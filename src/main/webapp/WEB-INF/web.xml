@@ -44,9 +44,9 @@
         <!-- 3. Welcome Files -->
         <!-- ======================================== -->
 <welcome-file-list>
-<welcome-file>login.xhtml</welcome-file>
-<welcome-file>dashboard.xhtml</welcome-file>
-<welcome-file>index.xhtml</welcome-file>
+<welcome-file>/jsp/login.jsp</welcome-file>
+<welcome-file>/jsp/dashboard.jsp</welcome-file>
+<welcome-file>/jsp/welcome.jsp</welcome-file>
 </welcome-file-list>
 
         <!-- ======================================== -->
