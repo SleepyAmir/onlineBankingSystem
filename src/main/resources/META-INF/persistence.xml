@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+    <persistence-unit name="sleepy" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <jta-data-source>jdbc/JtaDataSource</jta-data-source>
+        <non-jta-data-source>jdbc/NonJtaDataSource</non-jta-data-source>
+
+
+        <class>com.sleepy.onlinebankingsystem.model.entity.User</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Account</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Card</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Loan</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Transaction</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Role</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Authority</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Token</class>
+        <class>com.sleepy.onlinebankingsystem.model.entity.Base</class>
+
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
+
+            <!-- فقط برای اولین بار update استفاده کن، بعدش none -->
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+
+
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+
+            <!-- connection pool -->
+            <property name="hibernate.c3p0.min_size" value="5"/>
+            <property name="hibernate.c3p0.max_size" value="20"/>
+            <property name="hibernate.c3p0.acquire_increment" value="5"/>
+            <property name="hibernate.c3p0.timeout" value="1800"/>
+        </properties>
+    </persistence-unit>
+</persistence>

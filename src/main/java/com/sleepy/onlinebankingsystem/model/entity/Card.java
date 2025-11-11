@@ -1,0 +1,51 @@
+package com.sleepy.onlinebankingsystem.model.entity;
+
+
+import com.sleepy.onlinebankingsystem.model.enums.CardType;
+import lombok.*;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "cards",
+        uniqueConstraints = @UniqueConstraint(columnNames = "cardNumber"))
+@NamedQueries({
+        @NamedQuery(name = "Card.findByAccount", query = "SELECT c FROM Card c WHERE c.account = :account "),
+        @NamedQuery(name = "Card.findByCardNumber", query = "SELECT c FROM Card c WHERE c.cardNumber = :cardNumber "),
+        @NamedQuery(name = "Card.findByUser", query = "SELECT c FROM Card c WHERE c.account.user = :user"),
+        @NamedQuery(name = "Card.findActiveCards", query = "SELECT c FROM Card c WHERE c.active = true "),
+        @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c ")
+})
+public class Card extends Base {
+    public static final String FIND_BY_ACCOUNT = "Card.findByAccount";
+    public static final String FIND_BY_CARD_NUMBER = "Card.findByCardNumber";
+    public static final String FIND_BY_USER = "Card.findByUser";
+    public static final String FIND_ACTIVE_CARDS = "Card.findActiveCards";
+    public static final String FIND_ALL = "Card.findAll";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
+
+    @Column(nullable = false, unique = true, length = 16)
+    private String cardNumber;
+
+    @Column(nullable = false, length = 3)
+    private String cvv;
+
+    @Column(nullable = false)
+    private LocalDate expiryDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CardType type;
+
+    @Column(nullable = false)
+    private boolean active = true;
+}

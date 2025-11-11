@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+         version="5.0">
+
+
+<display-name>Online Banking System</display-name>
+<description>A secure online banking platform with user authentication, transactions, and loan management.</description>
+
+        <!-- ======================================== -->
+        <!-- 1. DataSource Reference (JTA & Non-JTA) -->
+        <!-- ======================================== -->
+    <resource-ref>
+        <description>JTA Managed DataSource for Transactions</description>
+        <res-ref-name>jdbc/JtaDataSource</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+        <res-sharing-scope>Shareable</res-sharing-scope>
+    </resource-ref>
+
+    <resource-ref>
+        <description>Non-JTA DataSource for Read-Only Operations</description>
+        <res-ref-name>jdbc/NonJtaDataSource</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+        <res-sharing-scope>Shareable</res-sharing-scope>
+    </resource-ref>
+
+        <!-- ======================================== -->
+        <!-- 2. Session Configuration -->
+        <!-- ======================================== -->
+<session-config>
+<session-timeout>30</session-timeout>
+<cookie-config>
+    <http-only>true</http-only>
+    <secure>false</secure> <!-- false for local dev (HTTP), true in production (HTTPS) -->
+    <max-age>1800</max-age>
+</cookie-config>
+<tracking-mode>COOKIE</tracking-mode>
+</session-config>
+
+        <!-- ======================================== -->
+        <!-- 3. Welcome Files -->
+        <!-- ======================================== -->
+<welcome-file-list>
+<welcome-file>login.xhtml</welcome-file>
+<welcome-file>dashboard.xhtml</welcome-file>
+<welcome-file>index.xhtml</welcome-file>
+</welcome-file-list>
+
+        <!-- ======================================== -->
+        <!-- 4. JSF Configuration (Jakarta Faces 3.0+) -->
+        <!-- ======================================== -->
+<context-param>
+<param-name>jakarta.faces.FACELETS_SKIP_COMMENTS</param-name>
+<param-value>true</param-value>
+</context-param>
+
+<context-param>
+<param-name>jakarta.faces.PROJECT_STAGE</param-name>
+<param-value>Development</param-value>
+</context-param>
+
+<context-param>
+<param-name>jakarta.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL</param-name>
+<param-value>true</param-value>
+</context-param>
+
+        <!-- ======================================== -->
+        <!-- 5. Security Filters -->
+        <!-- ======================================== -->
+
+        <!-- CSRF Protection for JSP & Forms -->
+<filter>
+<filter-name>CsrfFilter</filter-name>
+<filter-class>com.sleepy.onlinebankingsystem.filter.CsrfFilter</filter-class>
+</filter>
+<filter-mapping>
+<filter-name>CsrfFilter</filter-name>
+<url-pattern>*.xhtml</url-pattern>
+<url-pattern>/faces/*</url-pattern>
+<url-pattern>/servlet/*</url-pattern>
+</filter-mapping>
+
+        <!-- JWT Authentication for REST API -->
+<filter>
+<filter-name>JwtAuthenticationFilter</filter-name>
+<filter-class>com.sleepy.onlinebankingsystem.filter.JwtAuthenticationFilter</filter-class>
+</filter>
+<filter-mapping>
+<filter-name>JwtAuthenticationFilter</filter-name>
+<url-pattern>/api/*</url-pattern>
+<dispatcher>REQUEST</dispatcher>
+<dispatcher>FORWARD</dispatcher>
+</filter-mapping>
+
+        <!-- ======================================== -->
+        <!-- 6. Error Pages (User-Friendly) -->
+        <!-- ======================================== -->
+<error-page>
+<error-code>404</error-code>
+<location>/error/404.jsp</location>
+</error-page>
+<error-page>
+<error-code>403</error-code>
+<location>/error/403.jsp</location>
+</error-page>
+<error-page>
+<error-code>500</error-code>
+<location>/error/500.jsp</location>
+</error-page>
+<error-page>
+<exception-type>java.lang.Exception</exception-type>
+<location>/error/500.jsp</location>
+</error-page>
+
+        <!-- ======================================== -->
+        <!-- 7. Listeners -->
+        <!-- ======================================== -->
+<listener>
+<listener-class>com.sleepy.onlinebankingsystem.utils.SessionListener</listener-class>
+</listener>
+
+
+
+</web-app>

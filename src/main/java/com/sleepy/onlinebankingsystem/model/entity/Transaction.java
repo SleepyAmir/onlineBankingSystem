@@ -1,0 +1,65 @@
+package com.sleepy.onlinebankingsystem.model.entity;
+
+
+import com.sleepy.onlinebankingsystem.model.enums.TransactionType;
+import lombok.*;
+import jakarta.persistence.*;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "transactions",
+        uniqueConstraints = @UniqueConstraint(columnNames = "transactionId"))
+@NamedQueries({
+        @NamedQuery(name = "Transaction.findByAccount", query = "SELECT t FROM Transaction t WHERE (t.fromAccount = :account OR t.toAccount = :account) "),
+        @NamedQuery(name = "Transaction.findByUser", query = "SELECT t FROM Transaction t WHERE (t.fromAccount.user = :user OR t.toAccount.user = :user)"),
+        @NamedQuery(name = "Transaction.findByTransactionId", query = "SELECT t FROM Transaction t WHERE t.transactionId = :transactionId "),
+        @NamedQuery(name = "Transaction.findByDateRange", query = "SELECT t FROM Transaction t WHERE t.transactionDate BETWEEN :startDate AND :endDate "),
+        @NamedQuery(name = "Transaction.findAll", query = "SELECT t FROM Transaction t ")
+})
+public class Transaction extends Base {
+    public static final String FIND_BY_ACCOUNT = "Transaction.findByAccount";
+    public static final String FIND_BY_USER = "Transaction.findByUser";
+    public static final String FIND_BY_TRANSACTION_ID = "Transaction.findByTransactionId";
+    public static final String FIND_BY_DATE_RANGE = "Transaction.findByDateRange";
+    public static final String FIND_ALL = "Transaction.findAll";
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String transactionId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "from_account_id")
+    private Account fromAccount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "to_account_id")
+    private Account toAccount;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType type;
+
+    @Column(nullable = false)
+    private LocalDateTime transactionDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionStatus status;
+
+    @Column(length = 255)
+    private String description;
+
+    @Column(length = 50)
+    private String referenceNumber;
+}
