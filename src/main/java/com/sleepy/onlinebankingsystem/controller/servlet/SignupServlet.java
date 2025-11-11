@@ -24,7 +24,7 @@ public class SignupServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         CsrfFilter.generateCsrfToken(request);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/signup.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/jsp/signup.jsp");
         dispatcher.forward(request, response);
     }
 

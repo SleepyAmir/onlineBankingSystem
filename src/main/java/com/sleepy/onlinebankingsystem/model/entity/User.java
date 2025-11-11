@@ -35,8 +35,8 @@ public class User extends Base {
     @Column(nullable = false, length = 50)
     private String username;
 
-    @NotBlank @Size(min = 60, max = 60)
-    @Column(nullable = false, length = 60)
+    @NotBlank @Size(min = 6, max = 12)
+    @Column(nullable = false, length = 12)
     private String password;
 
     @NotBlank @Size(max = 100)
