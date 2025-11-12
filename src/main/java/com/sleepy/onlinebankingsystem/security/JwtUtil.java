@@ -1,5 +1,6 @@
 package com.sleepy.onlinebankingsystem.security;
 
+import com.sleepy.onlinebankingsystem.model.enums.UserRole;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,7 +19,7 @@ public class JwtUtil {
     private static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     private static final long EXPIRATION_MINUTES = 15;
 
-    public String generateToken(String username, Set<String> roles) {
+    public String generateToken(String username, Set<UserRole> roles) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", roles);
 

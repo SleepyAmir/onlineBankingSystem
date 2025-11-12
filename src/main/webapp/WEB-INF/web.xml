@@ -34,7 +34,7 @@
 <session-timeout>30</session-timeout>
 <cookie-config>
     <http-only>true</http-only>
-    <secure>false</secure> <!-- false for local dev (HTTP), true in production (HTTPS) -->
+        <secure>true</secure> <!-- Always true for security; use HTTPS in all environments -->
     <max-age>1800</max-age>
 </cookie-config>
 <tracking-mode>COOKIE</tracking-mode>

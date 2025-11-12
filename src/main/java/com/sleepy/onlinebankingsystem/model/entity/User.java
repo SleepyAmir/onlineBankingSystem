@@ -35,8 +35,9 @@ public class User extends Base {
     @Column(nullable = false, length = 50)
     private String username;
 
-    @NotBlank @Size(min = 6, max = 12)
-    @Column(nullable = false, length = 12)
+    @NotBlank
+    @Size(min = 60, max = 60, message = "هش رمز عبور نامعتبر است")
+    @Column(nullable = false, length = 60)
     private String password;
 
     @NotBlank @Size(max = 100)
@@ -56,7 +57,7 @@ public class User extends Base {
     private String nationalCode;
 
     @Column
-    private boolean active = false;
+    private boolean active = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Role> roles = new HashSet<>();

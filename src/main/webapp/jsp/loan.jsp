@@ -16,7 +16,7 @@
             <div class="alert alert-danger">${error}</div>
         </c:if>
 
-        <form action="/loan" method="post">
+        <form action="/jsp/loan" method="post">
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
             <div class="mb-3">
                 <label>حساب مقصد</label>

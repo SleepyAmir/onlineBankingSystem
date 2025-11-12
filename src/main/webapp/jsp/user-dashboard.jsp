@@ -17,8 +17,8 @@
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">بانک اسلیپی</a>
         <div>
-            <a href="/profile" class="btn btn-outline-light btn-sm">پروفایل</a>
-            <a href="/logout" class="btn btn-outline-light btn-sm">خروج</a>
+            <a href="/jsp/profile" class="btn btn-outline-light btn-sm">پروفایل</a>
+            <a href="/jsp/logout" class="btn btn-outline-light btn-sm">خروج</a>
         </div>
     </div>
 </nav>
@@ -32,8 +32,9 @@
     </c:if>
 
     <h2 class="mb-4">سلام، ${sessionScope.user.firstName}!</h2>
-
+    <!--
     <div class="row g-4 mb-5">
+
         <div class="col-md-3">
             <div class="card stat-card p-3 text-center">
                 <h5>تعداد حساب‌ها</h5>
@@ -57,7 +58,9 @@
                 <h5>تراکنش اخیر</h5>
                 <h3>${transactions.size()}</h3>
             </div>
+
         </div>
+        !-->
     </div>
 
     <div class="row g-4">
@@ -74,15 +77,15 @@
                         </div>
                     </div>
                 </c:forEach>
-                <a href="/account/create" class="btn btn-outline-primary mt-3">+ حساب جدید</a>
+                <a href="/jsp/account/create" class="btn btn-outline-primary mt-3">+ حساب جدید</a>
             </div>
         </div>
 
         <div class="col-lg-4">
             <div class="card p-4">
                 <h5>عملیات سریع</h5>
-                <a href="/transfer" class="btn btn-sm btn-primary w-100 mb-2">انتقال وجه</a>
-                <a href="/loan" class="btn btn-sm btn-info w-100 mb-2 text-white">درخواست وام</a>
+                <a href="/jsp/transfer" class="btn btn-sm btn-primary w-100 mb-2">انتقال وجه</a>
+                <a href="/jsp/loan" class="btn btn-sm btn-info w-100 mb-2 text-white">درخواست وام</a>
             </div>
         </div>
     </div>

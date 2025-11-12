@@ -28,12 +28,12 @@
                     <td>${loan.principal}</td>
                     <td>${loan.durationMonths} ماه</td>
                     <td>
-                        <form action="/admin/loan-approval" method="post" class="d-inline">
+                        <form action="/jsp/loan-approval" method="post" class="d-inline">
                             <input type="hidden" name="loanId" value="${loan.id}" />
                             <input type="hidden" name="action" value="approve" />
                             <button class="btn btn-success btn-sm">تأیید</button>
                         </form>
-                        <form action="/admin/loan-approval" method="post" class="d-inline">
+                        <form action="/jsp/loan-approval" method="post" class="d-inline">
                             <input type="hidden" name="loanId" value="${loan.id}" />
                             <input type="hidden" name="action" value="reject" />
                             <button class="btn btn-danger btn-sm">رد</button>

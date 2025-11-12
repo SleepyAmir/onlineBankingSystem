@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <title>ایجاد حساب جدید</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet" />
     <style> body { font-family: 'Vazirmatn', sans-serif; background: #f8f9fa; } </style>
 </head>
 <body class="bg-light">
@@ -12,7 +13,12 @@
 <div class="container py-5">
     <div class="card col-md-6 mx-auto p-4 shadow">
         <h4 class="text-center mb-4">ایجاد حساب جدید</h4>
-        <form action="/account/create" method="post">
+
+        <c:if test="${not empty error}">
+            <div class="alert alert-danger">${error}</div>
+        </c:if>
+
+        <form action="${pageContext.request.contextPath}/account/create" method="post">
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
             <div class="mb-3">
                 <label>نوع حساب</label>

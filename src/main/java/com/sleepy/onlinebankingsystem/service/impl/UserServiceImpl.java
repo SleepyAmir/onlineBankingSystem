@@ -5,7 +5,9 @@ import com.sleepy.onlinebankingsystem.repository.UserRepository;
 import com.sleepy.onlinebankingsystem.service.UserService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,6 +17,8 @@ import java.util.Optional;
 @Slf4j
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
+    @PersistenceContext(unitName = "sleepy")
+    private EntityManager entityManager;
 
     @Inject
     UserRepository userRepository;
@@ -24,6 +28,10 @@ public class UserServiceImpl implements UserService {
     public User save(User user) throws Exception {
         log.info("Saving user: {}", user.getUsername());
 
+        if (user.getPassword() == null || user.getPassword().length() < 60) {
+            throw new IllegalArgumentException("هش رمز عبور نامعتبر است");
+        }
+
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists: " + user.getUsername());
         }
@@ -31,7 +39,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("National code already exists: " + user.getNationalCode());
         }
 
-        user.setActive(false);
+        user.setActive(true);
         return userRepository.save(user);
     }
 

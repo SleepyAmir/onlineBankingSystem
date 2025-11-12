@@ -20,8 +20,9 @@
             <div class="alert alert-danger">${error}</div>
         </c:if>
 
-        <form action="/signup" method="post">
+        <form action="${pageContext.request.contextPath}/signup" method="post">
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
             <div class="row g-3">
                 <div class="col-md-6">
                     <input type="text" name="firstName" placeholder="نام" class="form-control" required />
@@ -47,7 +48,7 @@
             </div>
         </form>
         <div class="text-center mt-3">
-            <a href="/login">قبلاً ثبت‌نام کرده‌اید؟ ورود</a>
+            <a href="${pageContext.request.contextPath}/login">قبلاً ثبت‌نام کرده‌اید؟ ورود</a>
         </div>
     </div>
 </div>

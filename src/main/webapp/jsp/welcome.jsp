@@ -19,15 +19,15 @@
 <div class="container py-5">
     <div class="hero p-5 text-center col-lg-8 mx-auto">
         <h1 class="display-4 fw-bold text-primary mb-4">
-            <i class="fas fa-university"></i> بانک اسلیپی
+            بانک اسلیپی
         </h1>
         <p class="lead mb-4">${bankIntro}</p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="/login" class="btn btn-primary btn-lg px-5">
-                <i class="fas fa-sign-in-alt"></i> ورود
+            <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg px-5">
+                ورود
             </a>
-            <a href="/signup" class="btn btn-outline-primary btn-lg px-5">
-                <i class="fas fa-user-plus"></i> ثبت‌نام
+            <a href="${pageContext.request.contextPath}/signup" class="btn btn-outline-primary btn-lg px-5">
+                ثبت‌نام
             </a>
         </div>
     </div>
