@@ -24,6 +24,13 @@ import java.util.Date;
         @NamedQuery(name = "Card.findActiveCards", query = "SELECT c FROM Card c WHERE c.active = true "),
         @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c "),
         @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.account.user.id = :userId AND c.deleted = false"
+        ),
+        @NamedQuery(
+                name = "Card.findByUserWithAccountAndUser",
+                query = "SELECT c FROM Card c " +
+                        "JOIN FETCH c.account a " +
+                        "JOIN FETCH a.user u " +
+                        "WHERE u.id = :userId AND c.deleted = false"
         )
 })
 public class Card extends Base {
@@ -33,6 +40,7 @@ public class Card extends Base {
     public static final String FIND_ACTIVE_CARDS = "Card.findActiveCards";
     public static final String FIND_ALL = "Card.findAll";
     public static final String FIND_BY_USER_WITH_ACCOUNT = "Card.findByUserWithAccount";
+    public static final String FIND_BY_USER_WITH_ACCOUNT_AND_USER = "Card.findByUserWithAccountAndUser";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)

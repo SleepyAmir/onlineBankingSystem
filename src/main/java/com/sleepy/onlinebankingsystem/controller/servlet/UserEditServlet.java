@@ -12,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -37,6 +38,7 @@ public class UserEditServlet extends HttpServlet {
     private static final Pattern NATIONAL_CODE_PATTERN = Pattern.compile("^[0-9]{10}$");
 
     @Override
+    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         

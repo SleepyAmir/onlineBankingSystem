@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class CardListServlet extends HttpServlet {
     private static final int PAGE_SIZE = 10;
 
     @Override
+    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
@@ -44,28 +46,13 @@ public class CardListServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // --- دریافت پارامترها ---
-            String pageParam = req.getParameter("page");
-            int page = 0;
-            if (pageParam != null) {
-                try {
-                    page = Integer.parseInt(pageParam);
-                    if (page < 0) page = 0;
-                } catch (NumberFormatException e) {
-                    log.warn("Invalid page parameter: {}", pageParam);
-                    page = 0;
-                }
-            }
-
-            String activeParam = req.getParameter("active");
-            Boolean filterActive = null;
-            if (activeParam != null && !activeParam.isBlank()) {
-                filterActive = Boolean.parseBoolean(activeParam);
-            }
+            // --- پارامترها ---
+            int page = parsePage(req.getParameter("page"));
+            Boolean filterActive = parseActive(req.getParameter("active"));
 
             List<Card> cards;
 
-            // --- Admin / Manager: امکان فیلتر بر اساس کاربر ---
+            // --- Admin / Manager ---
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
 
                 String userIdParam = req.getParameter("userId");
@@ -76,7 +63,8 @@ public class CardListServlet extends HttpServlet {
 
                     if (userOpt.isPresent()) {
                         User targetUser = userOpt.get();
-                        cards = cardService.findByUserWithAccount(targetUser.getId()); // با account لود شده
+                        // متد جدید با JOIN FETCH user
+                        cards = cardService.findByUserWithAccountAndUser(targetUser.getId());
                         req.setAttribute("selectedUser", targetUser);
                     } else {
                         cards = getFilteredCards(filterActive, page);
@@ -88,7 +76,7 @@ public class CardListServlet extends HttpServlet {
                 req.setAttribute("users", userService.findActiveUsers());
 
             } else {
-                // --- کاربر عادی: فقط کارت‌های خودش ---
+                // --- کاربر عادی ---
                 Optional<User> userOpt = userService.findByUsername(currentUsername);
                 if (userOpt.isEmpty()) {
                     resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
@@ -96,7 +84,7 @@ public class CardListServlet extends HttpServlet {
                 }
 
                 User user = userOpt.get();
-                cards = cardService.findByUserWithAccount(user.getId()); // با account لود شده
+                cards = cardService.findByUserWithAccountAndUser(user.getId()); // متد جدید
 
                 if (filterActive != null) {
                     boolean active = filterActive;
@@ -106,7 +94,7 @@ public class CardListServlet extends HttpServlet {
                 }
             }
 
-            // --- ارسال اطلاعات به JSP ---
+            // --- ارسال به JSP ---
             req.setAttribute("cards", cards);
             req.setAttribute("currentPage", page);
             req.setAttribute("pageSize", PAGE_SIZE);
@@ -123,7 +111,24 @@ public class CardListServlet extends HttpServlet {
         }
     }
 
-    // --- متد کمکی برای Admin/Manager ---
+    // --- متدهای کمکی ---
+    private int parsePage(String pageParam) {
+        if (pageParam == null) return 0;
+        try {
+            int page = Integer.parseInt(pageParam);
+            return page < 0 ? 0 : page;
+        } catch (NumberFormatException e) {
+            log.warn("Invalid page parameter: {}", pageParam);
+            return 0;
+        }
+    }
+
+    private Boolean parseActive(String activeParam) {
+        if (activeParam == null || activeParam.isBlank()) return null;
+        return Boolean.parseBoolean(activeParam);
+    }
+
+    @Transactional // این خط مهمه!
     private List<Card> getFilteredCards(Boolean filterActive, int page) throws Exception {
         if (filterActive != null && filterActive) {
             return cardService.findActiveCards();
@@ -131,4 +136,5 @@ public class CardListServlet extends HttpServlet {
             return cardService.findAll(page, PAGE_SIZE);
         }
     }
+
 }

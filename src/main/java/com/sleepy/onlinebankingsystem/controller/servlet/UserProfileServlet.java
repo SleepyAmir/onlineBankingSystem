@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class UserProfileServlet extends HttpServlet {
     private static final Pattern PHONE_PATTERN = Pattern.compile("^09[0-9]{9}$");
 
     @Override
+    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         

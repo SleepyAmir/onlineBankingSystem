@@ -20,4 +20,5 @@ public interface CardService {
     List<Card> findActiveCards() throws Exception;
     List<Card> findAll(int page, int size) throws Exception;
     List<Card> findByUserWithAccount(Long userId) throws Exception;
+    List<Card> findByUserWithAccountAndUser(Long userId) throws Exception;
 }
