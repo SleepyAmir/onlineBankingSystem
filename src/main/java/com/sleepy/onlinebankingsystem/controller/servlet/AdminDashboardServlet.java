@@ -174,12 +174,12 @@ public class AdminDashboardServlet extends HttpServlet {
             req.setAttribute("systemStats", systemStats);
 
             // 9️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/dashboard/admin.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard/admin.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading admin dashboard", e);
             req.setAttribute("error", "خطا در بارگذاری داشبورد: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

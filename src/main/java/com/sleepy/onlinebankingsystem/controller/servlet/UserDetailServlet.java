@@ -70,12 +70,12 @@ public class UserDetailServlet extends HttpServlet {
             log.info("Fetched details for user: {}", user.getUsername());
 
             // 5️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/users/detail.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/users/detail.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching user details", e);
             req.setAttribute("error", "خطا در دریافت جزئیات کاربر: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

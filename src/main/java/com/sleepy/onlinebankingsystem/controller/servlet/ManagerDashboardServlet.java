@@ -127,12 +127,12 @@ public class ManagerDashboardServlet extends HttpServlet {
             req.setAttribute("recentUsers", recentUsers);
 
             // 9️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/dashboard/manager.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard/manager.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading manager dashboard", e);
             req.setAttribute("error", "خطا در بارگذاری داشبورد: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

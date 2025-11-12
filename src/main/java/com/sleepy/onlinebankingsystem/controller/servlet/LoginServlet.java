@@ -50,7 +50,7 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // نمایش صفحه لاگین (فرم HTML/JSP)
-        req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class LoginServlet extends HttpServlet {
                 password == null || password.isBlank()) {
                 
                 req.setAttribute("error", "نام کاربری و رمز عبور الزامی است");
-                req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
                 return;
             }
 
@@ -82,7 +82,7 @@ public class LoginServlet extends HttpServlet {
             if (userOpt.isEmpty()) {
                 log.warn("Login failed: User not found - {}", username);
                 req.setAttribute("error", "نام کاربری یا رمز عبور اشتباه است");
-                req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
                 return;
             }
 
@@ -92,7 +92,7 @@ public class LoginServlet extends HttpServlet {
             if (!user.isActive()) {
                 log.warn("Login failed: User is inactive - {}", username);
                 req.setAttribute("error", "حساب کاربری شما غیرفعال شده است");
-                req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
                 return;
             }
 
@@ -100,7 +100,7 @@ public class LoginServlet extends HttpServlet {
             if (!passwordUtil.matches(password, user.getPassword())) {
                 log.warn("Login failed: Invalid password - {}", username);
                 req.setAttribute("error", "نام کاربری یا رمز عبور اشتباه است");
-                req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
                 return;
             }
 
@@ -113,7 +113,7 @@ public class LoginServlet extends HttpServlet {
             if (userRoles.isEmpty()) {
                 log.warn("Login failed: User has no roles - {}", username);
                 req.setAttribute("error", "کاربر فاقد نقش سیستمی است");
-                req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
                 return;
             }
 
@@ -151,7 +151,7 @@ public class LoginServlet extends HttpServlet {
         } catch (Exception e) {
             log.error("Error during login", e);
             req.setAttribute("error", "خطای سرور: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
         }
     }
 

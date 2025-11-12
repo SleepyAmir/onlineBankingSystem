@@ -39,7 +39,7 @@ public class UserCreateServlet extends HttpServlet {
         
         // نمایش فرم ایجاد کاربر
         req.setAttribute("availableRoles", UserRole.values());
-        req.getRequestDispatcher("/WEB-INF/views/users/create.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/users/create.jsp").forward(req, resp);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class UserCreateServlet extends HttpServlet {
             if (validationError != null) {
                 req.setAttribute("error", validationError);
                 req.setAttribute("availableRoles", UserRole.values());
-                req.getRequestDispatcher("/WEB-INF/views/users/create.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/users/create.jsp").forward(req, resp);
                 return;
             }
 
@@ -72,14 +72,14 @@ public class UserCreateServlet extends HttpServlet {
             if (userService.findByUsername(username).isPresent()) {
                 req.setAttribute("error", "این نام کاربری قبلاً ثبت شده است");
                 req.setAttribute("availableRoles", UserRole.values());
-                req.getRequestDispatcher("/WEB-INF/views/users/create.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/users/create.jsp").forward(req, resp);
                 return;
             }
 
             if (userService.findByNationalCode(nationalCode).isPresent()) {
                 req.setAttribute("error", "این کد ملی قبلاً ثبت شده است");
                 req.setAttribute("availableRoles", UserRole.values());
-                req.getRequestDispatcher("/WEB-INF/views/users/create.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/users/create.jsp").forward(req, resp);
                 return;
             }
 
@@ -119,7 +119,7 @@ public class UserCreateServlet extends HttpServlet {
             log.error("Error creating user", e);
             req.setAttribute("error", "خطا در ایجاد کاربر: " + e.getMessage());
             req.setAttribute("availableRoles", UserRole.values());
-            req.getRequestDispatcher("/WEB-INF/views/users/create.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/users/create.jsp").forward(req, resp);
         }
     }
 

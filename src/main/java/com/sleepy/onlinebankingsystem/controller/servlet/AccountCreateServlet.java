@@ -52,12 +52,12 @@ public class AccountCreateServlet extends HttpServlet {
             req.setAttribute("accountTypes", AccountType.values());
 
             // 3️⃣ نمایش فرم ایجاد حساب
-            req.getRequestDispatcher("/WEB-INF/views/accounts/create.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading create account form", e);
             req.setAttribute("error", "خطا در بارگذاری فرم: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 
@@ -81,7 +81,7 @@ public class AccountCreateServlet extends HttpServlet {
             if (accountTypeParam == null || accountTypeParam.isBlank()) {
                 req.setAttribute("error", "نوع حساب الزامی است");
                 req.setAttribute("accountTypes", AccountType.values());
-                req.getRequestDispatcher("/WEB-INF/views/accounts/create.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
                 return;
             }
 
@@ -91,7 +91,7 @@ public class AccountCreateServlet extends HttpServlet {
             } catch (IllegalArgumentException e) {
                 req.setAttribute("error", "نوع حساب نامعتبر است");
                 req.setAttribute("accountTypes", AccountType.values());
-                req.getRequestDispatcher("/WEB-INF/views/accounts/create.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
                 return;
             }
 
@@ -108,7 +108,7 @@ public class AccountCreateServlet extends HttpServlet {
                         req.setAttribute("error", "کاربر مورد نظر یافت نشد");
                         req.setAttribute("accountTypes", AccountType.values());
                         req.setAttribute("users", userService.findActiveUsers());
-                        req.getRequestDispatcher("/WEB-INF/views/accounts/create.jsp").forward(req, resp);
+                        req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
                         return;
                     }
                     
@@ -132,13 +132,13 @@ public class AccountCreateServlet extends HttpServlet {
                     if (initialBalance.compareTo(BigDecimal.ZERO) < 0) {
                         req.setAttribute("error", "موجودی اولیه نمی‌تواند منفی باشد");
                         req.setAttribute("accountTypes", AccountType.values());
-                        req.getRequestDispatcher("/WEB-INF/views/accounts/create.jsp").forward(req, resp);
+                        req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
                         return;
                     }
                 } catch (NumberFormatException e) {
                     req.setAttribute("error", "موجودی اولیه نامعتبر است");
                     req.setAttribute("accountTypes", AccountType.values());
-                    req.getRequestDispatcher("/WEB-INF/views/accounts/create.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
                     return;
                 }
             }
@@ -169,7 +169,7 @@ public class AccountCreateServlet extends HttpServlet {
             log.error("Error creating account", e);
             req.setAttribute("error", "خطا در ایجاد حساب: " + e.getMessage());
             req.setAttribute("accountTypes", AccountType.values());
-            req.getRequestDispatcher("/WEB-INF/views/accounts/create.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
         }
     }
 

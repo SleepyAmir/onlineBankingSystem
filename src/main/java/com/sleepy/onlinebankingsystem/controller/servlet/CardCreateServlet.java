@@ -86,7 +86,7 @@ public class CardCreateServlet extends HttpServlet {
 
             if (activeAccounts.isEmpty()) {
                 req.setAttribute("error", "حساب فعالی برای صدور کارت وجود ندارد");
-                req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
                 return;
             }
 
@@ -95,12 +95,12 @@ public class CardCreateServlet extends HttpServlet {
             req.setAttribute("cardTypes", CardType.values());
 
             // 4️⃣ نمایش فرم صدور کارت
-            req.getRequestDispatcher("/WEB-INF/views/cards/create.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/cards/create.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading card creation form", e);
             req.setAttribute("error", "خطا در بارگذاری فرم: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 

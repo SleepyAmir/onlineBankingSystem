@@ -79,12 +79,12 @@ public class LoanDetailServlet extends HttpServlet {
             log.info("Fetched details for loan: {}", loan.getLoanNumber());
 
             // 5️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/loans/detail.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/loans/detail.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching loan details", e);
             req.setAttribute("error", "خطا در دریافت جزئیات وام: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

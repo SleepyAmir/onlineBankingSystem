@@ -134,12 +134,12 @@ public class TransactionHistoryServlet extends HttpServlet {
             log.info("Fetched {} transactions for user: {}", transactions.size(), currentUsername);
 
             // 6️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/transactions/history.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/transactions/history.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching transaction history", e);
             req.setAttribute("error", "خطا در دریافت تاریخچه تراکنش‌ها: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

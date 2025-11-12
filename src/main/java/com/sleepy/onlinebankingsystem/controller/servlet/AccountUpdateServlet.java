@@ -69,12 +69,12 @@ public class AccountUpdateServlet extends HttpServlet {
             req.setAttribute("accountStatuses", AccountStatus.values());
 
             // 5️⃣ نمایش فرم ویرایش
-            req.getRequestDispatcher("/WEB-INF/views/accounts/update.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/accounts/update.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading update form", e);
             req.setAttribute("error", "خطا در بارگذاری فرم: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 
@@ -118,7 +118,7 @@ public class AccountUpdateServlet extends HttpServlet {
                     req.setAttribute("account", account);
                     req.setAttribute("accountTypes", AccountType.values());
                     req.setAttribute("accountStatuses", AccountStatus.values());
-                    req.getRequestDispatcher("/WEB-INF/views/accounts/update.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/accounts/update.jsp").forward(req, resp);
                     return;
                 }
             }
@@ -133,7 +133,7 @@ public class AccountUpdateServlet extends HttpServlet {
                     req.setAttribute("account", account);
                     req.setAttribute("accountTypes", AccountType.values());
                     req.setAttribute("accountStatuses", AccountStatus.values());
-                    req.getRequestDispatcher("/WEB-INF/views/accounts/update.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/accounts/update.jsp").forward(req, resp);
                     return;
                 }
             }
@@ -153,7 +153,7 @@ public class AccountUpdateServlet extends HttpServlet {
                             req.setAttribute("account", account);
                             req.setAttribute("accountTypes", AccountType.values());
                             req.setAttribute("accountStatuses", AccountStatus.values());
-                            req.getRequestDispatcher("/WEB-INF/views/accounts/update.jsp").forward(req, resp);
+                            req.getRequestDispatcher("/views/accounts/update.jsp").forward(req, resp);
                             return;
                         }
                         account.setBalance(balance);
@@ -162,7 +162,7 @@ public class AccountUpdateServlet extends HttpServlet {
                         req.setAttribute("account", account);
                         req.setAttribute("accountTypes", AccountType.values());
                         req.setAttribute("accountStatuses", AccountStatus.values());
-                        req.getRequestDispatcher("/WEB-INF/views/accounts/update.jsp").forward(req, resp);
+                        req.getRequestDispatcher("/views/accounts/update.jsp").forward(req, resp);
                         return;
                     }
                 }
@@ -180,7 +180,7 @@ public class AccountUpdateServlet extends HttpServlet {
         } catch (Exception e) {
             log.error("Error updating account", e);
             req.setAttribute("error", "خطا در به‌روزرسانی حساب: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

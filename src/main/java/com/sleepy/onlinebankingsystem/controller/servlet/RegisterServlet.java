@@ -39,7 +39,7 @@ public class RegisterServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // نمایش صفحه ثبت‌نام (فرم HTML/JSP)
-        req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class RegisterServlet extends HttpServlet {
 
             if (validationError != null) {
                 req.setAttribute("error", validationError);
-                req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
                 return;
             }
 
@@ -75,7 +75,7 @@ public class RegisterServlet extends HttpServlet {
             if (userService.findByUsername(username).isPresent()) {
                 log.warn("Registration failed: Username already exists - {}", username);
                 req.setAttribute("error", "این نام کاربری قبلاً ثبت شده است");
-                req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
                 return;
             }
 
@@ -83,7 +83,7 @@ public class RegisterServlet extends HttpServlet {
             if (userService.findByNationalCode(nationalCode).isPresent()) {
                 log.warn("Registration failed: National code already exists - {}", nationalCode);
                 req.setAttribute("error", "این کد ملی قبلاً ثبت شده است");
-                req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
                 return;
             }
 
@@ -119,11 +119,11 @@ public class RegisterServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             log.error("Validation error during registration", e);
             req.setAttribute("error", e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
         } catch (Exception e) {
             log.error("Error during registration", e);
             req.setAttribute("error", "خطای سرور: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/auth/register.jsp").forward(req, resp);
         }
     }
 

@@ -130,12 +130,12 @@ public class LoanListServlet extends HttpServlet {
             log.info("Fetched {} loans for user: {}", loans.size(), currentUsername);
 
             // 6️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/loans/list.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/loans/list.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching loan list", e);
             req.setAttribute("error", "خطا در دریافت لیست وام‌ها: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

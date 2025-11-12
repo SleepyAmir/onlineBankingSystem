@@ -67,12 +67,12 @@ public class UserProfileServlet extends HttpServlet {
             req.setAttribute("roles", roles);
 
             // 5️⃣ نمایش پروفایل
-            req.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading profile", e);
             req.setAttribute("error", "خطا در بارگذاری پروفایل: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 
@@ -114,7 +114,7 @@ public class UserProfileServlet extends HttpServlet {
             if (validationError != null) {
                 req.setAttribute("error", validationError);
                 req.setAttribute("user", user);
-                req.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
                 return;
             }
 
@@ -129,14 +129,14 @@ public class UserProfileServlet extends HttpServlet {
                 if (currentPassword == null || currentPassword.isBlank()) {
                     req.setAttribute("error", "برای تغییر رمز عبور، ابتدا رمز فعلی را وارد کنید");
                     req.setAttribute("user", user);
-                    req.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
                     return;
                 }
 
                 if (!passwordUtil.matches(currentPassword, user.getPassword())) {
                     req.setAttribute("error", "رمز عبور فعلی اشتباه است");
                     req.setAttribute("user", user);
-                    req.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
                     return;
                 }
 
@@ -144,7 +144,7 @@ public class UserProfileServlet extends HttpServlet {
                 if (!newPassword.equals(confirmPassword)) {
                     req.setAttribute("error", "رمز عبور جدید و تکرار آن یکسان نیستند");
                     req.setAttribute("user", user);
-                    req.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
                     return;
                 }
 
@@ -152,7 +152,7 @@ public class UserProfileServlet extends HttpServlet {
                 if (newPassword.length() < 6) {
                     req.setAttribute("error", "رمز عبور جدید باید حداقل 6 کاراکتر باشد");
                     req.setAttribute("user", user);
-                    req.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
                     return;
                 }
 
@@ -178,12 +178,12 @@ public class UserProfileServlet extends HttpServlet {
             List<Role> roles = roleService.findByUser(user);
             req.setAttribute("roles", roles);
             
-            req.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/profile.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error updating profile", e);
             req.setAttribute("error", "خطا در به‌روزرسانی پروفایل: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 

@@ -79,12 +79,12 @@ public class CardDetailServlet extends HttpServlet {
             log.info("Fetched details for card: {}", maskCardNumber(card.getCardNumber()));
 
             // 5️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/cards/detail.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/cards/detail.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching card details", e);
             req.setAttribute("error", "خطا در دریافت جزئیات کارت: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 

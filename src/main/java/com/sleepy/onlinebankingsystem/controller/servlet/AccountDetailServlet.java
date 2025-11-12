@@ -85,12 +85,12 @@ public class AccountDetailServlet extends HttpServlet {
             log.info("Fetched details for account: {}", account.getAccountNumber());
 
             // 5️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/accounts/detail.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/accounts/detail.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching account details", e);
             req.setAttribute("error", "خطا در دریافت جزئیات حساب: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

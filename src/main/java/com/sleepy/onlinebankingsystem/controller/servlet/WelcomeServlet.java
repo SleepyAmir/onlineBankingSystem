@@ -95,7 +95,7 @@ public class WelcomeServlet extends HttpServlet {
         req.setAttribute("features", features);
         req.setAttribute("currentPage", "home");
 
-        req.getRequestDispatcher("/WEB-INF/views/welcome.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/welcome.jsp").forward(req, resp);
     }
 
     /**
@@ -137,7 +137,7 @@ public class WelcomeServlet extends HttpServlet {
 
         req.setAttribute("currentPage", "about");
 
-        req.getRequestDispatcher("/WEB-INF/views/welcome.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/welcome.jsp").forward(req, resp);
     }
 
     /**
@@ -191,7 +191,7 @@ public class WelcomeServlet extends HttpServlet {
         req.setAttribute("services", services);
         req.setAttribute("currentPage", "services");
 
-        req.getRequestDispatcher("/WEB-INF/views/welcome.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/welcome.jsp").forward(req, resp);
     }
 
     /**
@@ -234,7 +234,7 @@ public class WelcomeServlet extends HttpServlet {
 
         req.setAttribute("currentPage", "contact");
 
-        req.getRequestDispatcher("/WEB-INF/views/welcome.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/welcome.jsp").forward(req, resp);
     }
 
     /**

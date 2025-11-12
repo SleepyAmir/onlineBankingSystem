@@ -52,12 +52,12 @@ public class UserListServlet extends HttpServlet {
             log.info("Fetched {} users for page {}", users.size(), page);
 
             // 4️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/users/list.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/users/list.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching user list", e);
             req.setAttribute("error", "خطا در دریافت لیست کاربران: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

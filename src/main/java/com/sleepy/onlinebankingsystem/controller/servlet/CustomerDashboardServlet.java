@@ -185,12 +185,12 @@ public class CustomerDashboardServlet extends HttpServlet {
             req.setAttribute("notifications", notifications.toString());
 
             // 9️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/dashboard/customer.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard/customer.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading customer dashboard", e);
             req.setAttribute("error", "خطا در بارگذاری داشبورد: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

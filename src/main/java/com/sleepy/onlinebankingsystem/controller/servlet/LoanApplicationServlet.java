@@ -65,7 +65,7 @@ public class LoanApplicationServlet extends HttpServlet {
 
             if (activeAccounts.isEmpty()) {
                 req.setAttribute("error", "شما حساب فعالی برای دریافت وام ندارید");
-                req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
                 return;
             }
 
@@ -73,12 +73,12 @@ public class LoanApplicationServlet extends HttpServlet {
             req.setAttribute("accounts", activeAccounts);
 
             // 3️⃣ نمایش فرم درخواست وام
-            req.getRequestDispatcher("/WEB-INF/views/loans/apply.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/loans/apply.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading loan application form", e);
             req.setAttribute("error", "خطا در بارگذاری فرم: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 

@@ -75,7 +75,7 @@ public class LoanPaymentServlet extends HttpServlet {
             // 4️⃣ بررسی وضعیت وام
             if (loan.getStatus() != LoanStatus.APPROVED && loan.getStatus() != LoanStatus.ACTIVE) {
                 req.setAttribute("error", "فقط وام‌های تأیید شده قابل پرداخت هستند");
-                req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
                 return;
             }
 
@@ -84,12 +84,12 @@ public class LoanPaymentServlet extends HttpServlet {
             req.setAttribute("account", loan.getAccount());
 
             // 6️⃣ نمایش فرم پرداخت
-            req.getRequestDispatcher("/WEB-INF/views/loans/payment.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/loans/payment.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading loan payment form", e);
             req.setAttribute("error", "خطا در بارگذاری فرم: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 

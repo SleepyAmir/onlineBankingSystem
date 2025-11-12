@@ -76,12 +76,12 @@ public class UserEditServlet extends HttpServlet {
             req.setAttribute("availableRoles", UserRole.values());
 
             // 5️⃣ نمایش فرم ویرایش
-            req.getRequestDispatcher("/WEB-INF/views/users/edit.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/users/edit.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading edit form", e);
             req.setAttribute("error", "خطا در بارگذاری فرم: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 
@@ -125,7 +125,7 @@ public class UserEditServlet extends HttpServlet {
                 req.setAttribute("error", validationError);
                 req.setAttribute("user", user);
                 req.setAttribute("availableRoles", UserRole.values());
-                req.getRequestDispatcher("/WEB-INF/views/users/edit.jsp").forward(req, resp);
+                req.getRequestDispatcher("/views/users/edit.jsp").forward(req, resp);
                 return;
             }
 
@@ -135,7 +135,7 @@ public class UserEditServlet extends HttpServlet {
                     req.setAttribute("error", "این کد ملی قبلاً ثبت شده است");
                     req.setAttribute("user", user);
                     req.setAttribute("availableRoles", UserRole.values());
-                    req.getRequestDispatcher("/WEB-INF/views/users/edit.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/users/edit.jsp").forward(req, resp);
                     return;
                 }
             }
@@ -153,7 +153,7 @@ public class UserEditServlet extends HttpServlet {
                     req.setAttribute("error", "رمز عبور باید حداقل 6 کاراکتر باشد");
                     req.setAttribute("user", user);
                     req.setAttribute("availableRoles", UserRole.values());
-                    req.getRequestDispatcher("/WEB-INF/views/users/edit.jsp").forward(req, resp);
+                    req.getRequestDispatcher("/views/users/edit.jsp").forward(req, resp);
                     return;
                 }
                 String hashedPassword = passwordUtil.hash(password);
@@ -171,7 +171,7 @@ public class UserEditServlet extends HttpServlet {
         } catch (Exception e) {
             log.error("Error updating user", e);
             req.setAttribute("error", "خطا در به‌روزرسانی کاربر: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 

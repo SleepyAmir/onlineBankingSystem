@@ -64,12 +64,12 @@ public class TransactionServlet extends HttpServlet {
             req.setAttribute("transactionTypes", TransactionType.values());
 
             // 3️⃣ نمایش فرم تراکنش
-            req.getRequestDispatcher("/WEB-INF/views/transactions/form.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/transactions/form.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading transaction form", e);
             req.setAttribute("error", "خطا در بارگذاری فرم: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 

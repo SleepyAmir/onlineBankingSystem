@@ -99,12 +99,12 @@ public class AccountListServlet extends HttpServlet {
             log.info("Fetched {} accounts for user: {}", accounts.size(), currentUsername);
 
             // 5️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/accounts/list.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/accounts/list.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching account list", e);
             req.setAttribute("error", "خطا در دریافت لیست حساب‌ها: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

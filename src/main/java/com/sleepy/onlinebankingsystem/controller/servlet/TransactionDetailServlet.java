@@ -91,12 +91,12 @@ public class TransactionDetailServlet extends HttpServlet {
             log.info("Fetched details for transaction: {}", transaction.getTransactionId());
 
             // 5️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/transactions/detail.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/transactions/detail.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching transaction details", e);
             req.setAttribute("error", "خطا در دریافت جزئیات تراکنش: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }

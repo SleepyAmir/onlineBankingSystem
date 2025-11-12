@@ -124,12 +124,12 @@ public class CardListServlet extends HttpServlet {
             log.info("Fetched {} cards for user: {}", cards.size(), currentUsername);
 
             // 6️⃣ نمایش JSP
-            req.getRequestDispatcher("/WEB-INF/views/cards/list.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/cards/list.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error fetching card list", e);
             req.setAttribute("error", "خطا در دریافت لیست کارت‌ها: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
 }
