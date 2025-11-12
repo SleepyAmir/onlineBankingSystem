@@ -1,10 +1,10 @@
 package com.sleepy.onlinebankingsystem.model.entity;
 
 
+import com.sleepy.onlinebankingsystem.model.enums.TransactionStatus;
 import com.sleepy.onlinebankingsystem.model.enums.TransactionType;
 import lombok.*;
 import jakarta.persistence.*;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,7 +53,8 @@ public class Transaction extends Base {
     @Column(nullable = false)
     private LocalDateTime transactionDate;
 
-    @Enumerated(EnumType.STRING)
+
+    @Enumerated(EnumType.STRING) // ✅ این خط رو اضافه کن
     @Column(nullable = false)
     private TransactionStatus status;
 
