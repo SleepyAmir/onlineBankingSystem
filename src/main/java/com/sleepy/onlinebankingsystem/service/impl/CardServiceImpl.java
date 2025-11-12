@@ -81,4 +81,19 @@ public class CardServiceImpl implements CardService {
     public List<Card> findAll(int page, int size) throws Exception {
         return cardRepository.findAll(page, size);
     }
+
+    // درست شده
+    @Override
+    public List<Card> findByUserWithAccount(Long userId) throws Exception {
+        log.debug("Fetching cards with account for user ID: {}", userId);
+        try {
+            return cardRepository.getEntityManager()
+                    .createNamedQuery(Card.FIND_BY_USER_WITH_ACCOUNT, Card.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+        } catch (Exception e) {
+            log.error("Error fetching cards with account for user ID: {}", userId, e);
+            throw e;
+        }
+    }
 }

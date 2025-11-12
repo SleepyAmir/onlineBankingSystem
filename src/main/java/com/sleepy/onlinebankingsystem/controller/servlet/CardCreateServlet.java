@@ -30,29 +30,26 @@ import java.util.stream.Collectors;
 @WebServlet("/cards/create")
 public class CardCreateServlet extends HttpServlet {
 
-    @Inject
-    private CardService cardService;
-
-    @Inject
-    private AccountService accountService;
-
-    @Inject
-    private UserService userService;
+    @Inject private CardService cardService;
+    @Inject private AccountService accountService;
+    @Inject private UserService userService;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
             HttpSession session = req.getSession(false);
+            if (session == null) {
+                resp.sendRedirect(req.getContextPath() + "/auth/login");
+                return;
+            }
+
             String currentUsername = (String) session.getAttribute("username");
-            
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت حساب‌های کاربر
             Optional<User> userOpt = userService.findByUsername(currentUsername);
-            
             if (userOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
                 return;
@@ -61,25 +58,21 @@ public class CardCreateServlet extends HttpServlet {
             User user = userOpt.get();
             List<Account> userAccounts;
 
-            // 2️⃣ اگر Admin یا Manager است، می‌تواند برای هر کاربری کارت صادر کند
+            // Admin/Manager: امکان انتخاب کاربر
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
                 String userIdParam = req.getParameter("userId");
-                
                 if (userIdParam != null && !userIdParam.isBlank()) {
                     Long userId = Long.parseLong(userIdParam);
                     Optional<User> targetUserOpt = userService.findById(userId);
-                    
                     if (targetUserOpt.isPresent()) {
                         user = targetUserOpt.get();
                     }
                 }
-                
                 req.setAttribute("users", userService.findActiveUsers());
             }
 
             userAccounts = accountService.findByUser(user);
 
-            // فیلتر کردن حساب‌های فعال
             List<Account> activeAccounts = userAccounts.stream()
                     .filter(acc -> acc.getStatus() == AccountStatus.ACTIVE)
                     .collect(Collectors.toList());
@@ -90,11 +83,8 @@ public class CardCreateServlet extends HttpServlet {
                 return;
             }
 
-            // 3️⃣ ارسال اطلاعات به JSP
             req.setAttribute("accounts", activeAccounts);
             req.setAttribute("cardTypes", CardType.values());
-
-            // 4️⃣ نمایش فرم صدور کارت
             req.getRequestDispatcher("/views/cards/create.jsp").forward(req, resp);
 
         } catch (Exception e) {
@@ -105,79 +95,74 @@ public class CardCreateServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
             HttpSession session = req.getSession(false);
-            String currentUsername = (String) session.getAttribute("username");
-
-            // 1️⃣ دریافت پارامترهای فرم
-            String accountIdParam = req.getParameter("accountId");
-            String cardTypeParam = req.getParameter("cardType");
-
-            // 2️⃣ اعتبارسنجی
-            if (accountIdParam == null || accountIdParam.isBlank()) {
-                req.setAttribute("error", "انتخاب حساب الزامی است");
-                doGet(req, resp);
+            if (session == null) {
+                resp.sendRedirect(req.getContextPath() + "/auth/login");
                 return;
             }
 
+            String currentUsername = (String) session.getAttribute("username");
+            @SuppressWarnings("unchecked")
+            Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
+
+            // --- اعتبارسنجی ورودی ---
+            String accountIdParam = req.getParameter("accountId");
+            String cardTypeParam = req.getParameter("cardType");
+
+            if (accountIdParam == null || accountIdParam.isBlank()) {
+                setError(req, resp, "انتخاب حساب الزامی است");
+                return;
+            }
             if (cardTypeParam == null || cardTypeParam.isBlank()) {
-                req.setAttribute("error", "نوع کارت الزامی است");
-                doGet(req, resp);
+                setError(req, resp, "نوع کارت الزامی است");
                 return;
             }
 
             Long accountId = Long.parseLong(accountIdParam);
             CardType cardType;
-            
             try {
                 cardType = CardType.valueOf(cardTypeParam);
             } catch (IllegalArgumentException e) {
-                req.setAttribute("error", "نوع کارت نامعتبر است");
-                doGet(req, resp);
+                setError(req, resp, "نوع کارت نامعتبر است");
                 return;
             }
 
-            // 3️⃣ پیدا کردن حساب
-            Optional<Account> accountOpt = accountService.findById(accountId);
-            
+            // --- دریافت حساب با User لود شده (EAGER) ---
+            Optional<Account> accountOpt = accountService.findByIdWithUser(accountId);
             if (accountOpt.isEmpty()) {
-                req.setAttribute("error", "حساب یافت نشد");
-                doGet(req, resp);
+                setError(req, resp, "حساب یافت نشد");
                 return;
             }
 
             Account account = accountOpt.get();
+            User accountOwner = account.getUser(); // حالا بدون خطا لود میشه
 
-            // 4️⃣ بررسی مالکیت حساب
-            @SuppressWarnings("unchecked")
-            Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
+            log.info("Creating card for user: {}", accountOwner.getUsername());
 
+            // --- بررسی دسترسی ---
             if (!userRoles.contains(UserRole.ADMIN) && !userRoles.contains(UserRole.MANAGER)) {
-                if (!account.getUser().getUsername().equals(currentUsername)) {
-                    req.setAttribute("error", "شما فقط می‌توانید برای حساب خودتان کارت صادر کنید");
-                    doGet(req, resp);
+                if (!accountOwner.getUsername().equals(currentUsername)) {
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "دسترسی غیرمجاز");
                     return;
                 }
             }
 
-            // 5️⃣ بررسی وضعیت حساب
+            // --- بررسی وضعیت حساب ---
             if (account.getStatus() != AccountStatus.ACTIVE) {
-                req.setAttribute("error", "حساب باید فعال باشد");
-                doGet(req, resp);
+                setError(req, resp, "حساب باید فعال باشد");
                 return;
             }
 
-            // 6️⃣ تولید شماره کارت و CVV
+            // --- تولید اطلاعات کارت ---
             String cardNumber = generateCardNumber();
             String cvv = generateCVV();
-
-            // 7️⃣ تعیین تاریخ انقضا (3 سال از امروز)
             LocalDate expiryDate = LocalDate.now().plusYears(3);
 
-            // 8️⃣ ساخت کارت جدید
+            // --- ساخت و ذخیره کارت ---
             Card newCard = Card.builder()
                     .account(account)
                     .cardNumber(cardNumber)
@@ -187,57 +172,43 @@ public class CardCreateServlet extends HttpServlet {
                     .active(true)
                     .build();
 
-            // 9️⃣ ذخیره کارت
             Card savedCard = cardService.save(newCard);
 
-            log.info("Card created successfully: {} for account: {} by: {}", 
+            log.info("Card created successfully: {} for account: {} by: {}",
                     maskCardNumber(cardNumber), account.getAccountNumber(), currentUsername);
 
-            // 🔟 هدایت به صفحه جزئیات
-            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" + 
-                    savedCard.getId() + "&message=card_created");
+            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" + savedCard.getId() + "&message=card_created");
 
         } catch (Exception e) {
             log.error("Error creating card", e);
-            req.setAttribute("error", "خطا در صدور کارت: " + e.getMessage());
-            doGet(req, resp);
+            setError(req, resp, "خطا در صدور کارت: " + e.getMessage());
         }
     }
 
-    /**
-     * تولید شماره کارت 16 رقمی یکتا
-     */
+    // --- متد کمکی برای خطاها ---
+    private void setError(HttpServletRequest req, HttpServletResponse resp, String message)
+            throws ServletException, IOException {
+        req.setAttribute("error", message);
+        doGet(req, resp);
+    }
+
+    // --- متدهای تولید شماره ---
     private String generateCardNumber() {
         SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder(16);
-        
-        // 4 رقم اول (BIN - Bank Identification Number)
-        sb.append("6037"); // کد بانک فرضی
-        
-        // 12 رقم بعدی
+        StringBuilder sb = new StringBuilder("6037");
         for (int i = 0; i < 12; i++) {
             sb.append(random.nextInt(10));
         }
-        
         return sb.toString();
     }
 
-    /**
-     * تولید CVV سه رقمی
-     */
     private String generateCVV() {
         SecureRandom random = new SecureRandom();
-        int cvv = 100 + random.nextInt(900); // بین 100 تا 999
-        return String.valueOf(cvv);
+        return String.format("%03d", 100 + random.nextInt(900));
     }
 
-    /**
-     * پنهان کردن شماره کارت (نمایش 4 رقم آخر)
-     */
     private String maskCardNumber(String cardNumber) {
-        if (cardNumber == null || cardNumber.length() < 4) {
-            return "****";
-        }
+        if (cardNumber == null || cardNumber.length() < 4) return "****";
         return "************" + cardNumber.substring(cardNumber.length() - 4);
     }
 }

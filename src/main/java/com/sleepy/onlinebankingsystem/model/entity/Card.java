@@ -5,6 +5,8 @@ import com.sleepy.onlinebankingsystem.model.enums.CardType;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 
 @Getter
@@ -20,7 +22,9 @@ import java.time.LocalDate;
         @NamedQuery(name = "Card.findByCardNumber", query = "SELECT c FROM Card c WHERE c.cardNumber = :cardNumber "),
         @NamedQuery(name = "Card.findByUser", query = "SELECT c FROM Card c WHERE c.account.user = :user"),
         @NamedQuery(name = "Card.findActiveCards", query = "SELECT c FROM Card c WHERE c.active = true "),
-        @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c ")
+        @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c "),
+        @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.account.user.id = :userId AND c.deleted = false"
+        )
 })
 public class Card extends Base {
     public static final String FIND_BY_ACCOUNT = "Card.findByAccount";
@@ -28,6 +32,7 @@ public class Card extends Base {
     public static final String FIND_BY_USER = "Card.findByUser";
     public static final String FIND_ACTIVE_CARDS = "Card.findActiveCards";
     public static final String FIND_ALL = "Card.findAll";
+    public static final String FIND_BY_USER_WITH_ACCOUNT = "Card.findByUserWithAccount";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
@@ -48,4 +53,8 @@ public class Card extends Base {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    public Date getExpiryDateAsDate() {
+        return Date.from(this.expiryDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
 }

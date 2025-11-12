@@ -7,6 +7,7 @@ import com.sleepy.onlinebankingsystem.repository.AccountRepository;
 import com.sleepy.onlinebankingsystem.service.AccountService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +32,12 @@ public class AccountServiceImpl implements AccountService {
 
         return accountRepository.save(account);
     }
+    @Override
+    public List<Account> findByUserWithUser(User user) throws Exception {
+        log.info("Fetching accounts with user for user ID: {}", user.getId());
+        return accountRepository.findByUserWithUser(user);
+    }
+
 
     @Transactional
     @Override
@@ -50,6 +57,24 @@ public class AccountServiceImpl implements AccountService {
     public void softDeleteByAccountNumber(String accountNumber) throws Exception {
         accountRepository.findByAccountNumber(accountNumber)
                 .ifPresent(acc -> accountRepository.softDelete(acc.getId()));
+    }
+
+    @Override
+    public Optional<Account> findByIdWithUser(Long id) throws Exception {
+        log.debug("Fetching account with user by ID: {}", id);
+        try {
+            Account account = accountRepository.getEntityManager()
+                    .createNamedQuery(Account.FIND_BY_ID_WITH_USER, Account.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+            return Optional.of(account);
+        } catch (NoResultException e) {
+            log.debug("No account found with id: {}", id);
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error("Error in findByIdWithUser for id: {}", id, e);
+            throw e;
+        }
     }
 
     @Override

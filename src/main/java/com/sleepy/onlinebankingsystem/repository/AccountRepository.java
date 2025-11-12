@@ -18,7 +18,7 @@ public class AccountRepository extends BaseRepository<Account> {
     private EntityManager em;
 
     @Override
-    protected EntityManager getEntityManager() {
+    public EntityManager getEntityManager() {
         return em;
     }
 
@@ -47,5 +47,10 @@ public class AccountRepository extends BaseRepository<Account> {
 
     public List<Account> findAllAccounts() {
         return em.createNamedQuery(Account.FIND_ALL, Account.class).getResultList();
+    }
+    public List<Account> findByUserWithUser(User user) {
+        return em.createNamedQuery(Account.FIND_BY_USER_WITH_USER, Account.class)
+                .setParameter("user", user)
+                .getResultList();
     }
 }

@@ -31,7 +31,7 @@ public class User extends Base {
 
 
 
-    @NotBlank @Size(min = 4, max = 50)
+    @NotBlank @Size(min = 2, max = 50)
     @Column(nullable = false, length = 50)
     private String username;
 
@@ -59,7 +59,10 @@ public class User extends Base {
     @Column
     private boolean active = true;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

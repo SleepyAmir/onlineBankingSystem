@@ -87,8 +87,8 @@ public class AccountListServlet extends HttpServlet {
                     resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
                     return;
                 }
-                
-                accounts = accountService.findByUser(userOpt.get());
+
+                accounts = accountService.findByUserWithUser(userOpt.get());
             }
 
             // 4️⃣ ارسال اطلاعات به JSP

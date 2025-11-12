@@ -13,6 +13,8 @@ public interface AccountService {
     void softDelete(Long id) throws Exception;
     void softDeleteByAccountNumber(String accountNumber) throws Exception;
 
+    Optional<Account> findByIdWithUser(Long id)throws Exception;
+    List<Account> findByUserWithUser(User user) throws Exception;
     Optional<Account> findById(Long id) throws Exception;
     Optional<Account> findByAccountNumber(String accountNumber) throws Exception;
     List<Account> findByUser(User user) throws Exception;

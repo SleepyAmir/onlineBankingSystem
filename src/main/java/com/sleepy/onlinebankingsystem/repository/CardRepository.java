@@ -17,7 +17,7 @@ public class CardRepository extends BaseRepository<Card> {
     private EntityManager em;
 
     @Override
-    protected EntityManager getEntityManager() { return em; }
+    public EntityManager getEntityManager() { return em; }
 
     @Override
     protected Class<Card> getEntityClass() { return Card.class; }
