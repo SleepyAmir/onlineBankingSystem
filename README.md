@@ -377,7 +377,12 @@ startup.bat
 tail -f ../logs/catalina.out
 ```
 
+### مرحله 6️⃣: دسترسی به برنامه
 
+```
+🌐 URL: http://localhost:80/welcome
+
+📧 حساب‌های پیش‌فرض:
 ```
 ### مرحله 6️⃣: دسترسی به برنامه
 ```
