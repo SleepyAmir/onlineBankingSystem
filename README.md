@@ -832,7 +832,7 @@ mvn verify -Pintegration-tests
 
 ### صفحه خوش‌آمدگویی
 
-<img src="/docs/screenshots/Welcome.png.png" alt="Welcome Page" width="800"/>
+<img src="/docs/screenshots/Welcome.png" alt="Welcome Page" width="800"/>
 
 **ویژگی‌ها:**
 - طراحی مدرن و Gradient Background
