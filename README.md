@@ -319,8 +319,8 @@ EXIT;
 <Resource id="jdbc/JtaDataSource" type="DataSource">
     jdbcDriver = oracle.jdbc.driver.OracleDriver
     jdbcUrl = jdbc:oracle:thin:@localhost:1521:xe
-    username = sleepy
-    password = sleepy123
+    username = javaee
+    password = java123
     jtaManaged = true
 </Resource>
 ```
@@ -340,8 +340,8 @@ EXIT;
 <Resource id="jdbc/JtaDataSource" type="DataSource">
     jdbcDriver = com.mysql.cj.jdbc.Driver
     jdbcUrl = jdbc:mysql://localhost:3306/onlinebankingsystem
-    username = sleepy
-    password = sleepy123
+    username = javaee
+    password = java123
     jtaManaged = true
 </Resource>
 ```
@@ -377,21 +377,23 @@ startup.bat
 tail -f ../logs/catalina.out
 ```
 
-### مرحله 6️⃣: دسترسی به برنامه
 
 ```
-🌐 URL: http://localhost:8080/onlineBankingSystem/
+### مرحله 6️⃣: دسترسی به برنامه
+```
+🌐 URL: http://localhost:80/welcome
 
 📧 حساب‌های پیش‌فرض:
 ```
 
-| نقش | نام کاربری | رمز عبور | دسترسی‌ها |
-|-----|-----------|----------|-----------|
-| 👑 **Admin** | `admin` | `123456` | دسترسی کامل به سیستم |
-| 👔 **Manager** | `manager` | `123456` | مدیریت وام‌ها و تراکنش‌ها |
-| 👤 **Customer** | `amir` | `123456` | عملیات بانکی پایه |
-| 👤 **Customer** | `sara` | `123456` | عملیات بانکی پایه |
+| نقش | نام کاربری | رمز عبور | شماره کارت | دسترسی‌ها |
+|-----|------------|----------|-------------|-----------|
+| 👑 **Admin** | `admin` | `123456` | - | دسترسی کامل به سیستم |
+| 👔 **Manager** | `manager` | `123456` | - | مدیریت وام‌ها و تراکنش‌ها |
+| 👤 **Customer** | `Amir` | `Amir123` | `6037787250994758` | عملیات بانکی پایه |
+| 👤 **Customer** | `Leila` | `Leila123` | `6037044249866627` | عملیات بانکی پایه |
 
+---
 ---
 
 ## ⚙️ پیکربندی
@@ -437,7 +439,7 @@ session.setMaxInactiveInterval(15 * 60); // 15 دقیقه
 ### سناریو 1️⃣: ورود به سیستم
 
 ```
-1. مراجعه به http://localhost:8080/onlineBankingSystem/
+1. مراجعه به http://localhost:80/welcome/
 2. کلیک روی "ورود به سیستم"
 3. وارد کردن نام کاربری و رمز عبور
 4. انتقال به داشبورد بر اساس نقش
@@ -513,7 +515,7 @@ session.setMaxInactiveInterval(15 * 60); // 15 دقیقه
 ### Base URL
 
 ```
-http://localhost:8080/onlineBankingSystem/api
+http://localhost:80/api
 ```
 
 ### Authentication
@@ -601,8 +603,8 @@ POST /api/transactions/transfer
 Content-Type: application/json
 
 {
-  "fromCardNumber": "6037991234567890",
-  "toCardNumber": "6037990987654321",
+  "fromCardNumber": "6037787250994758",
+  "toCardNumber": "6037671525818325",
   "amount": 200000,
   "description": "انتقال به دوست"
 }
@@ -644,7 +646,7 @@ POST /api/loans/{id}/approve
 
 ```
 📚 Postman Collection: ./docs/API_Collection.json
-📖 Swagger UI: http://localhost:8080/onlineBankingSystem/swagger-ui/
+
 ```
 
 ---
