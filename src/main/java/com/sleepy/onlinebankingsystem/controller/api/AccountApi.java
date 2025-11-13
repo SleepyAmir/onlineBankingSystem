@@ -42,7 +42,7 @@ public class AccountApi {
         try {
             log.info("Creating account for user: {}", request.getUserId());
 
-            // پیدا کردن کاربر
+
             Optional<User> userOpt = userService.findById(request.getUserId());
             if (userOpt.isEmpty()) {
                 return Response.status(404)
@@ -50,7 +50,7 @@ public class AccountApi {
                         .build();
             }
 
-            // اعتبارسنجی موجودی اولیه
+
             if (request.getInitialBalance() != null &&
                     request.getInitialBalance().compareTo(BigDecimal.ZERO) < 0) {
                 return Response.status(400)
@@ -58,7 +58,7 @@ public class AccountApi {
                         .build();
             }
 
-            // ساخت حساب
+
             Account account = Account.builder()
                     .user(userOpt.get())
                     .accountNumber(generateAccountNumber())
@@ -344,7 +344,7 @@ public class AccountApi {
 
             Account account = accountOpt.get();
 
-            // بررسی موجودی
+
             if (account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
                 return Response.status(400)
                         .entity(ApiResponse.error("حساب با موجودی مثبت قابل حذف نیست"))
@@ -366,7 +366,7 @@ public class AccountApi {
         }
     }
 
-    // ==================== Helper Methods ====================
+
 
     private String generateAccountNumber() {
         SecureRandom random = new SecureRandom();
@@ -380,7 +380,7 @@ public class AccountApi {
         return sb.toString();
     }
 
-    // ==================== Request/Response DTOs ====================
+
 
     public static class AccountCreateRequest {
         private Long userId;

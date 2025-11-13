@@ -35,7 +35,6 @@ public class AccountDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            // 1️⃣ دریافت شماره حساب یا ID از پارامتر
             String accountNumber = req.getParameter("accountNumber");
             String idParam = req.getParameter("id");
 
@@ -46,7 +45,6 @@ public class AccountDetailServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ پیدا کردن حساب
             Optional<Account> accountOpt;
             
             if (accountNumber != null && !accountNumber.isBlank()) {
@@ -64,14 +62,12 @@ public class AccountDetailServlet extends HttpServlet {
 
             Account account = accountOpt.get();
 
-            // 3️⃣ بررسی دسترسی (کاربر فقط حساب‌های خودش را ببیند)
             HttpSession session = req.getSession(false);
             String currentUsername = (String) session.getAttribute("username");
             
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // اگر کاربر عادی است، فقط حساب‌های خودش را می‌تواند ببیند
             if (!userRoles.contains(UserRole.ADMIN) && !userRoles.contains(UserRole.MANAGER)) {
                 if (!account.getUser().getUsername().equals(currentUsername)) {
                     log.warn("Unauthorized access to account {} by user {}", 
@@ -81,12 +77,10 @@ public class AccountDetailServlet extends HttpServlet {
                 }
             }
 
-            // 4️⃣ ارسال اطلاعات به JSP
             req.setAttribute("account", account);
 
             log.info("Fetched details for account: {}", account.getAccountNumber());
 
-            // 5️⃣ نمایش JSP
             req.getRequestDispatcher("/views/accounts/detail.jsp").forward(req, resp);
 
         } catch (Exception e) {

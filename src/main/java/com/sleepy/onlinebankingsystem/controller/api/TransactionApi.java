@@ -58,14 +58,12 @@ public class TransactionApi {
         try {
             log.info("Processing deposit to account: {}", request.getToAccountNumber());
 
-            // اعتبارسنجی مبلغ
             if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 return Response.status(400)
                         .entity(ApiResponse.error("مبلغ باید بیشتر از صفر باشد"))
                         .build();
             }
 
-            // پیدا کردن حساب مقصد
             Optional<Account> toAccountOpt = accountService.findByAccountNumber(request.getToAccountNumber());
             if (toAccountOpt.isEmpty()) {
                 return Response.status(404)
@@ -75,18 +73,15 @@ public class TransactionApi {
 
             Account toAccount = toAccountOpt.get();
 
-            // بررسی وضعیت حساب
             if (toAccount.getStatus() != AccountStatus.ACTIVE) {
                 return Response.status(400)
                         .entity(ApiResponse.error("حساب مقصد فعال نیست"))
                         .build();
             }
 
-            // افزایش موجودی
             toAccount.setBalance(toAccount.getBalance().add(request.getAmount()));
             accountService.update(toAccount);
 
-            // ثبت تراکنش
             Transaction transaction = Transaction.builder()
                     .transactionId(generateTransactionId())
                     .toAccount(toAccount)
@@ -133,14 +128,12 @@ public class TransactionApi {
         try {
             log.info("Processing withdrawal from account: {}", request.getFromAccountNumber());
 
-            // اعتبارسنجی مبلغ
             if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 return Response.status(400)
                         .entity(ApiResponse.error("مبلغ باید بیشتر از صفر باشد"))
                         .build();
             }
 
-            // پیدا کردن حساب مبدأ
             Optional<Account> fromAccountOpt = accountService.findByAccountNumber(request.getFromAccountNumber());
             if (fromAccountOpt.isEmpty()) {
                 return Response.status(404)
@@ -150,25 +143,21 @@ public class TransactionApi {
 
             Account fromAccount = fromAccountOpt.get();
 
-            // بررسی وضعیت حساب
             if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
                 return Response.status(400)
                         .entity(ApiResponse.error("حساب مبدأ فعال نیست"))
                         .build();
             }
 
-            // بررسی موجودی کافی
             if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
                 return Response.status(400)
                         .entity(ApiResponse.error("موجودی کافی نیست"))
                         .build();
             }
 
-            // کاهش موجودی
             fromAccount.setBalance(fromAccount.getBalance().subtract(request.getAmount()));
             accountService.update(fromAccount);
 
-            // ثبت تراکنش
             Transaction transaction = Transaction.builder()
                     .transactionId(generateTransactionId())
                     .fromAccount(fromAccount)
@@ -216,14 +205,13 @@ public class TransactionApi {
             log.info("Processing transfer from card {} to card {}",
                     request.getFromCardNumber(), request.getToCardNumber());
 
-            // اعتبارسنجی
+
             if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
                 return Response.status(400)
                         .entity(ApiResponse.error("مبلغ باید بیشتر از صفر باشد"))
                         .build();
             }
 
-            // پیدا کردن کارت مبدأ
             Optional<Card> fromCardOpt = cardService.findByCardNumber(request.getFromCardNumber());
             if (fromCardOpt.isEmpty()) {
                 return Response.status(404)
@@ -238,7 +226,6 @@ public class TransactionApi {
             }
             Account fromAccount = fromCard.getAccount();
 
-            // پیدا کردن کارت مقصد
             Optional<Card> toCardOpt = cardService.findByCardNumber(request.getToCardNumber());
             if (toCardOpt.isEmpty()) {
                 return Response.status(404)
@@ -253,21 +240,18 @@ public class TransactionApi {
             }
             Account toAccount = toCard.getAccount();
 
-            // چک وضعیت حساب‌ها
             if (fromAccount.getStatus() != AccountStatus.ACTIVE || toAccount.getStatus() != AccountStatus.ACTIVE) {
                 return Response.status(400)
                         .entity(ApiResponse.error("هر دو حساب باید فعال باشند"))
                         .build();
             }
 
-            // چک موجودی
             if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
                 return Response.status(400)
                         .entity(ApiResponse.error("موجودی حساب مبدأ کافی نیست"))
                         .build();
             }
 
-            // ایجاد تراکنش
             Transaction transaction = Transaction.builder()
                     .transactionId(generateTransactionId())
                     .fromAccount(fromAccount)
@@ -282,13 +266,11 @@ public class TransactionApi {
 
             transactionService.save(transaction);
 
-            // به‌روزرسانی موجودی
             fromAccount.setBalance(fromAccount.getBalance().subtract(request.getAmount()));
             toAccount.setBalance(toAccount.getBalance().add(request.getAmount()));
             accountService.update(fromAccount);
             accountService.update(toAccount);
 
-            // پاسخ
             TransactionResponse response = TransactionResponse.builder()
                     .transactionId(transaction.getTransactionId())
                     .fromAccount(fromCard.getCardNumber())  // برگرداندن cardNumber
@@ -462,14 +444,12 @@ public class TransactionApi {
         }
     }
 
-    // ==================== Helper Methods ====================
 
     private String generateTransactionId() {
         return "TRX" + System.currentTimeMillis() + "-" +
                 UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
-    // ==================== Request DTOs ====================
 
     public static class DepositRequest {
         private String toAccountNumber;

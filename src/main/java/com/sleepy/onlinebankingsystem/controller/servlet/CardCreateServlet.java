@@ -141,7 +141,7 @@ public class CardCreateServlet extends HttpServlet {
             }
 
             Account account = accountOpt.get();
-            User accountOwner = account.getUser(); // حالا بدون خطا لود میشه
+            User accountOwner = account.getUser();
 
             log.info("Creating card for user: {}", accountOwner.getUsername());
 

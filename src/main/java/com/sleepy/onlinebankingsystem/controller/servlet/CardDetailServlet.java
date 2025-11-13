@@ -30,7 +30,6 @@ public class CardDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            // 1️⃣ دریافت شناسه کارت
             String idParam = req.getParameter("id");
             String cardNumberParam = req.getParameter("cardNumber");
 
@@ -41,7 +40,6 @@ public class CardDetailServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ پیدا کردن کارت
             Optional<Card> cardOpt;
             
             if (cardNumberParam != null && !cardNumberParam.isBlank()) {
@@ -59,7 +57,6 @@ public class CardDetailServlet extends HttpServlet {
 
             Card card = cardOpt.get();
 
-            // 3️⃣ بررسی دسترسی (کاربر فقط کارت‌های خودش را ببیند)
             HttpSession session = req.getSession(false);
             String currentUsername = (String) session.getAttribute("username");
             
@@ -75,12 +72,10 @@ public class CardDetailServlet extends HttpServlet {
                 }
             }
 
-            // 4️⃣ ارسال اطلاعات به JSP
             req.setAttribute("card", card);
 
             log.info("Fetched details for card: {}", maskCardNumber(card.getCardNumber()));
 
-            // 5️⃣ نمایش JSP
             req.getRequestDispatcher("/views/cards/detail.jsp").forward(req, resp);
 
         } catch (Exception e) {

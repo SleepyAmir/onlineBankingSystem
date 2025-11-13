@@ -40,7 +40,6 @@ public class CardApi {
         try {
             log.info("Creating card for account: {}", request.getAccountId());
 
-            // اعتبارسنجی
             if (request.getAccountId() == null) {
                 return Response.status(400)
                         .entity(ApiResponse.error("شناسه حساب الزامی است"))
@@ -53,7 +52,6 @@ public class CardApi {
                         .build();
             }
 
-            // پیدا کردن حساب
             Optional<Account> accountOpt = accountService.findById(request.getAccountId());
             if (accountOpt.isEmpty()) {
                 return Response.status(404)
@@ -63,19 +61,16 @@ public class CardApi {
 
             Account account = accountOpt.get();
 
-            // بررسی وضعیت حساب
             if (account.getStatus() != AccountStatus.ACTIVE) {
                 return Response.status(400)
                         .entity(ApiResponse.error("حساب باید فعال باشد"))
                         .build();
             }
 
-            // تولید اطلاعات کارت
             String cardNumber = generateCardNumber();
             String cvv = generateCVV();
             LocalDate expiryDate = LocalDate.now().plusYears(3);
 
-            // ساخت کارت
             Card card = Card.builder()
                     .account(account)
                     .cardNumber(cardNumber)
@@ -363,7 +358,7 @@ public class CardApi {
         }
     }
 
-    // ==================== Helper Methods ====================
+
 
     private String generateCardNumber() {
         SecureRandom random = new SecureRandom();
@@ -388,7 +383,7 @@ public class CardApi {
         return "************" + cardNumber.substring(cardNumber.length() - 4);
     }
 
-    // ==================== Request/Response DTOs ====================
+
 
     public static class CardCreateRequest {
         private Long accountId;
@@ -402,7 +397,7 @@ public class CardApi {
 
     public static class CardResponse {
         private Long id;
-        private String cardNumber; // Masked
+        private String cardNumber;
         private LocalDate expiryDate;
         private CardType type;
         private boolean active;
@@ -424,7 +419,6 @@ public class CardApi {
             return "************" + cardNumber.substring(cardNumber.length() - 4);
         }
 
-        // Getters
         public Long getId() { return id; }
         public String getCardNumber() { return cardNumber; }
         public LocalDate getExpiryDate() { return expiryDate; }

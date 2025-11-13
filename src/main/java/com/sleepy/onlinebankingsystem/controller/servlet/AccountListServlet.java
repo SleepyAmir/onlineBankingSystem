@@ -44,7 +44,6 @@ public class AccountListServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت شماره صفحه
             String pageParam = req.getParameter("page");
             int page = 0;
             
@@ -60,13 +59,10 @@ public class AccountListServlet extends HttpServlet {
 
             List<Account> accounts;
 
-            // 2️⃣ اگر کاربر ADMIN یا MANAGER باشد، همه حساب‌ها را نمایش بده
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
-                // دریافت userId از پارامتر (اختیاری)
                 String userIdParam = req.getParameter("userId");
                 
                 if (userIdParam != null && !userIdParam.isBlank()) {
-                    // نمایش حساب‌های یک کاربر خاص
                     Long userId = Long.parseLong(userIdParam);
                     Optional<User> userOpt = userService.findById(userId);
                     
@@ -77,11 +73,9 @@ public class AccountListServlet extends HttpServlet {
                         accounts = accountService.findAll(page, PAGE_SIZE);
                     }
                 } else {
-                    // نمایش همه حساب‌ها
                     accounts = accountService.findAll(page, PAGE_SIZE);
                 }
             } else {
-                // 3️⃣ کاربر عادی فقط حساب‌های خودش را می‌بیند
                 Optional<User> userOpt = userService.findByUsername(currentUsername);
                 
                 if (userOpt.isEmpty()) {
@@ -93,14 +87,12 @@ public class AccountListServlet extends HttpServlet {
                 accounts = accountService.findByUserWithUser(userOpt.get());
             }
 
-            // 4️⃣ ارسال اطلاعات به JSP
             req.setAttribute("accounts", accounts);
             req.setAttribute("currentPage", page);
             req.setAttribute("pageSize", PAGE_SIZE);
 
             log.info("Fetched {} accounts for user: {}", accounts.size(), currentUsername);
 
-            // 5️⃣ نمایش JSP
             req.getRequestDispatcher("/views/accounts/list.jsp").forward(req, resp);
 
         } catch (Exception e) {

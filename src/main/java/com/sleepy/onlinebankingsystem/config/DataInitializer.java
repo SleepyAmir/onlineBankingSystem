@@ -38,7 +38,7 @@ public class DataInitializer implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         try {
-            initializeData(); // منطق رو به متد جدا منتقل کردیم
+            initializeData();
         } catch (Exception e) {
             log.error("Data initialization failed", e);
             throw new RuntimeException("Failed to initialize data", e);
@@ -116,9 +116,9 @@ public class DataInitializer implements ServletContextListener {
     private void createAuthorities(Map<String, Role> roles) throws Exception {
         Role adminRole = roles.get("admin");
         Role managerRole = roles.get("manager");
-        Role customerRole = roles.get("amir"); // یا sara
+        Role customerRole = roles.get("amir");
 
-        // Admin: همه دسترسی‌ها
+        // Admin:
         authorityService.save(Authority.builder().role(adminRole).resource("ACCOUNT").action("CREATE").build());
         authorityService.save(Authority.builder().role(adminRole).resource("ACCOUNT").action("READ").build());
         authorityService.save(Authority.builder().role(adminRole).resource("ACCOUNT").action("UPDATE").build());
@@ -127,12 +127,12 @@ public class DataInitializer implements ServletContextListener {
         authorityService.save(Authority.builder().role(adminRole).resource("TRANSACTION").action("CREATE").build());
         authorityService.save(Authority.builder().role(adminRole).resource("TRANSACTION").action("READ").build());
 
-        // Manager: خواندن و نوشتن
+        // Manager:
         authorityService.save(Authority.builder().role(managerRole).resource("ACCOUNT").action("READ").build());
         authorityService.save(Authority.builder().role(managerRole).resource("ACCOUNT").action("UPDATE").build());
         authorityService.save(Authority.builder().role(managerRole).resource("TRANSACTION").action("READ").build());
 
-        // Customer: فقط خواندن
+        // Customer:
         authorityService.save(Authority.builder().role(customerRole).resource("ACCOUNT").action("READ").build());
         authorityService.save(Authority.builder().role(customerRole).resource("TRANSACTION").action("READ").build());
     }
@@ -140,7 +140,7 @@ public class DataInitializer implements ServletContextListener {
     private Map<String, List<Account>> createAccounts(Map<String, User> users) throws Exception {
         Map<String, List<Account>> accounts = new HashMap<>();
 
-        // --- Amir ---
+
         List<Account> amirAccounts = new ArrayList<>();
         Account amirSavings = Account.builder()
                 .user(users.get("amir"))
@@ -161,7 +161,7 @@ public class DataInitializer implements ServletContextListener {
         amirAccounts.add(accountService.save(amirChecking));
         accounts.put("amir", amirAccounts);
 
-        // --- Sara ---
+
         List<Account> saraAccounts = new ArrayList<>();
         Account saraSavings = Account.builder()
                 .user(users.get("sara"))
@@ -287,7 +287,7 @@ public class DataInitializer implements ServletContextListener {
         log.info("Created sample loans");
     }
 
-    // --- Helper Methods ---
+
     private String generateAccountNumber() {
         StringBuilder sb = new StringBuilder();
         sb.append(1 + random.nextInt(9));

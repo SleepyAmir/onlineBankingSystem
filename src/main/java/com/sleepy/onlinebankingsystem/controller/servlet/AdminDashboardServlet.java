@@ -52,14 +52,15 @@ public class AdminDashboardServlet extends HttpServlet {
 
             log.info("Admin dashboard accessed by: {}", username);
 
-            // 1️⃣ آمار کاربران
+            //آمار کاربران
             List<User> allUsers = userService.findAll(0, 1000);
             List<User> activeUsers = userService.findActiveUsers();
             int totalUsers = allUsers.size();
             int activeUserCount = activeUsers.size();
             int inactiveUserCount = totalUsers - activeUserCount;
 
-            // 2️⃣ آمار حساب‌ها
+
+            //آمار حساب ها
             List<Account> allAccounts = accountService.findAll(0, 1000);
             List<Account> activeAccounts = accountService.findByStatus(AccountStatus.ACTIVE);
             List<Account> frozenAccounts = accountService.findByStatus(AccountStatus.FROZEN);
@@ -75,7 +76,7 @@ public class AdminDashboardServlet extends HttpServlet {
                     .map(Account::getBalance)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // 3️⃣ آمار تراکنش‌ها
+            //آمار تراکنش ها
             List<Transaction> allTransactions = transactionService.findAll(0, 1000);
             int totalTransactions = allTransactions.size();
 
@@ -90,7 +91,7 @@ public class AdminDashboardServlet extends HttpServlet {
                     .map(Transaction::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // 4️⃣ آمار وام‌ها
+            //آمار وام ها
             List<Loan> allLoans = loanService.findAll(0, 1000);
             List<Loan> pendingLoans = loanService.findByStatus(LoanStatus.PENDING);
             List<Loan> approvedLoans = loanService.findByStatus(LoanStatus.APPROVED);
@@ -108,14 +109,14 @@ public class AdminDashboardServlet extends HttpServlet {
                     .map(Loan::getPrincipal)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            // 5️⃣ آمار کارت‌ها
+            //آمار کارت ها
             List<Card> allCards = cardService.findAll(0, 1000);
             List<Card> activeCards = cardService.findActiveCards();
             int totalCards = allCards.size();
             int activeCardCount = activeCards.size();
             int blockedCardCount = totalCards - activeCardCount;
 
-            // 6️⃣ آخرین فعالیت‌ها
+            //آخرین فعالیت ها
             List<User> recentUsers = allUsers.stream()
                     .sorted((u1, u2) -> u2.getCreatedAt().compareTo(u1.getCreatedAt()))
                     .limit(5)
@@ -131,12 +132,12 @@ public class AdminDashboardServlet extends HttpServlet {
                     .limit(5)
                     .collect(Collectors.toList());
 
-            // 7️⃣ آمار سیستمی
+            //آمار سیستمی
             Map<String, Object> systemStats = new HashMap<>();
             systemStats.put("serverTime", LocalDateTime.now());
             systemStats.put("activeSessionCount", allUsers.size()); // تعداد Session های فعال
 
-            // 8️⃣ ارسال اطلاعات به JSP
+
             // آمار کاربران
             req.setAttribute("totalUsers", totalUsers);
             req.setAttribute("activeUsers", activeUserCount);
@@ -175,7 +176,7 @@ public class AdminDashboardServlet extends HttpServlet {
             // آمار سیستمی
             req.setAttribute("systemStats", systemStats);
 
-            // 9️⃣ نمایش JSP
+
             req.getRequestDispatcher("/views/user-dashboard/admin.jsp").forward(req, resp);
 
         } catch (Exception e) {

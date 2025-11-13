@@ -29,7 +29,7 @@ public class AccountStatusServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            // 1️⃣ بررسی دسترسی (ادمین یا مدیر)
+
             HttpSession session = req.getSession(false);
             
             @SuppressWarnings("unchecked")
@@ -40,7 +40,7 @@ public class AccountStatusServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ دریافت پارامترها
+
             String idParam = req.getParameter("id");
             String statusParam = req.getParameter("status");
             
@@ -61,7 +61,7 @@ public class AccountStatusServlet extends HttpServlet {
                 return;
             }
 
-            // 3️⃣ پیدا کردن حساب
+
             Optional<Account> accountOpt = accountService.findById(accountId);
             
             if (accountOpt.isEmpty()) {
@@ -71,7 +71,7 @@ public class AccountStatusServlet extends HttpServlet {
 
             Account account = accountOpt.get();
 
-            // 4️⃣ تغییر وضعیت
+
             AccountStatus oldStatus = account.getStatus();
             account.setStatus(newStatus);
             
@@ -81,7 +81,7 @@ public class AccountStatusServlet extends HttpServlet {
                     account.getAccountNumber(), oldStatus, newStatus, 
                     session.getAttribute("username"));
 
-            // 5️⃣ هدایت به صفحه جزئیات
+
             resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" + 
                     accountId + "&message=status_updated");
 

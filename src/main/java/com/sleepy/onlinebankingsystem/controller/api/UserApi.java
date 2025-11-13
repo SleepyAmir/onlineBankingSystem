@@ -488,7 +488,6 @@ public class UserApi {
         }
     }
 
-    // ==================== Validation Methods ====================
 
     private String validateRegisterRequest(RegisterRequest request) {
         if (isBlank(request.getUsername()) || request.getUsername().length() < 4) {
@@ -554,8 +553,6 @@ public class UserApi {
         return str == null || str.trim().isEmpty();
     }
 
-    // ==================== Request DTOs ====================
-
     public static class UserCreateRequest extends RegisterRequest {
         private UserRole role;
         private boolean active = true;
@@ -574,7 +571,7 @@ public class UserApi {
         private String password;
         private Boolean active;
 
-        // Getters & Setters
+
         public String getFirstName() { return firstName; }
         public void setFirstName(String firstName) { this.firstName = firstName; }
         public String getLastName() { return lastName; }

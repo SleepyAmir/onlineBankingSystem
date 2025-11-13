@@ -34,7 +34,6 @@ public class CardBlockServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت ID کارت
             String idParam = req.getParameter("id");
             
             if (idParam == null || idParam.isBlank()) {
@@ -43,8 +42,6 @@ public class CardBlockServlet extends HttpServlet {
             }
 
             Long cardId = Long.parseLong(idParam);
-
-            // 2️⃣ پیدا کردن کارت
             Optional<Card> cardOpt = cardService.findById(cardId);
             
             if (cardOpt.isEmpty()) {
@@ -54,7 +51,6 @@ public class CardBlockServlet extends HttpServlet {
 
             Card card = cardOpt.get();
 
-            // 3️⃣ بررسی دسترسی
             if (!userRoles.contains(UserRole.ADMIN) && !userRoles.contains(UserRole.MANAGER)) {
                 if (!card.getAccount().getUser().getUsername().equals(currentUsername)) {
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "دسترسی غیرمجاز");
@@ -62,22 +58,19 @@ public class CardBlockServlet extends HttpServlet {
                 }
             }
 
-            // 4️⃣ بررسی وضعیت فعلی
             if (!card.isActive()) {
                 resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" + 
                         cardId + "&error=already_blocked");
                 return;
             }
 
-            // 5️⃣ مسدودسازی کارت
             card.setActive(false);
             cardService.update(card);
 
             log.info("Card blocked: {} by user: {}", 
                     maskCardNumber(card.getCardNumber()), currentUsername);
 
-            // 6️⃣ هدایت به صفحه جزئیات
-            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" + 
+            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" +
                     cardId + "&message=card_blocked");
 
         } catch (Exception e) {

@@ -35,7 +35,6 @@ public class CardActivateServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت ID کارت
             String idParam = req.getParameter("id");
             
             if (idParam == null || idParam.isBlank()) {
@@ -45,7 +44,6 @@ public class CardActivateServlet extends HttpServlet {
 
             Long cardId = Long.parseLong(idParam);
 
-            // 2️⃣ پیدا کردن کارت
             Optional<Card> cardOpt = cardService.findById(cardId);
             
             if (cardOpt.isEmpty()) {
@@ -55,7 +53,6 @@ public class CardActivateServlet extends HttpServlet {
 
             Card card = cardOpt.get();
 
-            // 3️⃣ بررسی دسترسی (فقط Admin و Manager)
             if (!userRoles.contains(UserRole.ADMIN) && !userRoles.contains(UserRole.MANAGER)) {
                 log.warn("Unauthorized card activation attempt by user: {}", currentUsername);
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, 
@@ -63,22 +60,19 @@ public class CardActivateServlet extends HttpServlet {
                 return;
             }
 
-            // 4️⃣ بررسی وضعیت فعلی
             if (card.isActive()) {
                 resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" + 
                         cardId + "&error=already_active");
                 return;
             }
 
-            // 5️⃣ فعال‌سازی کارت
             card.setActive(true);
             cardService.update(card);
 
             log.info("Card activated: {} by manager: {}", 
                     maskCardNumber(card.getCardNumber()), currentUsername);
 
-            // 6️⃣ هدایت به صفحه جزئیات
-            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" + 
+            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" +
                     cardId + "&message=card_activated");
 
         } catch (Exception e) {

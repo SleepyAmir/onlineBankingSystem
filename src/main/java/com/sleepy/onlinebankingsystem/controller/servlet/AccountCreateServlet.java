@@ -44,16 +44,12 @@ public class AccountCreateServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ اگر ادمین یا مدیر است، لیست کاربران را ارسال کن
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
-                // ادمین می‌تواند برای هر کاربری حساب بسازد
                 req.setAttribute("users", userService.findActiveUsers());
             }
 
-            // 2️⃣ ارسال انواع حساب
             req.setAttribute("accountTypes", AccountType.values());
 
-            // 3️⃣ نمایش فرم ایجاد حساب
             req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
 
         } catch (Exception e) {
@@ -74,12 +70,10 @@ public class AccountCreateServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت پارامترهای فرم
             String accountTypeParam = req.getParameter("accountType");
             String userIdParam = req.getParameter("userId");
             String initialBalanceParam = req.getParameter("initialBalance");
 
-            // 2️⃣ اعتبارسنجی
             if (accountTypeParam == null || accountTypeParam.isBlank()) {
                 req.setAttribute("error", "نوع حساب الزامی است");
                 req.setAttribute("accountTypes", AccountType.values());
@@ -97,11 +91,9 @@ public class AccountCreateServlet extends HttpServlet {
                 return;
             }
 
-            // 3️⃣ تعیین کاربر صاحب حساب
             User accountOwner;
             
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
-                // ادمین/مدیر می‌تواند برای کاربر دیگری حساب بسازد
                 if (userIdParam != null && !userIdParam.isBlank()) {
                     Long userId = Long.parseLong(userIdParam);
                     Optional<User> userOpt = userService.findById(userId);
@@ -116,17 +108,14 @@ public class AccountCreateServlet extends HttpServlet {
                     
                     accountOwner = userOpt.get();
                 } else {
-                    // اگر userId ندادن، برای خودش حساب می‌سازد
                     Optional<User> userOpt = userService.findByUsername(currentUsername);
                     accountOwner = userOpt.orElseThrow();
                 }
             } else {
-                // کاربر عادی فقط برای خودش حساب می‌سازد
                 Optional<User> userOpt = userService.findByUsername(currentUsername);
                 accountOwner = userOpt.orElseThrow();
             }
 
-            // 4️⃣ موجودی اولیه (پیش‌فرض صفر)
             BigDecimal initialBalance = BigDecimal.ZERO;
             if (initialBalanceParam != null && !initialBalanceParam.isBlank()) {
                 try {
@@ -145,10 +134,8 @@ public class AccountCreateServlet extends HttpServlet {
                 }
             }
 
-            // 5️⃣ تولید شماره حساب یکتا (16 رقمی)
             String accountNumber = generateAccountNumber();
 
-            // 6️⃣ ساخت حساب جدید
             Account newAccount = Account.builder()
                     .user(accountOwner)
                     .accountNumber(accountNumber)
@@ -157,14 +144,12 @@ public class AccountCreateServlet extends HttpServlet {
                     .status(AccountStatus.ACTIVE)
                     .build();
 
-            // 7️⃣ ذخیره حساب
             Account savedAccount = accountService.save(newAccount);
 
             log.info("Account created successfully: {} for user: {} by: {}", 
                     accountNumber, accountOwner.getUsername(), currentUsername);
 
-            // 8️⃣ هدایت به صفحه جزئیات
-            resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" + 
+            resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" +
                     savedAccount.getId() + "&message=created");
 
         } catch (Exception e) {
@@ -182,10 +167,8 @@ public class AccountCreateServlet extends HttpServlet {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder(16);
         
-        // رقم اول نباید صفر باشد
         sb.append(random.nextInt(9) + 1);
         
-        // 15 رقم بعدی
         for (int i = 0; i < 15; i++) {
             sb.append(random.nextInt(10));
         }

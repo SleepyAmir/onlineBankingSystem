@@ -44,7 +44,6 @@ public class LoanApi {
         try {
             log.info("Processing loan application for account: {}", request.getAccountNumber());
 
-            // اعتبارسنجی
             String validationError = validateLoanRequest(request);
             if (validationError != null) {
                 return Response.status(400)
@@ -52,7 +51,6 @@ public class LoanApi {
                         .build();
             }
 
-            // پیدا کردن حساب
             Optional<Account> accountOpt = accountService.findByAccountNumber(request.getAccountNumber());
             if (accountOpt.isEmpty()) {
                 return Response.status(404)
@@ -62,21 +60,18 @@ public class LoanApi {
 
             Account account = accountOpt.get();
 
-            // بررسی وضعیت حساب
             if (account.getStatus() != AccountStatus.ACTIVE) {
                 return Response.status(400)
                         .entity(ApiResponse.error("حساب باید فعال باشد"))
                         .build();
             }
 
-            // محاسبه قسط ماهانه
             BigDecimal monthlyPayment = calculateMonthlyPayment(
                     request.getPrincipal(),
                     request.getAnnualInterestRate(),
                     request.getDurationMonths()
             );
 
-            // ساخت وام
             Loan loan = Loan.builder()
                     .account(account)
                     .user(account.getUser())
@@ -129,18 +124,15 @@ public class LoanApi {
 
             Loan loan = loanOpt.get();
 
-            // بررسی وضعیت وام
             if (loan.getStatus() != LoanStatus.PENDING) {
                 return Response.status(400)
                         .entity(ApiResponse.error("فقط وام‌های در انتظار قابل تأیید هستند"))
                         .build();
             }
 
-            // تأیید وام
             loan.setStatus(LoanStatus.APPROVED);
             loanService.update(loan);
 
-            // واریز مبلغ وام به حساب
             Account account = loan.getAccount();
             account.setBalance(account.getBalance().add(loan.getPrincipal()));
             accountService.update(account);
@@ -184,14 +176,12 @@ public class LoanApi {
 
             Loan loan = loanOpt.get();
 
-            // بررسی وضعیت وام
             if (loan.getStatus() != LoanStatus.PENDING) {
                 return Response.status(400)
                         .entity(ApiResponse.error("فقط وام‌های در انتظار قابل رد هستند"))
                         .build();
             }
 
-            // رد وام
             loan.setStatus(LoanStatus.REJECTED);
             Loan updatedLoan = loanService.update(loan);
 
@@ -249,7 +239,6 @@ public class LoanApi {
                         .build();
             }
 
-            // پرداخت قسط
             loanService.payInstallment(loan, paymentAmount);
 
             log.info("Loan installment paid: {} amount {}", loan.getLoanNumber(), paymentAmount);
@@ -435,7 +424,6 @@ public class LoanApi {
         }
     }
 
-    // ==================== Helper Methods ====================
 
     private String validateLoanRequest(CreateLoanRequest request) {
         if (request.getAccountNumber() == null) {
@@ -498,7 +486,6 @@ public class LoanApi {
         return sb.toString();
     }
 
-    // ==================== DTOs ====================
 
     public static class PaymentRequest {
         private BigDecimal amount;

@@ -30,7 +30,7 @@ public class AccountDeleteServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            // 1️⃣ بررسی دسترسی (فقط ادمین)
+
             HttpSession session = req.getSession(false);
             
             @SuppressWarnings("unchecked")
@@ -42,7 +42,7 @@ public class AccountDeleteServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ دریافت ID حساب
+
             String idParam = req.getParameter("id");
             
             if (idParam == null || idParam.isBlank()) {
@@ -52,7 +52,7 @@ public class AccountDeleteServlet extends HttpServlet {
 
             Long accountId = Long.parseLong(idParam);
 
-            // 3️⃣ بررسی وجود حساب
+
             Optional<Account> accountOpt = accountService.findById(accountId);
             
             if (accountOpt.isEmpty()) {
@@ -62,7 +62,7 @@ public class AccountDeleteServlet extends HttpServlet {
 
             Account account = accountOpt.get();
 
-            // 4️⃣ بررسی موجودی (نباید حساب با موجودی مثبت حذف شود)
+
             if (account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
                 log.warn("Attempt to delete account with positive balance: {}", 
                         account.getAccountNumber());
@@ -71,13 +71,13 @@ public class AccountDeleteServlet extends HttpServlet {
                 return;
             }
 
-            // 5️⃣ حذف نرم (Soft Delete)
+
             accountService.softDelete(accountId);
 
             log.info("Account soft-deleted successfully: {} by admin: {}", 
                     account.getAccountNumber(), session.getAttribute("username"));
 
-            // 6️⃣ هدایت به لیست با پیام موفقیت
+
             resp.sendRedirect(req.getContextPath() + "/accounts/list?message=deleted");
 
         } catch (Exception e) {
@@ -90,7 +90,6 @@ public class AccountDeleteServlet extends HttpServlet {
     @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        // حذف فقط با POST مجاز است
         resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "از متد POST استفاده کنید");
     }
 }
