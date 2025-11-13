@@ -160,11 +160,11 @@ public class LoginServlet extends HttpServlet {
      */
     private String determineRedirectUrl(Set<UserRole> roles) {
         if (roles.contains(UserRole.ADMIN)) {
-            return "/admin/dashboard";
+            return "/admin/user-dashboard";
         } else if (roles.contains(UserRole.MANAGER)) {
-            return "/manager/dashboard";
+            return "/manager/user-dashboard";
         } else {
-            return "/customer/dashboard";
+            return "/customer/user-dashboard";
         }
     }
 }

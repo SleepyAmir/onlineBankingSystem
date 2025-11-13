@@ -1,14 +1,13 @@
 package com.sleepy.onlinebankingsystem.controller.api;
 
+import com.sleepy.onlinebankingsystem.model.dto.request.CreateLoanRequest;
+import com.sleepy.onlinebankingsystem.model.dto.response.ApiResponse;
 import com.sleepy.onlinebankingsystem.model.entity.Account;
 import com.sleepy.onlinebankingsystem.model.entity.Loan;
-import com.sleepy.onlinebankingsystem.model.entity.User;
 import com.sleepy.onlinebankingsystem.model.enums.AccountStatus;
 import com.sleepy.onlinebankingsystem.model.enums.LoanStatus;
 import com.sleepy.onlinebankingsystem.service.AccountService;
 import com.sleepy.onlinebankingsystem.service.LoanService;
-import com.sleepy.onlinebankingsystem.service.UserService;
-import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -21,8 +20,9 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-@Path("/api/loans")
+@Path("/loans")
 @Slf4j
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,32 +34,29 @@ public class LoanApi {
     @Inject
     private AccountService accountService;
 
-    @Inject
-    private UserService userService;
-
     /**
      * درخواست وام جدید
      * POST /api/loans/apply
      */
     @POST
     @Path("/apply")
-    public Response applyForLoan(LoanApplicationRequest request) {
+    public Response applyForLoan(CreateLoanRequest request) {
         try {
-            log.info("Processing loan application for account: {}", request.getAccountId());
+            log.info("Processing loan application for account: {}", request.getAccountNumber());
 
             // اعتبارسنجی
             String validationError = validateLoanRequest(request);
             if (validationError != null) {
                 return Response.status(400)
-                        .entity(new ErrorResponse(validationError))
+                        .entity(ApiResponse.error(validationError))
                         .build();
             }
 
             // پیدا کردن حساب
-            Optional<Account> accountOpt = accountService.findById(request.getAccountId());
+            Optional<Account> accountOpt = accountService.findByAccountNumber(request.getAccountNumber());
             if (accountOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("حساب یافت نشد"))
+                        .entity(ApiResponse.error("حساب یافت نشد"))
                         .build();
             }
 
@@ -68,7 +65,7 @@ public class LoanApi {
             // بررسی وضعیت حساب
             if (account.getStatus() != AccountStatus.ACTIVE) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("حساب باید فعال باشد"))
+                        .entity(ApiResponse.error("حساب باید فعال باشد"))
                         .build();
             }
 
@@ -95,12 +92,21 @@ public class LoanApi {
             Loan savedLoan = loanService.save(loan);
             log.info("Loan application submitted: {}", savedLoan.getLoanNumber());
 
-            return Response.status(201).entity(savedLoan).build();
+            LoanResponse response = LoanResponse.builder()
+                    .loanNumber(savedLoan.getLoanNumber())
+                    .principal(savedLoan.getPrincipal())
+                    .annualInterestRate(savedLoan.getAnnualInterestRate())
+                    .durationMonths(savedLoan.getDurationMonths())
+                    .monthlyPayment(savedLoan.getMonthlyPayment())
+                    .status(savedLoan.getStatus())
+                    .build();
+
+            return Response.status(201).entity(ApiResponse.success(response)).build();
 
         } catch (Exception e) {
             log.error("Error processing loan application", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در ثبت درخواست وام: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در ثبت درخواست وام: " + e.getMessage()))
                     .build();
         }
     }
@@ -117,7 +123,7 @@ public class LoanApi {
 
             if (loanOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("وام یافت نشد"))
+                        .entity(ApiResponse.error("وام یافت نشد"))
                         .build();
             }
 
@@ -126,7 +132,7 @@ public class LoanApi {
             // بررسی وضعیت وام
             if (loan.getStatus() != LoanStatus.PENDING) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("فقط وام‌های در انتظار قابل تأیید هستند"))
+                        .entity(ApiResponse.error("فقط وام‌های در انتظار قابل تأیید هستند"))
                         .build();
             }
 
@@ -141,12 +147,21 @@ public class LoanApi {
 
             log.info("Loan approved: {}", loan.getLoanNumber());
 
-            return Response.ok().entity(loan).build();
+            LoanResponse response = LoanResponse.builder()
+                    .loanNumber(loan.getLoanNumber())
+                    .principal(loan.getPrincipal())
+                    .annualInterestRate(loan.getAnnualInterestRate())
+                    .durationMonths(loan.getDurationMonths())
+                    .monthlyPayment(loan.getMonthlyPayment())
+                    .status(loan.getStatus())
+                    .build();
+
+            return Response.ok().entity(ApiResponse.success(response)).build();
 
         } catch (Exception e) {
             log.error("Error approving loan: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در تأیید وام: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در تأیید وام: " + e.getMessage()))
                     .build();
         }
     }
@@ -163,7 +178,7 @@ public class LoanApi {
 
             if (loanOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("وام یافت نشد"))
+                        .entity(ApiResponse.error("وام یافت نشد"))
                         .build();
             }
 
@@ -172,22 +187,88 @@ public class LoanApi {
             // بررسی وضعیت وام
             if (loan.getStatus() != LoanStatus.PENDING) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("فقط وام‌های در انتظار قابل رد هستند"))
+                        .entity(ApiResponse.error("فقط وام‌های در انتظار قابل رد هستند"))
                         .build();
             }
 
             // رد وام
             loan.setStatus(LoanStatus.REJECTED);
-            loanService.update(loan);
+            Loan updatedLoan = loanService.update(loan);
 
             log.info("Loan rejected: {}", loan.getLoanNumber());
 
-            return Response.ok().entity(loan).build();
+            LoanResponse response = LoanResponse.builder()
+                    .loanNumber(updatedLoan.getLoanNumber())
+                    .principal(updatedLoan.getPrincipal())
+                    .annualInterestRate(updatedLoan.getAnnualInterestRate())
+                    .durationMonths(updatedLoan.getDurationMonths())
+                    .monthlyPayment(updatedLoan.getMonthlyPayment())
+                    .status(updatedLoan.getStatus())
+                    .build();
+
+            return Response.ok().entity(ApiResponse.success(response)).build();
 
         } catch (Exception e) {
             log.error("Error rejecting loan: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در رد وام: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در رد وام: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * پرداخت قسط وام
+     * POST /api/loans/{id}/pay
+     */
+    @POST
+    @Path("/{id}/pay")
+    public Response payLoanInstallment(@PathParam("id") Long id, PaymentRequest request) {
+        try {
+            Optional<Loan> loanOpt = loanService.findById(id);
+
+            if (loanOpt.isEmpty()) {
+                return Response.status(404)
+                        .entity(ApiResponse.error("وام یافت نشد"))
+                        .build();
+            }
+
+            Loan loan = loanOpt.get();
+
+            // بررسی وضعیت وام
+            if (loan.getStatus() != LoanStatus.APPROVED && loan.getStatus() != LoanStatus.ACTIVE) {
+                return Response.status(400)
+                        .entity(ApiResponse.error("فقط وام‌های فعال قابل پرداخت هستند"))
+                        .build();
+            }
+
+            BigDecimal paymentAmount = request.getAmount() != null ? request.getAmount() : loan.getMonthlyPayment();
+
+            if (paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                return Response.status(400)
+                        .entity(ApiResponse.error("مبلغ پرداخت باید بیشتر از صفر باشد"))
+                        .build();
+            }
+
+            // پرداخت قسط
+            loanService.payInstallment(loan, paymentAmount);
+
+            log.info("Loan installment paid: {} amount {}", loan.getLoanNumber(), paymentAmount);
+
+            LoanResponse response = LoanResponse.builder()
+                    .loanNumber(loan.getLoanNumber())
+                    .principal(loan.getPrincipal())
+                    .annualInterestRate(loan.getAnnualInterestRate())
+                    .durationMonths(loan.getDurationMonths())
+                    .monthlyPayment(loan.getMonthlyPayment())
+                    .status(loan.getStatus())
+                    .build();
+
+            return Response.ok().entity(ApiResponse.success(response)).build();
+
+        } catch (Exception e) {
+            log.error("Error paying loan installment: {}", id, e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در پرداخت قسط: " + e.getMessage()))
                     .build();
         }
     }
@@ -202,12 +283,23 @@ public class LoanApi {
             @QueryParam("size") @DefaultValue("10") int size) {
         try {
             List<Loan> loans = loanService.findAll(page, size);
-            return Response.ok().entity(loans).build();
+            List<LoanResponse> responses = loans.stream()
+                    .map(l -> LoanResponse.builder()
+                            .loanNumber(l.getLoanNumber())
+                            .principal(l.getPrincipal())
+                            .annualInterestRate(l.getAnnualInterestRate())
+                            .durationMonths(l.getDurationMonths())
+                            .monthlyPayment(l.getMonthlyPayment())
+                            .status(l.getStatus())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return Response.ok().entity(ApiResponse.success(responses)).build();
 
         } catch (Exception e) {
             log.error("Error fetching loans", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت وام‌ها: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت وام‌ها: " + e.getMessage()))
                     .build();
         }
     }
@@ -224,69 +316,26 @@ public class LoanApi {
 
             if (loanOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("وام یافت نشد"))
+                        .entity(ApiResponse.error("وام یافت نشد"))
                         .build();
             }
 
-            return Response.ok().entity(loanOpt.get()).build();
+            Loan loan = loanOpt.get();
+            LoanResponse response = LoanResponse.builder()
+                    .loanNumber(loan.getLoanNumber())
+                    .principal(loan.getPrincipal())
+                    .annualInterestRate(loan.getAnnualInterestRate())
+                    .durationMonths(loan.getDurationMonths())
+                    .monthlyPayment(loan.getMonthlyPayment())
+                    .status(loan.getStatus())
+                    .build();
+
+            return Response.ok().entity(ApiResponse.success(response)).build();
 
         } catch (Exception e) {
             log.error("Error fetching loan by id: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت وام: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * دریافت وام با شماره وام
-     * GET /api/loans/number/{loanNumber}
-     */
-    @GET
-    @Path("/number/{loanNumber}")
-    public Response getLoanByNumber(@PathParam("loanNumber") String loanNumber) {
-        try {
-            Optional<Loan> loanOpt = loanService.findByLoanNumber(loanNumber);
-
-            if (loanOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(new ErrorResponse("وام یافت نشد"))
-                        .build();
-            }
-
-            return Response.ok().entity(loanOpt.get()).build();
-
-        } catch (Exception e) {
-            log.error("Error fetching loan by number: {}", loanNumber, e);
-            return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت وام: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * دریافت وام‌های یک کاربر
-     * GET /api/loans/user/{userId}
-     */
-    @GET
-    @Path("/user/{userId}")
-    public Response getLoansByUser(@PathParam("userId") Long userId) {
-        try {
-            Optional<User> userOpt = userService.findById(userId);
-
-            if (userOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
-                        .build();
-            }
-
-            List<Loan> loans = loanService.findByUser(userOpt.get());
-            return Response.ok().entity(loans).build();
-
-        } catch (Exception e) {
-            log.error("Error fetching loans for user: {}", userId, e);
-            return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت وام‌ها: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت وام: " + e.getMessage()))
                     .build();
         }
     }
@@ -301,16 +350,27 @@ public class LoanApi {
         try {
             LoanStatus loanStatus = LoanStatus.valueOf(status);
             List<Loan> loans = loanService.findByStatus(loanStatus);
-            return Response.ok().entity(loans).build();
+            List<LoanResponse> responses = loans.stream()
+                    .map(l -> LoanResponse.builder()
+                            .loanNumber(l.getLoanNumber())
+                            .principal(l.getPrincipal())
+                            .annualInterestRate(l.getAnnualInterestRate())
+                            .durationMonths(l.getDurationMonths())
+                            .monthlyPayment(l.getMonthlyPayment())
+                            .status(l.getStatus())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return Response.ok().entity(ApiResponse.success(responses)).build();
 
         } catch (IllegalArgumentException e) {
             return Response.status(400)
-                    .entity(new ErrorResponse("وضعیت نامعتبر است"))
+                    .entity(ApiResponse.error("وضعیت نامعتبر است"))
                     .build();
         } catch (Exception e) {
             log.error("Error fetching loans by status: {}", status, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت وام‌ها: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت وام‌ها: " + e.getMessage()))
                     .build();
         }
     }
@@ -324,12 +384,23 @@ public class LoanApi {
     public Response getActiveLoans() {
         try {
             List<Loan> loans = loanService.findActiveLoans();
-            return Response.ok().entity(loans).build();
+            List<LoanResponse> responses = loans.stream()
+                    .map(l -> LoanResponse.builder()
+                            .loanNumber(l.getLoanNumber())
+                            .principal(l.getPrincipal())
+                            .annualInterestRate(l.getAnnualInterestRate())
+                            .durationMonths(l.getDurationMonths())
+                            .monthlyPayment(l.getMonthlyPayment())
+                            .status(l.getStatus())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return Response.ok().entity(ApiResponse.success(responses)).build();
 
         } catch (Exception e) {
             log.error("Error fetching active loans", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت وام‌های فعال: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت وام‌های فعال: " + e.getMessage()))
                     .build();
         }
     }
@@ -343,20 +414,31 @@ public class LoanApi {
     public Response getPendingLoans() {
         try {
             List<Loan> loans = loanService.findByStatus(LoanStatus.PENDING);
-            return Response.ok().entity(loans).build();
+            List<LoanResponse> responses = loans.stream()
+                    .map(l -> LoanResponse.builder()
+                            .loanNumber(l.getLoanNumber())
+                            .principal(l.getPrincipal())
+                            .annualInterestRate(l.getAnnualInterestRate())
+                            .durationMonths(l.getDurationMonths())
+                            .monthlyPayment(l.getMonthlyPayment())
+                            .status(l.getStatus())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return Response.ok().entity(ApiResponse.success(responses)).build();
 
         } catch (Exception e) {
             log.error("Error fetching pending loans", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت وام‌های در انتظار: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت وام‌های در انتظار: " + e.getMessage()))
                     .build();
         }
     }
 
     // ==================== Helper Methods ====================
 
-    private String validateLoanRequest(LoanApplicationRequest request) {
-        if (request.getAccountId() == null) {
+    private String validateLoanRequest(CreateLoanRequest request) {
+        if (request.getAccountNumber() == null) {
             return "شناسه حساب الزامی است";
         }
 
@@ -416,37 +498,32 @@ public class LoanApi {
         return sb.toString();
     }
 
-    // ==================== Request/Response DTOs ====================
+    // ==================== DTOs ====================
 
-    public static class LoanApplicationRequest {
-        private Long accountId;
+    public static class PaymentRequest {
+        private BigDecimal amount;
+
+        public BigDecimal getAmount() { return amount; }
+        public void setAmount(BigDecimal amount) { this.amount = amount; }
+    }
+
+    public static class LoanResponse {
+        private String loanNumber;
         private BigDecimal principal;
         private BigDecimal annualInterestRate;
         private Integer durationMonths;
+        private BigDecimal monthlyPayment;
+        private LoanStatus status;
 
-        // Getters & Setters
-        public Long getAccountId() { return accountId; }
-        public void setAccountId(Long accountId) { this.accountId = accountId; }
-        public BigDecimal getPrincipal() { return principal; }
-        public void setPrincipal(BigDecimal principal) { this.principal = principal; }
-        public BigDecimal getAnnualInterestRate() { return annualInterestRate; }
-        public void setAnnualInterestRate(BigDecimal annualInterestRate) {
+        @lombok.Builder
+        public LoanResponse(String loanNumber, BigDecimal principal, BigDecimal annualInterestRate,
+                            Integer durationMonths, BigDecimal monthlyPayment, LoanStatus status) {
+            this.loanNumber = loanNumber;
+            this.principal = principal;
             this.annualInterestRate = annualInterestRate;
-        }
-        public Integer getDurationMonths() { return durationMonths; }
-        public void setDurationMonths(Integer durationMonths) {
             this.durationMonths = durationMonths;
+            this.monthlyPayment = monthlyPayment;
+            this.status = status;
         }
-    }
-
-    public static class ErrorResponse {
-        private String message;
-
-        public ErrorResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
     }
 }

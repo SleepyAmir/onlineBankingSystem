@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Set;
 
 @Slf4j
-@WebServlet("/dashboard")
+@WebServlet("/user-dashboard")
 public class HomeDashboardServlet extends HttpServlet {
 
     @Override
@@ -41,11 +41,11 @@ public class HomeDashboardServlet extends HttpServlet {
 
         // هدایت به داشبورد مناسب بر اساس نقش
         if (userRoles.contains(UserRole.ADMIN)) {
-            resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+            resp.sendRedirect(req.getContextPath() + "/admin/user-dashboard");
         } else if (userRoles.contains(UserRole.MANAGER)) {
-            resp.sendRedirect(req.getContextPath() + "/manager/dashboard");
+            resp.sendRedirect(req.getContextPath() + "/manager/user-dashboard");
         } else if (userRoles.contains(UserRole.CUSTOMER)) {
-            resp.sendRedirect(req.getContextPath() + "/customer/dashboard");
+            resp.sendRedirect(req.getContextPath() + "/customer/user-dashboard");
         } else {
             log.error("Unknown role for user: {}", username);
             resp.sendRedirect(req.getContextPath() + "/auth/login?error=unknown_role");

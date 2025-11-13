@@ -24,7 +24,7 @@
         <!-- فرم پروفایل -->
         <div class="card shadow-lg border-0 rounded-3">
             <div class="card-body">
-                <form action="${pageContext.request.contextPath}/profile" method="post">
+                <form action="${pageContext.request.contextPath}/user-profile" method="post">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="firstName" class="form-label">نام</label>

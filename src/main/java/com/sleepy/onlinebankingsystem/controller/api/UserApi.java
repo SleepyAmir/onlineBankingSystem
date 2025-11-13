@@ -1,13 +1,16 @@
 package com.sleepy.onlinebankingsystem.controller.api;
 
+import com.sleepy.onlinebankingsystem.model.dto.request.RegisterRequest;
+import com.sleepy.onlinebankingsystem.model.dto.response.ApiResponse;
+import com.sleepy.onlinebankingsystem.model.dto.response.UserResponse;
 import com.sleepy.onlinebankingsystem.model.entity.Role;
 import com.sleepy.onlinebankingsystem.model.entity.User;
 import com.sleepy.onlinebankingsystem.model.enums.UserRole;
 import com.sleepy.onlinebankingsystem.service.RoleService;
 import com.sleepy.onlinebankingsystem.service.UserService;
 import com.sleepy.onlinebankingsystem.utils.PasswordUtil;
-import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -18,10 +21,11 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Path("/api/users")
+@Path("/users")
 @Slf4j
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Transactional
 public class UserApi {
 
     @Inject
@@ -42,27 +46,26 @@ public class UserApi {
      */
     @POST
     @Path("/register")
-
-    public Response register(UserRegisterRequest request) {
+    public Response register(RegisterRequest request) {
         try {
             log.info("Registering new user: {}", request.getUsername());
 
             String validationError = validateRegisterRequest(request);
             if (validationError != null) {
                 return Response.status(400)
-                        .entity(new ErrorResponse(validationError))
+                        .entity(ApiResponse.error(validationError))
                         .build();
             }
 
             if (userService.findByUsername(request.getUsername()).isPresent()) {
                 return Response.status(409)
-                        .entity(new ErrorResponse("این نام کاربری قبلاً ثبت شده است"))
+                        .entity(ApiResponse.error("این نام کاربری قبلاً ثبت شده است"))
                         .build();
             }
 
             if (userService.findByNationalCode(request.getNationalCode()).isPresent()) {
                 return Response.status(409)
-                        .entity(new ErrorResponse("این کد ملی قبلاً ثبت شده است"))
+                        .entity(ApiResponse.error("این کد ملی قبلاً ثبت شده است"))
                         .build();
             }
 
@@ -88,14 +91,21 @@ public class UserApi {
 
             log.info("User registered successfully: {}", savedUser.getUsername());
 
+            UserResponse response = UserResponse.builder()
+                    .fullName(savedUser.getFirstName() + " " + savedUser.getLastName())
+                    .nationalCode(savedUser.getNationalCode())
+                    .phone(savedUser.getPhone())
+                    .active(savedUser.isActive())
+                    .build();
+
             return Response.status(201)
-                    .entity(new UserResponse(savedUser))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error registering user", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در ثبت‌نام: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در ثبت‌نام: " + e.getMessage()))
                     .build();
         }
     }
@@ -112,19 +122,19 @@ public class UserApi {
             String validationError = validateCreateRequest(request);
             if (validationError != null) {
                 return Response.status(400)
-                        .entity(new ErrorResponse(validationError))
+                        .entity(ApiResponse.error(validationError))
                         .build();
             }
 
             if (userService.findByUsername(request.getUsername()).isPresent()) {
                 return Response.status(409)
-                        .entity(new ErrorResponse("این نام کاربری قبلاً ثبت شده است"))
+                        .entity(ApiResponse.error("این نام کاربری قبلاً ثبت شده است"))
                         .build();
             }
 
             if (userService.findByNationalCode(request.getNationalCode()).isPresent()) {
                 return Response.status(409)
-                        .entity(new ErrorResponse("این کد ملی قبلاً ثبت شده است"))
+                        .entity(ApiResponse.error("این کد ملی قبلاً ثبت شده است"))
                         .build();
             }
 
@@ -150,14 +160,21 @@ public class UserApi {
 
             log.info("User created successfully: {} with role {}", savedUser.getUsername(), request.getRole());
 
+            UserResponse response = UserResponse.builder()
+                    .fullName(savedUser.getFirstName() + " " + savedUser.getLastName())
+                    .nationalCode(savedUser.getNationalCode())
+                    .phone(savedUser.getPhone())
+                    .active(savedUser.isActive())
+                    .build();
+
             return Response.status(201)
-                    .entity(new UserResponse(savedUser))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error creating user", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در ایجاد کاربر: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در ایجاد کاربر: " + e.getMessage()))
                     .build();
         }
     }
@@ -172,16 +189,131 @@ public class UserApi {
             @QueryParam("size") @DefaultValue("10") int size) {
         try {
             List<User> users = userService.findAll(page, size);
+            List<UserResponse> responses = users.stream()
+                    .map(u -> UserResponse.builder()
+                            .fullName(u.getFirstName() + " " + u.getLastName())
+                            .nationalCode(u.getNationalCode())
+                            .phone(u.getPhone())
+                            .active(u.isActive())
+                            .build())
+                    .collect(Collectors.toList());
+
             return Response.ok()
-                    .entity(users.stream()
-                            .map(UserResponse::new)
-                            .collect(Collectors.toList()))
+                    .entity(ApiResponse.success(responses))
                     .build();
 
         } catch (Exception e) {
             log.error("Error fetching users", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کاربران: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت کاربران: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * دریافت کاربر با ID
+     * GET /api/users/{id}
+     */
+    @GET
+    @Path("/{id}")
+    public Response getUserById(@PathParam("id") Long id) {
+        try {
+            Optional<User> userOpt = userService.findById(id);
+
+            if (userOpt.isEmpty()) {
+                return Response.status(404)
+                        .entity(ApiResponse.error("کاربر یافت نشد"))
+                        .build();
+            }
+
+            User u = userOpt.get();
+            UserResponse response = UserResponse.builder()
+                    .fullName(u.getFirstName() + " " + u.getLastName())
+                    .nationalCode(u.getNationalCode())
+                    .phone(u.getPhone())
+                    .active(u.isActive())
+                    .build();
+
+            return Response.ok()
+                    .entity(ApiResponse.success(response))
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error fetching user by id: {}", id, e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در دریافت کاربر: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * دریافت کاربر با نام کاربری
+     * GET /api/users/username/{username}
+     */
+    @GET
+    @Path("/username/{username}")
+    public Response getUserByUsername(@PathParam("username") String username) {
+        try {
+            Optional<User> userOpt = userService.findByUsername(username);
+
+            if (userOpt.isEmpty()) {
+                return Response.status(404)
+                        .entity(ApiResponse.error("کاربر یافت نشد"))
+                        .build();
+            }
+
+            User u = userOpt.get();
+            UserResponse response = UserResponse.builder()
+                    .fullName(u.getFirstName() + " " + u.getLastName())
+                    .nationalCode(u.getNationalCode())
+                    .phone(u.getPhone())
+                    .active(u.isActive())
+                    .build();
+
+            return Response.ok()
+                    .entity(ApiResponse.success(response))
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error fetching user by username: {}", username, e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در دریافت کاربر: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * دریافت کاربر با کد ملی
+     * GET /api/users/national/{nationalCode}
+     */
+    @GET
+    @Path("/national/{nationalCode}")
+    public Response getUserByNationalCode(@PathParam("nationalCode") String nationalCode) {
+        try {
+            Optional<User> userOpt = userService.findByNationalCode(nationalCode);
+
+            if (userOpt.isEmpty()) {
+                return Response.status(404)
+                        .entity(ApiResponse.error("کاربر یافت نشد"))
+                        .build();
+            }
+
+            User u = userOpt.get();
+            UserResponse response = UserResponse.builder()
+                    .fullName(u.getFirstName() + " " + u.getLastName())
+                    .nationalCode(u.getNationalCode())
+                    .phone(u.getPhone())
+                    .active(u.isActive())
+                    .build();
+
+            return Response.ok()
+                    .entity(ApiResponse.success(response))
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Error fetching user by national code: {}", nationalCode, e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در دریافت کاربر: " + e.getMessage()))
                     .build();
         }
     }
@@ -195,189 +327,149 @@ public class UserApi {
     public Response getActiveUsers() {
         try {
             List<User> users = userService.findActiveUsers();
+            List<UserResponse> responses = users.stream()
+                    .map(u -> UserResponse.builder()
+                            .fullName(u.getFirstName() + " " + u.getLastName())
+                            .nationalCode(u.getNationalCode())
+                            .phone(u.getPhone())
+                            .active(u.isActive())
+                            .build())
+                    .collect(Collectors.toList());
+
             return Response.ok()
-                    .entity(users.stream()
-                            .map(UserResponse::new)
-                            .collect(Collectors.toList()))
+                    .entity(ApiResponse.success(responses))
                     .build();
 
         } catch (Exception e) {
             log.error("Error fetching active users", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کاربران فعال: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * دریافت کاربر با ID
-     */
-    @GET
-    @Path("/{id}")
-    public Response getUserById(@PathParam("id") Long id) {
-        try {
-            Optional<User> userOpt = userService.findById(id);
-            if (userOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
-                        .build();
-            }
-            return Response.ok()
-                    .entity(new UserResponse(userOpt.get()))
-                    .build();
-        } catch (Exception e) {
-            log.error("Error fetching user by id: {}", id, e);
-            return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کاربر: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * دریافت کاربر با نام کاربری
-     */
-    @GET
-    @Path("/username/{username}")
-    public Response getUserByUsername(@PathParam("username") String username) {
-        try {
-            Optional<User> userOpt = userService.findByUsername(username);
-            if (userOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
-                        .build();
-            }
-            return Response.ok()
-                    .entity(new UserResponse(userOpt.get()))
-                    .build();
-        } catch (Exception e) {
-            log.error("Error fetching user by username: {}", username, e);
-            return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کاربر: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * دریافت کاربر با کد ملی
-     */
-    @GET
-    @Path("/nationalCode/{nationalCode}")
-    public Response getUserByNationalCode(@PathParam("nationalCode") String nationalCode) {
-        try {
-            Optional<User> userOpt = userService.findByNationalCode(nationalCode);
-            if (userOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
-                        .build();
-            }
-            return Response.ok()
-                    .entity(new UserResponse(userOpt.get()))
-                    .build();
-        } catch (Exception e) {
-            log.error("Error fetching user by national code: {}", nationalCode, e);
-            return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کاربر: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت کاربران فعال: " + e.getMessage()))
                     .build();
         }
     }
 
     /**
      * به‌روزرسانی کاربر
+     * PUT /api/users/{id}
      */
     @PUT
     @Path("/{id}")
-    public Response updateUser(@PathParam("id") Long id, UserUpdateRequest request) {
+    public Response updateUser(
+            @PathParam("id") Long id,
+            UserUpdateRequest request) {
         try {
             Optional<User> userOpt = userService.findById(id);
+
             if (userOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
+                        .entity(ApiResponse.error("کاربر یافت نشد"))
+                        .build();
+            }
+
+            String validationError = validateUpdateRequest(request);
+            if (validationError != null) {
+                return Response.status(400)
+                        .entity(ApiResponse.error(validationError))
                         .build();
             }
 
             User user = userOpt.get();
-            String validationError = validateUpdateRequest(request);
-            if (validationError != null) {
-                return Response.status(400)
-                        .entity(new ErrorResponse(validationError))
-                        .build();
-            }
 
-            if (request.getNationalCode() != null &&
-                    !user.getNationalCode().equals(request.getNationalCode())) {
-                if (userService.findByNationalCode(request.getNationalCode()).isPresent()) {
-                    return Response.status(409)
-                            .entity(new ErrorResponse("این کد ملی قبلاً ثبت شده است"))
-                            .build();
-                }
+            if (!isBlank(request.getFirstName())) {
+                user.setFirstName(request.getFirstName());
             }
-
-            if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
-            if (request.getLastName() != null) user.setLastName(request.getLastName());
-            if (request.getPhone() != null) user.setPhone(request.getPhone());
-            if (request.getNationalCode() != null) user.setNationalCode(request.getNationalCode());
-            if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            if (!isBlank(request.getLastName())) {
+                user.setLastName(request.getLastName());
+            }
+            if (!isBlank(request.getPhone())) {
+                user.setPhone(request.getPhone());
+            }
+            if (!isBlank(request.getNationalCode())) {
+                user.setNationalCode(request.getNationalCode());
+            }
+            if (!isBlank(request.getPassword())) {
                 user.setPassword(passwordUtil.hash(request.getPassword()));
             }
-            if (request.getActive() != null) user.setActive(request.getActive());
+            if (request.getActive() != null) {
+                user.setActive(request.getActive());
+            }
 
             User updatedUser = userService.update(user);
-            log.info("User updated successfully: {}", user.getUsername());
+            log.info("User updated successfully: {}", updatedUser.getUsername());
+
+            UserResponse response = UserResponse.builder()
+                    .fullName(updatedUser.getFirstName() + " " + updatedUser.getLastName())
+                    .nationalCode(updatedUser.getNationalCode())
+                    .phone(updatedUser.getPhone())
+                    .active(updatedUser.isActive())
+                    .build();
 
             return Response.ok()
-                    .entity(new UserResponse(updatedUser))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error updating user: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در به‌روزرسانی کاربر: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در به‌روزرسانی کاربر: " + e.getMessage()))
                     .build();
         }
     }
 
     /**
      * فعال/غیرفعال کردن کاربر
+     * PATCH /api/users/{id}/toggle-active
      */
     @PATCH
-    @Path("/{id}/status")
-    public Response changeUserStatus(@PathParam("id") Long id, @QueryParam("active") boolean active) {
+    @Path("/{id}/toggle-active")
+    public Response toggleUserActive(@PathParam("id") Long id) {
         try {
             Optional<User> userOpt = userService.findById(id);
+
             if (userOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
+                        .entity(ApiResponse.error("کاربر یافت نشد"))
                         .build();
             }
 
             User user = userOpt.get();
-            user.setActive(active);
+            user.setActive(!user.isActive());
             User updatedUser = userService.update(user);
 
-            log.info("User status changed: {} to {}", user.getUsername(), active);
+            log.info("User active status toggled: {} to {}", updatedUser.getUsername(), updatedUser.isActive());
+
+            UserResponse response = UserResponse.builder()
+                    .fullName(updatedUser.getFirstName() + " " + updatedUser.getLastName())
+                    .nationalCode(updatedUser.getNationalCode())
+                    .phone(updatedUser.getPhone())
+                    .active(updatedUser.isActive())
+                    .build();
+
             return Response.ok()
-                    .entity(new UserResponse(updatedUser))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
-            log.error("Error changing user status: {}", id, e);
+            log.error("Error toggling user active status: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در تغییر وضعیت کاربر: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در تغییر وضعیت کاربر: " + e.getMessage()))
                     .build();
         }
     }
 
     /**
      * حذف نرم کاربر
+     * DELETE /api/users/{id}
      */
     @DELETE
     @Path("/{id}")
     public Response deleteUser(@PathParam("id") Long id) {
         try {
             Optional<User> userOpt = userService.findById(id);
+
             if (userOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
+                        .entity(ApiResponse.error("کاربر یافت نشد"))
                         .build();
             }
 
@@ -385,28 +477,32 @@ public class UserApi {
             log.info("User soft-deleted: {}", userOpt.get().getUsername());
 
             return Response.ok()
-                    .entity(new SuccessResponse("کاربر با موفقیت حذف شد"))
+                    .entity(ApiResponse.success("کاربر با موفقیت حذف شد"))
                     .build();
 
         } catch (Exception e) {
             log.error("Error deleting user: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در حذف کاربر: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در حذف کاربر: " + e.getMessage()))
                     .build();
         }
     }
 
     // ==================== Validation Methods ====================
 
-    private String validateRegisterRequest(UserRegisterRequest request) {
-        if (isBlank(request.getUsername()) || request.getUsername().length() < 4 || request.getUsername().length() > 50) {
-            return "نام کاربری باید بین 4 تا 50 کاراکتر باشد";
+    private String validateRegisterRequest(RegisterRequest request) {
+        if (isBlank(request.getUsername()) || request.getUsername().length() < 4) {
+            return "نام کاربری نامعتبر است (حداقل 4 کاراکتر)";
         }
         if (isBlank(request.getPassword()) || request.getPassword().length() < 6) {
             return "رمز عبور باید حداقل 6 کاراکتر باشد";
         }
-        if (isBlank(request.getFirstName())) return "نام الزامی است";
-        if (isBlank(request.getLastName())) return "نام خانوادگی الزامی است";
+        if (isBlank(request.getFirstName())) {
+            return "نام الزامی است";
+        }
+        if (isBlank(request.getLastName())) {
+            return "نام خانوادگی الزامی است";
+        }
         if (isBlank(request.getPhone()) || !PHONE_PATTERN.matcher(request.getPhone()).matches()) {
             return "شماره تلفن نامعتبر است (فرمت: 09xxxxxxxxx)";
         }
@@ -417,15 +513,18 @@ public class UserApi {
     }
 
     private String validateCreateRequest(UserCreateRequest request) {
-        // از خود request استفاده می‌کنیم (نه ساختن UserRegisterRequest جدید)
-        if (isBlank(request.getUsername()) || request.getUsername().length() < 4 || request.getUsername().length() > 50) {
-            return "نام کاربری باید بین 4 تا 50 کاراکتر باشد";
+        if (isBlank(request.getUsername()) || request.getUsername().length() < 4) {
+            return "نام کاربری نامعتبر است (حداقل 4 کاراکتر)";
         }
         if (isBlank(request.getPassword()) || request.getPassword().length() < 6) {
             return "رمز عبور باید حداقل 6 کاراکتر باشد";
         }
-        if (isBlank(request.getFirstName())) return "نام الزامی است";
-        if (isBlank(request.getLastName())) return "نام خانوادگی الزامی است";
+        if (isBlank(request.getFirstName())) {
+            return "نام الزامی است";
+        }
+        if (isBlank(request.getLastName())) {
+            return "نام خانوادگی الزامی است";
+        }
         if (isBlank(request.getPhone()) || !PHONE_PATTERN.matcher(request.getPhone()).matches()) {
             return "شماره تلفن نامعتبر است (فرمت: 09xxxxxxxxx)";
         }
@@ -455,32 +554,9 @@ public class UserApi {
         return str == null || str.trim().isEmpty();
     }
 
-    // ==================== Request/Response DTOs ====================
+    // ==================== Request DTOs ====================
 
-    public static class UserRegisterRequest {
-        private String username;
-        private String password;
-        private String firstName;
-        private String lastName;
-        private String phone;
-        private String nationalCode;
-
-        // Getters & Setters
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-        public String getFirstName() { return firstName; }
-        public void setFirstName(String firstName) { this.firstName = firstName; }
-        public String getLastName() { return lastName; }
-        public void setLastName(String lastName) { this.lastName = lastName; }
-        public String getPhone() { return phone; }
-        public void setPhone(String phone) { this.phone = phone; }
-        public String getNationalCode() { return nationalCode; }
-        public void setNationalCode(String nationalCode) { this.nationalCode = nationalCode; }
-    }
-
-    public static class UserCreateRequest extends UserRegisterRequest {
+    public static class UserCreateRequest extends RegisterRequest {
         private UserRole role;
         private boolean active = true;
 
@@ -511,63 +587,5 @@ public class UserApi {
         public void setPassword(String password) { this.password = password; }
         public Boolean getActive() { return active; }
         public void setActive(Boolean active) { this.active = active; }
-    }
-
-    public static class UserResponse {
-        private Long id;
-        private String username;
-        private String firstName;
-        private String lastName;
-        private String phone;
-        private String nationalCode; // ماسک شده
-        private boolean active;
-        private UserRole role; // اضافه شده
-
-        public UserResponse(User user) {
-            this.id = user.getId();
-            this.username = user.getUsername();
-            this.firstName = user.getFirstName();
-            this.lastName = user.getLastName();
-            this.phone = user.getPhone();
-            this.nationalCode = maskNationalCode(user.getNationalCode());
-            this.active = user.isActive();
-
-            // استخراج نقش از لیست نقش‌ها
-            this.role = user.getRoles() != null
-                    ? user.getRoles().stream()
-                    .map(Role::getRole)
-                    .findFirst()
-                    .orElse(null)
-                    : null;
-        }
-
-        private String maskNationalCode(String nationalCode) {
-            if (nationalCode == null || nationalCode.length() < 6) return "******";
-            return "******" + nationalCode.substring(nationalCode.length() - 4);
-        }
-
-        // Getters
-        public Long getId() { return id; }
-        public String getUsername() { return username; }
-        public String getFirstName() { return firstName; }
-        public String getLastName() { return lastName; }
-        public String getPhone() { return phone; }
-        public String getNationalCode() { return nationalCode; }
-        public boolean isActive() { return active; }
-        public UserRole getRole() { return role; }
-    }
-
-    public static class ErrorResponse {
-        private String message;
-        public ErrorResponse(String message) { this.message = message; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
-
-    public static class SuccessResponse {
-        private String message;
-        public SuccessResponse(String message) { this.message = message; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
     }
 }

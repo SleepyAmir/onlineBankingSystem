@@ -147,7 +147,7 @@
     </button>
     
     <!-- Brand -->
-    <a href="${pageContext.request.contextPath}/dashboard" class="navbar-brand">
+    <a href="${pageContext.request.contextPath}/user-dashboard" class="navbar-brand">
         <i class="fas fa-university"></i>
         <span>بانک آنلاین</span>
     </a>
@@ -185,7 +185,7 @@
                     </div>
                 </li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile"><i class="fas fa-user me-2"></i>پروفایل</a></li>
+                <li><a class="dropdown-item" href="${pageContext.request.contextPath}/user-profile"><i class="fas fa-user me-2"></i>پروفایل</a></li>
                 <li><a class="dropdown-item" href="${pageContext.request.contextPath}/settings"><i class="fas fa-cog me-2"></i>تنظیمات</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>خروج</a></li>

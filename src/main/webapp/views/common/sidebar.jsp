@@ -101,7 +101,7 @@
         <!-- Dashboard Section -->
         <li class="menu-section-title">صفحات اصلی</li>
         <li class="menu-item">
-            <a href="${pageContext.request.contextPath}/dashboard" class="menu-link ${requestURI.contains('/dashboard') ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/user-dashboard" class="menu-link ${requestURI.contains('/user-dashboard') ? 'active' : ''}">
                 <i class="fas fa-tachometer-alt menu-icon"></i>
                 <span>داشبورد</span>
             </a>
@@ -171,7 +171,7 @@
         <!-- Settings Section -->
         <li class="menu-section-title">تنظیمات</li>
         <li class="menu-item">
-            <a href="${pageContext.request.contextPath}/profile" class="menu-link ${requestURI.contains('/profile') ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/user-profile" class="menu-link ${requestURI.contains('/user-profile') ? 'active' : ''}">
                 <i class="fas fa-user menu-icon"></i>
                 <span>پروفایل</span>
             </a>

@@ -1,14 +1,12 @@
 package com.sleepy.onlinebankingsystem.controller.api;
 
+import com.sleepy.onlinebankingsystem.model.dto.response.ApiResponse;
 import com.sleepy.onlinebankingsystem.model.entity.Account;
 import com.sleepy.onlinebankingsystem.model.entity.Card;
-import com.sleepy.onlinebankingsystem.model.entity.User;
 import com.sleepy.onlinebankingsystem.model.enums.AccountStatus;
 import com.sleepy.onlinebankingsystem.model.enums.CardType;
 import com.sleepy.onlinebankingsystem.service.AccountService;
 import com.sleepy.onlinebankingsystem.service.CardService;
-import com.sleepy.onlinebankingsystem.service.UserService;
-import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -21,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Path("/api/cards")
+@Path("/cards")
 @Slf4j
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -32,9 +30,6 @@ public class CardApi {
 
     @Inject
     private AccountService accountService;
-
-    @Inject
-    private UserService userService;
 
     /**
      * صدور کارت جدید
@@ -48,13 +43,13 @@ public class CardApi {
             // اعتبارسنجی
             if (request.getAccountId() == null) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("شناسه حساب الزامی است"))
+                        .entity(ApiResponse.error("شناسه حساب الزامی است"))
                         .build();
             }
 
             if (request.getType() == null) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("نوع کارت الزامی است"))
+                        .entity(ApiResponse.error("نوع کارت الزامی است"))
                         .build();
             }
 
@@ -62,7 +57,7 @@ public class CardApi {
             Optional<Account> accountOpt = accountService.findById(request.getAccountId());
             if (accountOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("حساب یافت نشد"))
+                        .entity(ApiResponse.error("حساب یافت نشد"))
                         .build();
             }
 
@@ -71,7 +66,7 @@ public class CardApi {
             // بررسی وضعیت حساب
             if (account.getStatus() != AccountStatus.ACTIVE) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("حساب باید فعال باشد"))
+                        .entity(ApiResponse.error("حساب باید فعال باشد"))
                         .build();
             }
 
@@ -93,14 +88,16 @@ public class CardApi {
             Card savedCard = cardService.save(card);
             log.info("Card created successfully: {}", maskCardNumber(cardNumber));
 
+            CardResponse response = new CardResponse(savedCard);
+
             return Response.status(201)
-                    .entity(new CardResponse(savedCard))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error creating card", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در صدور کارت: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در صدور کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -115,16 +112,18 @@ public class CardApi {
             @QueryParam("size") @DefaultValue("10") int size) {
         try {
             List<Card> cards = cardService.findAll(page, size);
+            List<CardResponse> responses = cards.stream()
+                    .map(CardResponse::new)
+                    .collect(Collectors.toList());
+
             return Response.ok()
-                    .entity(cards.stream()
-                            .map(CardResponse::new)
-                            .collect(Collectors.toList()))
+                    .entity(ApiResponse.success(responses))
                     .build();
 
         } catch (Exception e) {
             log.error("Error fetching cards", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کارت‌ها: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت کارت‌ها: " + e.getMessage()))
                     .build();
         }
     }
@@ -138,16 +137,18 @@ public class CardApi {
     public Response getActiveCards() {
         try {
             List<Card> cards = cardService.findActiveCards();
+            List<CardResponse> responses = cards.stream()
+                    .map(CardResponse::new)
+                    .collect(Collectors.toList());
+
             return Response.ok()
-                    .entity(cards.stream()
-                            .map(CardResponse::new)
-                            .collect(Collectors.toList()))
+                    .entity(ApiResponse.success(responses))
                     .build();
 
         } catch (Exception e) {
             log.error("Error fetching active cards", e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کارت‌های فعال: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت کارت‌های فعال: " + e.getMessage()))
                     .build();
         }
     }
@@ -164,18 +165,20 @@ public class CardApi {
 
             if (cardOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کارت یافت نشد"))
+                        .entity(ApiResponse.error("کارت یافت نشد"))
                         .build();
             }
 
+            CardResponse response = new CardResponse(cardOpt.get());
+
             return Response.ok()
-                    .entity(new CardResponse(cardOpt.get()))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error fetching card by id: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کارت: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -192,49 +195,20 @@ public class CardApi {
 
             if (cardOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کارت یافت نشد"))
+                        .entity(ApiResponse.error("کارت یافت نشد"))
                         .build();
             }
 
+            CardResponse response = new CardResponse(cardOpt.get());
+
             return Response.ok()
-                    .entity(new CardResponse(cardOpt.get()))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error fetching card by number: {}", cardNumber, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کارت: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * دریافت کارت‌های یک کاربر
-     * GET /api/cards/user/{userId}
-     */
-    @GET
-    @Path("/user/{userId}")
-    public Response getCardsByUser(@PathParam("userId") Long userId) {
-        try {
-            Optional<User> userOpt = userService.findById(userId);
-
-            if (userOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(new ErrorResponse("کاربر یافت نشد"))
-                        .build();
-            }
-
-            List<Card> cards = cardService.findByUser(userOpt.get());
-            return Response.ok()
-                    .entity(cards.stream()
-                            .map(CardResponse::new)
-                            .collect(Collectors.toList()))
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Error fetching cards for user: {}", userId, e);
-            return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کارت‌ها: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -251,21 +225,23 @@ public class CardApi {
 
             if (accountOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("حساب یافت نشد"))
+                        .entity(ApiResponse.error("حساب یافت نشد"))
                         .build();
             }
 
             List<Card> cards = cardService.findByAccount(accountOpt.get());
+            List<CardResponse> responses = cards.stream()
+                    .map(CardResponse::new)
+                    .collect(Collectors.toList());
+
             return Response.ok()
-                    .entity(cards.stream()
-                            .map(CardResponse::new)
-                            .collect(Collectors.toList()))
+                    .entity(ApiResponse.success(responses))
                     .build();
 
         } catch (Exception e) {
             log.error("Error fetching cards for account: {}", accountId, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در دریافت کارت‌ها: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در دریافت کارت‌ها: " + e.getMessage()))
                     .build();
         }
     }
@@ -282,7 +258,7 @@ public class CardApi {
 
             if (cardOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کارت یافت نشد"))
+                        .entity(ApiResponse.error("کارت یافت نشد"))
                         .build();
             }
 
@@ -290,7 +266,7 @@ public class CardApi {
 
             if (card.isActive()) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("کارت از قبل فعال است"))
+                        .entity(ApiResponse.error("کارت از قبل فعال است"))
                         .build();
             }
 
@@ -299,14 +275,16 @@ public class CardApi {
 
             log.info("Card activated: {}", maskCardNumber(card.getCardNumber()));
 
+            CardResponse response = new CardResponse(updatedCard);
+
             return Response.ok()
-                    .entity(new CardResponse(updatedCard))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error activating card: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در فعال‌سازی کارت: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در فعال‌سازی کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -323,7 +301,7 @@ public class CardApi {
 
             if (cardOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کارت یافت نشد"))
+                        .entity(ApiResponse.error("کارت یافت نشد"))
                         .build();
             }
 
@@ -331,7 +309,7 @@ public class CardApi {
 
             if (!card.isActive()) {
                 return Response.status(400)
-                        .entity(new ErrorResponse("کارت از قبل مسدود است"))
+                        .entity(ApiResponse.error("کارت از قبل مسدود است"))
                         .build();
             }
 
@@ -340,14 +318,16 @@ public class CardApi {
 
             log.info("Card blocked: {}", maskCardNumber(card.getCardNumber()));
 
+            CardResponse response = new CardResponse(updatedCard);
+
             return Response.ok()
-                    .entity(new CardResponse(updatedCard))
+                    .entity(ApiResponse.success(response))
                     .build();
 
         } catch (Exception e) {
             log.error("Error blocking card: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در مسدودسازی کارت: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در مسدودسازی کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -364,7 +344,7 @@ public class CardApi {
 
             if (cardOpt.isEmpty()) {
                 return Response.status(404)
-                        .entity(new ErrorResponse("کارت یافت نشد"))
+                        .entity(ApiResponse.error("کارت یافت نشد"))
                         .build();
             }
 
@@ -372,13 +352,13 @@ public class CardApi {
             log.info("Card soft-deleted: {}", maskCardNumber(cardOpt.get().getCardNumber()));
 
             return Response.ok()
-                    .entity(new SuccessResponse("کارت با موفقیت حذف شد"))
+                    .entity(ApiResponse.success("کارت با موفقیت حذف شد"))
                     .build();
 
         } catch (Exception e) {
             log.error("Error deleting card: {}", id, e);
             return Response.status(500)
-                    .entity(new ErrorResponse("خطا در حذف کارت: " + e.getMessage()))
+                    .entity(ApiResponse.error("خطا در حذف کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -451,27 +431,5 @@ public class CardApi {
         public CardType getType() { return type; }
         public boolean isActive() { return active; }
         public Long getAccountId() { return accountId; }
-    }
-
-    public static class ErrorResponse {
-        private String message;
-
-        public ErrorResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
-
-    public static class SuccessResponse {
-        private String message;
-
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
     }
 }

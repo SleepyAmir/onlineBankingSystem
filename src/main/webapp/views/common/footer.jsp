@@ -12,8 +12,8 @@
                 <h5 class="text-uppercase">لینک‌های مفید</h5>
                 <ul class="list-unstyled mb-0">
                     <li><a href="${pageContext.request.contextPath}/" class="text-dark">خانه</a></li>
-                    <li><a href="${pageContext.request.contextPath}/dashboard" class="text-dark">داشبورد</a></li>
-                    <li><a href="${pageContext.request.contextPath}/profile" class="text-dark">پروفایل</a></li>
+                    <li><a href="${pageContext.request.contextPath}/user-dashboard" class="text-dark">داشبورد</a></li>
+                    <li><a href="${pageContext.request.contextPath}/user-profile" class="text-dark">پروفایل</a></li>
                     <li><a href="${pageContext.request.contextPath}/auth/logout" class="text-dark">خروج</a></li>
                 </ul>
             </div>

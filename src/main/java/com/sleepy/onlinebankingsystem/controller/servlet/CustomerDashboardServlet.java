@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-@WebServlet("/customer/dashboard")
+@WebServlet("/customer/user-dashboard")
 public class CustomerDashboardServlet extends HttpServlet {
 
     @Inject
@@ -187,7 +187,7 @@ public class CustomerDashboardServlet extends HttpServlet {
             req.setAttribute("notifications", notifications.toString());
 
             // 9️⃣ نمایش JSP
-            req.getRequestDispatcher("/views/dashboard/customer.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/user-dashboard/customer.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading customer dashboard", e);

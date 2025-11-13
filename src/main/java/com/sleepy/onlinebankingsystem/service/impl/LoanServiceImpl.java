@@ -10,6 +10,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +54,44 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    @Transactional
+    public Loan payInstallment(Loan loan, BigDecimal amount) throws Exception {
+        if (loan == null || amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("وام و مبلغ پرداخت الزامی و باید مثبت باشد");
+        }
+
+        if (loan.getStatus() != LoanStatus.APPROVED && loan.getStatus() != LoanStatus.ACTIVE) {
+            throw new IllegalStateException("فقط وام‌های تأیید شده یا فعال قابل پرداخت هستند");
+        }
+
+        // محاسبه قسط استاندارد
+        BigDecimal standardInstallment = loan.getMonthlyPayment();
+
+        // اگر مبلغ پرداخت شده کمتر از قسط استاندارد باشد → خطا
+        if (amount.compareTo(standardInstallment) < 0) {
+            throw new IllegalArgumentException(
+                    String.format("مبلغ پرداخت باید حداقل %.2f باشد", standardInstallment)
+            );
+        }
+
+        // کاهش مانده وام
+        BigDecimal remainingPrincipal = loan.getPrincipal().subtract(amount);
+        if (remainingPrincipal.compareTo(BigDecimal.ZERO) <= 0) {
+            // وام تسویه شد
+            loan.setStatus(LoanStatus.PAID);
+            loan.setPrincipal(BigDecimal.ZERO);
+            log.info("Loan fully paid: {}", loan.getLoanNumber());
+        } else {
+            // فقط قسط پرداخت شد
+            loan.setPrincipal(remainingPrincipal);
+            loan.setStatus(LoanStatus.ACTIVE); // اگر قبلاً APPROVED بود
+            log.info("Installment paid for loan: {}, remaining: {}", loan.getLoanNumber(), remainingPrincipal);
+        }
+
+        return loanRepository.save(loan);
+    }
+
+    @Override
     public Optional<Loan> findById(Long id) throws Exception {
         return loanRepository.findById(id);
     }
@@ -81,4 +120,6 @@ public class LoanServiceImpl implements LoanService {
     public List<Loan> findAll(int page, int size) throws Exception {
         return loanRepository.findAll(page, size);
     }
+
+
 }

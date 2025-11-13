@@ -93,7 +93,7 @@
                         <button type="submit" class="btn btn-primary flex-fill">
                             انجام تراکنش
                         </button>
-                        <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-secondary flex-fill">
+                        <a href="${pageContext.request.contextPath}/user-dashboard" class="btn btn-secondary flex-fill">
                             لغو
                         </a>
                     </div>

@@ -24,7 +24,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
     <c:if test="${param.isDashboard}">
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/dashboard.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/user-dashboard.css">
     </c:if>
     <c:if test="${param.isWelcome}">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/welcome.css">

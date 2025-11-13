@@ -35,7 +35,7 @@ public class WelcomeServlet extends HttpServlet {
         // اگر لاگین کرده و صفحه اصلی رو می‌خواد، بره داشبورد
         if (isLoggedIn && (path.equals("/") || path.equals("/welcome") || path.isEmpty())) {
             log.info("User already logged in, redirecting to dashboard");
-            resp.sendRedirect(req.getContextPath() + "/dashboard");
+            resp.sendRedirect(req.getContextPath() + "/user-dashboard");
             return;
         }
 
