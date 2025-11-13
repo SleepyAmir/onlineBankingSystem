@@ -832,7 +832,7 @@ mvn verify -Pintegration-tests
 
 ### صفحه خوش‌آمدگویی
 
-<img src="path/to/welcome-screenshot.png" alt="Welcome Page" width="800"/>
+<img src="/docs/screenshots/Welcome.png.png" alt="Welcome Page" width="800"/>
 
 **ویژگی‌ها:**
 - طراحی مدرن و Gradient Background
@@ -842,10 +842,18 @@ mvn verify -Pintegration-tests
 
 ### صفحه ورود
 
-<img src="path/to/login-screenshot.png" alt="Login Page" width="800"/>
+<img src="/docs/screenshots/Login.png" alt="Login Page" width="800"/>
 
 **امکانات:**
 - فرم ورود با Validation
 - پیام‌های خطای واضح
 - Remember Me
-- Link به
+
+
+### صفحه ثبت نام
+<img src="/docs/screenshots/SignUp.png" alt="Register Page" width="800"/>
+
+**امکانات:**
+- فرم ثبت نام با Validation
+- پیام‌های خطای واضح
+- Remember Me
