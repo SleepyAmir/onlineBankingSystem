@@ -122,6 +122,22 @@
 <listener-class>com.sleepy.onlinebankingsystem.utils.SessionListener</listener-class>
 </listener>
 
+    <!-- غیرفعال کردن امنیت برای همه APIها -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Public APIs</web-resource-name>
+            <url-pattern>/api/*</url-pattern>
+        </web-resource-collection>
+        <!-- هیچ نقش الزامی نیست -->
+    </security-constraint>
 
+    <!-- یا کاملاً امنیت رو خاموش کن -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>All APIs</web-resource-name>
+            <url-pattern>/api/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint>
 
 </web-app>
