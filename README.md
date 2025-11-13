@@ -1,514 +1,844 @@
-```markdown
-🏦 سیستم بانکداری آنلاین - OnlineBankingSystem
-سیستم جامع بانکداری آنلاین با Jakarta EE
-ویژگی‌ها • نصب • استفاده • API • مشارکت
-📑 فهرست
+<div align="center">
 
-* درباره پروژه
+# 🏦 سیستم بانکداری آنلاین | Online Banking System
 
-* ویژگی‌ها
+<img src="https://img.shields.io/badge/Java-11-orange?style=for-the-badge&logo=java" />
+<img src="https://img.shields.io/badge/Jakarta%20EE-9.1-blue?style=for-the-badge&logo=oracle" />
+<img src="https://img.shields.io/badge/Hibernate-6.2-59666C?style=for-the-badge&logo=hibernate" />
+<img src="https://img.shields.io/badge/Oracle-DB-red?style=for-the-badge&logo=oracle" />
+<img src="https://img.shields.io/badge/TomEE-9.x-yellow?style=for-the-badge" />
 
-* تکنولوژی‌ها
+**یک سیستم بانکداری آنلاین جامع و امن با معماری Enterprise**
 
-* پیش‌نیازها
+[ویژگی‌ها](#-ویژگیها) • [نصب](#-نصب-و-راهاندازی) • [مستندات](#-مستندات-api) • [دمو](#-نمایش-پروژه)
 
-* نصب و راه‌اندازی
+<img src="https://via.placeholder.com/800x400/6366f1/ffffff?text=Banking+System+Dashboard" alt="Dashboard Preview" />
 
-* پیکربندی
+---
 
-* استفاده
+</div>
 
-* ساختار پروژه
+## 📑 فهرست مطالب
 
-* مستندات API
+- [معرفی پروژه](#-معرفی-پروژه)
+- [ویژگی‌ها](#-ویژگیها)
+- [تکنولوژی‌ها](#️-تکنولوژیها)
+- [معماری سیستم](#-معماری-سیستم)
+- [پیش‌نیازها](#-پیشنیازها)
+- [نصب و راه‌اندازی](#-نصب-و-راهاندازی)
+- [پیکربندی](#️-پیکربندی)
+- [راهنمای استفاده](#-راهنمای-استفاده)
+- [API Documentation](#-مستندات-api)
+- [ساختار پروژه](#-ساختار-پروژه)
+- [امنیت](#-امنیت)
+- [تست](#-تست)
+- [مشارکت](#-مشارکت)
+- [مجوز](#-مجوز)
 
-* مشارکت
+---
 
-🎯 درباره پروژه
-یک سیستم بانکداری آنلاین امن و جامع که با استفاده از Jakarta EE پیاده‌سازی شده است. این پروژه شامل مدیریت کاربران، حساب‌های بانکی، کارت‌ها، وام‌ها و تراکنش‌ها می‌شود. با تمرکز روی امنیت، عملکرد و کاربری آسان، مناسب برای بانکداری دیجیتال است.
+## 🎯 معرفی پروژه
 
-* ✅ مدیریت کاربران با نقش‌های مختلف
+**سیستم بانکداری آنلاین** یک پلتفرم کامل و امن برای مدیریت عملیات بانکی است که با استفاده از تکنولوژی‌های **Jakarta EE** و معماری **Enterprise** طراحی شده است.
 
-* ✅ ایجاد و مدیریت حساب‌های بانکی
+### 💡 چرا این پروژه؟
 
-* ✅ صدور و کنترل کارت‌ها
+- ✅ **معماری حرفه‌ای**: استفاده از Design Patterns و Best Practices
+- ✅ **امنیت بالا**: رمزنگاری BCrypt، JWT Authentication، CSRF Protection
+- ✅ **مقیاس‌پذیری**: معماری لایه‌ای قابل توسعه
+- ✅ **مستندسازی کامل**: API Documentation و Code Comments
+- ✅ **پشتیبانی از Farsi/RTL**: رابط کاربری فارسی کامل
 
-* ✅ درخواست و مدیریت وام‌ها با محاسبه قسط
+---
 
-* ✅ تراکنش‌های مالی (واریز، برداشت، انتقال)
+## ✨ ویژگی‌ها
 
-* ✅ REST API کامل
+### 🔐 مدیریت کاربران و امنیت
 
-* ✅ رابط کاربری ساده با JSP
+| ویژگی | توضیحات |
+|------|---------|
+| 🔑 **احراز هویت** | ثبت‌نام، ورود، خروج با BCrypt Hashing |
+| 👥 **نقش‌های کاربری** | Admin, Manager, Customer با دسترسی‌های متفاوت |
+| 🛡️ **امنیت پیشرفته** | JWT Token, Session Management, CSRF Protection |
+| 📊 **Audit Trail** | ثبت تمام فعالیت‌ها با Timestamp |
 
-* ✅ پشتیبانی از زبان فارسی
+### 💰 مدیریت مالی
 
-✨ ویژگی‌ها
-🔐 احراز هویت و امنیت
+<table>
+<tr>
+<td width="50%">
 
-* ✓ ثبت‌نام و ورود امن با هشینگ رمز عبور
+**🏦 حساب‌های بانکی**
+- ایجاد حساب جاری/پس‌انداز
+- مدیریت موجودی
+- تغییر وضعیت (فعال/مسدود/بسته)
+- شماره حساب یکتا 16 رقمی
 
-* ✓ نقش‌ها: Admin, Manager, Customer
+</td>
+<td width="50%">
 
-* ✓ کنترل دسترسی مبتنی بر نقش
+**💳 کارت‌های بانکی**
+- صدور کارت دبیت/اعتباری
+- تولید CVV و تاریخ انقضا
+- فعال/مسدودسازی کارت
+- ماسکینگ شماره کارت
 
-* ✓ حذف نرم (Soft Delete) برای تمام موجودیت‌ها
+</td>
+</tr>
+<tr>
+<td>
 
-🏦 مدیریت حساب‌ها
+**💸 تراکنش‌های مالی**
+- واریز و برداشت وجه
+- انتقال بین حساب‌ها
+- انتقال با شماره کارت
+- تاریخچه کامل تراکنش‌ها
 
-* ✓ ایجاد حساب با موجودی اولیه
+</td>
+<td>
 
-* ✓ به‌روزرسانی و تغییر وضعیت حساب
+**🏦 وام و اعتبارات**
+- درخواست وام
+- محاسبه قسط ماهانه
+- تأیید/رد وام توسط مدیر
+- پرداخت اقساط آنلاین
 
-* ✓ جستجو بر اساس کاربر یا شماره حساب
+</td>
+</tr>
+</table>
 
-* ✓ حذف حساب با چک موجودی
-
-💳 مدیریت کارت‌ها
-
-* ✓ صدور کارت جدید با CVV و تاریخ انقضا
-
-* ✓ فعال/غیرفعال کردن کارت
-
-* ✓ جستجو بر اساس حساب یا شماره کارت
-
-* ✓ ماسکینگ شماره کارت برای امنیت
-
-💰 مدیریت وام‌ها
-
-* ✓ درخواست وام با محاسبه اتوماتیک قسط ماهانه
-
-* ✓ تأیید/رد وام توسط مدیر
-
-* ✓ پرداخت قسط و تغییر وضعیت وام
-
-* ✓ جستجو بر اساس وضعیت (Pending, Approved, Active)
-
-🔄 مدیریت تراکنش‌ها
-
-* ✓ واریز، برداشت و انتقال وجه
-
-* ✓ انتقال با شماره کارت
-
-* ✓ تولید ID منحصربه‌فرد برای تراکنش
-
-* ✓ تاریخچه تراکنش‌ها با جستجو
-
-🔧 قابلیت‌های فنی
-
-* ✓ REST API با JAX-RS
-
-* ✓ اعتبارسنجی داده‌ها
-
-* ✓ لاگینگ با Logback و SLF4J
-
-* ✓ داده‌های اولیه با DataInitializer
-
-* ✓ پشتیبانی از Oracle/MySQL
-
-🛠 تکنولوژی‌ها
-Backend
-تکنولوژینسخهکاربردJava11زبان برنامه‌نویسیJakarta EE9.1فریمورک EnterpriseHibernate6.2ORM FrameworkOracle DB11g+ یا MySQLپایگاه دادهMaven3.8+Build ToolLombok1.18کاهش BoilerplateLogback1.5.16لاگینگSLF4J2.0.13لاگینگGson2.10.1JSON ProcessingJUnit5.10.2تستینگMockito5.12.0ماکینگ
-Frontend
-تکنولوژینسخهکاربردJSP/JSTL3.0Server-side RenderingBootstrap5.3UI Framework (RTL)JavaScriptES6+تعاملات کاربریCSS3-استایل و انیمیشن
-Application Server
-
-* ✅ Apache TomEE 9.x (پیشنهادی)
-
-* ✅ WildFly 26+
-
-* ✅ Payara Server 6+
-
-📦 پیش‌نیازها
-قبل از شروع، موارد زیر را نصب کنید:
-1. Java Development Kit
+### 📊 ویژگی‌های پیشرفته
 
 ```
-# نصب JDK 11
-# بررسی نسخه
+✓ داشبورد اختصاصی برای هر نقش (Admin/Manager/Customer)
+✓ گزارش‌گیری پیشرفته با فیلترهای زمانی
+✓ جستجوی پیشرفته در تمام بخش‌ها
+✓ صفحه‌بندی (Pagination) در لیست‌ها
+✓ Soft Delete برای تمام موجودیت‌ها
+✓ Validation در سمت Client و Server
+✓ پشتیبانی از REST API کامل
+✓ Responsive Design با Bootstrap 5
+```
+
+---
+
+## 🛠️ تکنولوژی‌ها
+
+### Backend Stack
+
+```yaml
+Language: Java 11
+Framework: Jakarta EE 9.1
+ORM: Hibernate 6.2
+Database: Oracle 11g+ / MySQL 8.0+
+Build Tool: Maven 3.8+
+Security: BCrypt, JWT, CSRF Protection
+Logging: Logback + SLF4J
+```
+
+### Frontend Stack
+
+```yaml
+Template Engine: JSP/JSTL 3.0
+CSS Framework: Bootstrap 5.3 (RTL)
+JavaScript: ES6+ (Vanilla)
+Icons: Font Awesome / Custom
+```
+
+### Application Server
+
+```yaml
+Primary: Apache TomEE 9.x (Jakarta EE 9.1)
+Alternative: WildFly 26+, Payara Server 6+
+```
+
+### Dependencies Overview
+
+| Category | Library | Version | Purpose |
+|----------|---------|---------|---------|
+| Core | Jakarta EE API | 9.1.0 | Enterprise APIs |
+| Persistence | Hibernate | 6.2 | ORM Framework |
+| Security | BCrypt | 0.4 | Password Hashing |
+| Auth | JWT (jjwt) | 0.11.5 | Token Authentication |
+| JSON | Gson | 2.10.1 | JSON Processing |
+| Logging | Logback | 1.5.16 | Application Logging |
+| Testing | JUnit 5 | 5.10.2 | Unit Testing |
+| Testing | Mockito | 5.12.0 | Mocking Framework |
+
+---
+
+## 🏗 معماری سیستم
+
+### Layered Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                 Presentation Layer                   │
+│  (Servlets, JSP, REST APIs, Filters)                │
+├─────────────────────────────────────────────────────┤
+│                   Service Layer                      │
+│  (Business Logic, Transaction Management)           │
+├─────────────────────────────────────────────────────┤
+│                 Repository Layer                     │
+│  (Data Access, JPA/Hibernate)                       │
+├─────────────────────────────────────────────────────┤
+│                  Database Layer                      │
+│  (Oracle DB / MySQL)                                │
+└─────────────────────────────────────────────────────┘
+```
+
+### Design Patterns
+
+- **Repository Pattern**: جداسازی لایه دیتابیس
+- **Service Pattern**: مدیریت Business Logic
+- **DTO Pattern**: انتقال داده بین لایه‌ها
+- **Builder Pattern**: ساخت اشیاء پیچیده
+- **Singleton Pattern**: مدیریت Session و Configuration
+
+---
+
+## 📋 پیش‌نیازها
+
+### نرم‌افزارهای مورد نیاز
+
+```bash
+# 1. Java Development Kit
+☑ JDK 11 or higher
+  Download: https://adoptium.net/
+
+# 2. Apache Maven
+☑ Maven 3.8+
+  Download: https://maven.apache.org/download.cgi
+
+# 3. Database (یکی از موارد زیر)
+☑ Oracle Database 11g+ OR MySQL 8.0+
+
+# 4. Application Server
+☑ Apache TomEE 9.x (Recommended)
+  Download: https://tomee.apache.org/download-ng.html
+```
+
+### بررسی نصب
+
+```bash
+# Java
 java -version
-# خروجی: java version "11.x.x"
-```
+# Expected: java version "11.x.x"
 
-2. Apache Maven
-
-```
-# بررسی نسخه Maven
+# Maven
 mvn -version
-# خروجی: Apache Maven 3.8.x
+# Expected: Apache Maven 3.8.x
+
+# Oracle (optional)
+sqlplus / as sysdba
+# OR MySQL
+mysql --version
 ```
 
-3. پایگاه داده
-Oracle Database 11g+ یا MySQL 8.0+
+---
 
-```
--- ایجاد دیتابیس
-CREATE DATABASE onlinebankingsystem;
-```
+## 🚀 نصب و راه‌اندازی
 
-4. Application Server
-Apache TomEE 9.x (توصیه می‌شود)
+### مرحله 1️⃣: دریافت پروژه
 
-```
-# دانلود از
-https://tomee.apache.org/download-ng.html
-```
-
-🚀 نصب و راه‌اندازی
-مرحله 1: دریافت پروژه
-
-```
+```bash
+# Clone the repository
 git clone https://github.com/yourusername/onlineBankingSystem.git
 cd onlineBankingSystem
 ```
 
-مرحله 2: راه‌اندازی دیتابیس
-برای Oracle:
+### مرحله 2️⃣: راه‌اندازی دیتابیس
 
-```
--- اتصال به Oracle به عنوان SYSDBA
+<details>
+<summary><b>🔸 Oracle Database</b></summary>
+
+```sql
+-- 1. اتصال به Oracle
 sqlplus / as sysdba
 
--- ایجاد کاربر
+-- 2. ایجاد کاربر
 CREATE USER sleepy IDENTIFIED BY sleepy123;
 GRANT CONNECT, RESOURCE, DBA TO sleepy;
 GRANT UNLIMITED TABLESPACE TO sleepy;
+
+-- 3. بررسی اتصال
+CONNECT sleepy/sleepy123;
+SELECT USER FROM DUAL;
+-- Expected: SLEEPY
+
 EXIT;
 ```
 
-برای MySQL:
+</details>
 
-```
--- اتصال به MySQL
+<details>
+<summary><b>🔸 MySQL Database</b></summary>
+
+```sql
+-- 1. اتصال به MySQL
 mysql -u root -p
 
--- ایجاد دیتابیس و کاربر
+-- 2. ایجاد دیتابیس
 CREATE DATABASE onlinebankingsystem
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
-CREATE USER 'sleepy'@'localhost'
+-- 3. ایجاد کاربر
+CREATE USER 'sleepy'@'localhost' 
 IDENTIFIED BY 'sleepy123';
 
-GRANT ALL PRIVILEGES ON onlinebankingsystem.*
+GRANT ALL PRIVILEGES ON onlinebankingsystem.* 
 TO 'sleepy'@'localhost';
 
 FLUSH PRIVILEGES;
+
+-- 4. بررسی
+USE onlinebankingsystem;
+SELECT DATABASE();
+-- Expected: onlinebankingsystem
+
 EXIT;
 ```
 
-مرحله 3: پیکربندی اتصال
-فایل src/main/resources/META-INF/persistence.xml را ویرایش کنید:
-برای Oracle:
+</details>
 
-```
-<property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
+### مرحله 3️⃣: پیکربندی دیتابیس
+
+**برای Oracle:**
+
+`src/main/resources/META-INF/persistence.xml`:
+
+```xml
+<property name="hibernate.dialect" 
+          value="org.hibernate.dialect.OracleDialect"/>
 ```
 
-برای MySQL:
+`src/main/resources/tomee-resources.xml`:
 
-```
-<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-```
-
-فایل src/main/webapp/WEB-INF/resources.xml برای datasource:
-
-```
-<Resource id="bankDataSource" type="DataSource">
-    JdbcDriver = oracle.jdbc.OracleDriver
-    JdbcUrl = jdbc:oracle:thin:@localhost:1521:XE
-    UserName = sleepy
-    Password = sleepy123
-    JtaManaged = true
+```xml
+<Resource id="jdbc/JtaDataSource" type="DataSource">
+    jdbcDriver = oracle.jdbc.driver.OracleDriver
+    jdbcUrl = jdbc:oracle:thin:@localhost:1521:xe
+    username = sleepy
+    password = sleepy123
+    jtaManaged = true
 </Resource>
 ```
 
-مرحله 4: Build پروژه
+**برای MySQL:**
 
+`persistence.xml`:
+
+```xml
+<property name="hibernate.dialect" 
+          value="org.hibernate.dialect.MySQLDialect"/>
 ```
-# پاک‌سازی و Build
+
+`tomee-resources.xml`:
+
+```xml
+<Resource id="jdbc/JtaDataSource" type="DataSource">
+    jdbcDriver = com.mysql.cj.jdbc.Driver
+    jdbcUrl = jdbc:mysql://localhost:3306/onlinebankingsystem
+    username = sleepy
+    password = sleepy123
+    jtaManaged = true
+</Resource>
+```
+
+### مرحله 4️⃣: Build پروژه
+
+```bash
+# Clean & Package
 mvn clean package
 
-# خروجی:
-# [INFO] Building war: .../target/onlineBankingSystem-1.0-SNAPSHOT.war
+# Output:
+# [INFO] Building war: target/onlineBankingSystem-1.0-SNAPSHOT.war
 # [INFO] BUILD SUCCESS
+# [INFO] Total time: 45.123 s
 ```
 
-مرحله 5: Deploy
-با TomEE:
+### مرحله 5️⃣: Deploy روی TomEE
 
-```
-# کپی فایل WAR
+```bash
+# 1. کپی WAR file
 cp target/onlineBankingSystem-1.0-SNAPSHOT.war $TOMEE_HOME/webapps/
 
-# راه‌اندازی سرور
+# 2. راه‌اندازی سرور
 cd $TOMEE_HOME/bin
-./startup.sh    # Linux/Mac
-# یا
-startup.bat     # Windows
+
+# Linux/Mac:
+./startup.sh
+
+# Windows:
+startup.bat
+
+# 3. مشاهده لاگ‌ها
+tail -f ../logs/catalina.out
 ```
 
-مرحله 6: دسترسی به برنامه
-مرورگر را باز کرده و به آدرس زیر بروید:
+### مرحله 6️⃣: دسترسی به برنامه
 
 ```
-http://localhost:80/onlineBankingSystem/
+🌐 URL: http://localhost:8080/onlineBankingSystem/
+
+📧 حساب‌های پیش‌فرض:
 ```
 
-🔧 پیکربندی
-حساب‌های پیش‌فرض
-سیستم با 4 حساب آزمایشی راه‌اندازی می‌شود (از DataInitializer):
-نقشنام کاربریرمز عبوردسترسی‌ها👑 Adminadmin123456دسترسی کامل👔 Managermanager123456مدیریت وام‌ها👤 Customer1amir123456عملیات پایه👤 Customer2sara123456عملیات پایه
-📖 استفاده
-سناریوی کاری استاندارد
-1️⃣ ورود به سیستم
-به صفحه login.jsp بروید
-از حساب‌های آزمایشی استفاده کنید یا ثبت‌نام کنید
-پس از ورود، به داشبورد منتقل می‌شوید
-2️⃣ ایجاد حساب بانکی
+| نقش | نام کاربری | رمز عبور | دسترسی‌ها |
+|-----|-----------|----------|-----------|
+| 👑 **Admin** | `admin` | `123456` | دسترسی کامل به سیستم |
+| 👔 **Manager** | `manager` | `123456` | مدیریت وام‌ها و تراکنش‌ها |
+| 👤 **Customer** | `amir` | `123456` | عملیات بانکی پایه |
+| 👤 **Customer** | `sara` | `123456` | عملیات بانکی پایه |
+
+---
+
+## ⚙️ پیکربندی
+
+### تنظیمات امنیتی
+
+**BCrypt Rounds** (تعداد دور هشینگ):
+
+```java
+// PasswordUtil.java
+private static final int BCRYPT_ROUNDS = 12;
+```
+
+**JWT Expiration** (مدت اعتبار توکن):
+
+```java
+// JwtUtil.java
+private static final long EXPIRATION_MINUTES = 15;
+```
+
+**Session Timeout**:
+
+```java
+// LoginServlet.java
+session.setMaxInactiveInterval(15 * 60); // 15 دقیقه
+```
+
+### تنظیمات Hibernate
+
+```xml
+<!-- persistence.xml -->
+<property name="hibernate.hbm2ddl.auto" value="update"/>
+<property name="hibernate.show_sql" value="true"/>
+<property name="hibernate.format_sql" value="true"/>
+```
+
+⚠️ **نکته مهم**: برای محیط Production، `hbm2ddl.auto` را روی `none` قرار دهید.
+
+---
+
+## 📖 راهنمای استفاده
+
+### سناریو 1️⃣: ورود به سیستم
+
+```
+1. مراجعه به http://localhost:8080/onlineBankingSystem/
+2. کلیک روی "ورود به سیستم"
+3. وارد کردن نام کاربری و رمز عبور
+4. انتقال به داشبورد بر اساس نقش
+```
+
+### سناریو 2️⃣: ایجاد حساب بانکی (Admin/Manager)
 
 ```
 داشبورد → حساب‌ها → ایجاد حساب جدید
 
-- کاربر: انتخاب از لیست
-- نوع: SAVINGS
-- موجودی اولیه: 1000000
-- ذخیره
+📝 اطلاعات مورد نیاز:
+  • کاربر: انتخاب از لیست
+  • نوع حساب: جاری/پس‌انداز
+  • موجودی اولیه: مبلغ (اختیاری)
+  
+✅ پس از ذخیره: شماره حساب یکتا تولید می‌شود
 ```
 
-3️⃣ صدور کارت
+### سناریو 3️⃣: صدور کارت
 
 ```
 کارت‌ها → صدور کارت جدید
 
-- حساب: انتخاب حساب
-- نوع: DEBIT
-- ذخیره
+📝 اطلاعات:
+  • حساب بانکی: انتخاب حساب فعال
+  • نوع کارت: دبیت/اعتباری
+  
+✅ سیستم خودکار تولید می‌کند:
+  - شماره کارت 16 رقمی
+  - CVV 3 رقمی
+  - تاریخ انقضا (3 سال آینده)
 ```
 
-4️⃣ درخواست وام
-
-```
-وام‌ها → درخواست وام
-
-- حساب: انتخاب
-- مبلغ اصل: 5000000
-- نرخ بهره: 12
-- مدت: 12 ماه
-- ذخیره
-```
-
-5️⃣ تأیید وام (به عنوان مدیر)
-
-```
-وام‌ها → لیست وام‌ها → تأیید وام
-```
-
-6️⃣ انتقال وجه
+### سناریو 4️⃣: انتقال وجه
 
 ```
 تراکنش‌ها → انتقال وجه
 
-- کارت مبدأ: انتخاب
-- کارت مقصد: انتخاب
-- مبلغ: 10000
-- توضیح: تست
-- ذخیره
+📝 مراحل:
+  1. انتخاب کارت مبدأ
+  2. وارد کردن شماره کارت/حساب مقصد
+  3. مبلغ انتقال
+  4. توضیحات (اختیاری)
+  
+✅ اعتبارسنجی خودکار:
+  - بررسی موجودی کافی
+  - بررسی وضعیت حساب‌ها
+  - تولید کد پیگیری
 ```
 
-استفاده از REST API
-دریافت لیست حساب‌ها
+### سناریو 5️⃣: درخواست وام
 
 ```
-curl -X GET http://localhost:80/api/accounts \
-  -H "Content-Type: application/json"
+وام‌ها → درخواست وام جدید
+
+📝 اطلاعات:
+  • حساب بانکی
+  • مبلغ اصل وام
+  • نرخ بهره سالانه
+  • مدت زمان (ماه)
+  
+💡 محاسبه خودکار:
+  - قسط ماهانه با فرمول ریاضی
+  - کل مبلغ قابل پرداخت
+  
+👔 تأیید مدیر: وام در وضعیت Pending قرار می‌گیرد
 ```
 
-ایجاد تراکنش انتقال
+---
+
+## 🌐 مستندات API
+
+### Base URL
 
 ```
-curl -X POST http://localhost:80/api/transactions/transfer \
--H "Content-Type: application/json" \
--d '{
-"fromCardNumber": "6037...",
-"toCardNumber": "6037...",
-"amount": 5000
-}'
+http://localhost:8080/onlineBankingSystem/api
 ```
 
-📁 ساختار پروژه
+### Authentication
+
+```http
+POST /api/users/register
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "password": "password123",
+  "firstName": "نام",
+  "lastName": "نام خانوادگی",
+  "phone": "09121234567",
+  "nationalCode": "1234567890"
+}
+```
+
+### 💳 Account Management
+
+<details>
+<summary><b>دریافت تمام حساب‌ها</b></summary>
+
+```http
+GET /api/accounts?page=0&size=10
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": [
+    {
+      "accountNumber": "1234567890123456",
+      "type": "SAVINGS",
+      "balance": 10000000,
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary><b>ایجاد حساب جدید</b></summary>
+
+```http
+POST /api/accounts
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "type": "SAVINGS",
+  "initialBalance": 1000000
+}
+```
+
+</details>
+
+### 💸 Transaction Management
+
+<details>
+<summary><b>واریز وجه</b></summary>
+
+```http
+POST /api/transactions/deposit
+Content-Type: application/json
+
+{
+  "toAccountNumber": "1234567890123456",
+  "amount": 500000,
+  "description": "واریز نقدی"
+}
+```
+
+</details>
+
+<details>
+<summary><b>انتقال وجه</b></summary>
+
+```http
+POST /api/transactions/transfer
+Content-Type: application/json
+
+{
+  "fromCardNumber": "6037991234567890",
+  "toCardNumber": "6037990987654321",
+  "amount": 200000,
+  "description": "انتقال به دوست"
+}
+```
+
+</details>
+
+### 🏦 Loan Management
+
+<details>
+<summary><b>درخواست وام</b></summary>
+
+```http
+POST /api/loans/apply
+Content-Type: application/json
+
+{
+  "accountNumber": "1234567890123456",
+  "principal": 50000000,
+  "annualInterestRate": 18.0,
+  "durationMonths": 24
+}
+```
+
+</details>
+
+<details>
+<summary><b>تأیید وام (Manager/Admin)</b></summary>
+
+```http
+POST /api/loans/{id}/approve
+```
+
+</details>
+
+### 📄 کامل API Docs
+
+برای مشاهده مستندات کامل API:
+
+```
+📚 Postman Collection: ./docs/API_Collection.json
+📖 Swagger UI: http://localhost:8080/onlineBankingSystem/swagger-ui/
+```
+
+---
+
+## 📁 ساختار پروژه
 
 ```
 onlineBankingSystem/
 │
-├───.idea
-│   └───dataSources
-│       └───6ad6ec74-e8f0-4aa9-93e5-214e1125b2dd
-│           └───storage_v2
-│               └───_src_
-│                   └───schema
-├───.mvn
-│   └───wrapper
-├───src
-│   ├───main
-│   │   ├───java
-│   │   │   └───com
-│   │   │       └───sleepy
-│   │   │           └───onlinebankingsystem
-│   │   │               ├───config
-│   │   │               ├───controller
-│   │   │               │   ├───api
-│   │   │               │   └───servlet
-│   │   │               ├───exception
-│   │   │               ├───filter
-│   │   │               ├───model
-│   │   │               │   ├───dto
-│   │   │               │   │   ├───request
-│   │   │               │   │   └───response
-│   │   │               │   ├───entity
-│   │   │               │   └───enums
-│   │   │               ├───repository
-│   │   │               ├───security
-│   │   │               ├───service
-│   │   │               │   └───impl
-│   │   │               ├───session
-│   │   │               ├───tools
-│   │   │               ├───utils
-│   │   │               └───validation
-│   │   ├───resources
-│   │   │   └───META-INF
-│   │   └───webapp
-│   │       ├───css
-│   │       ├───error
-│   │       ├───js
-│   │       ├───views
-│   │       │   ├───accounts
-│   │       │   ├───auth
-│   │       │   ├───cards
-│   │       │   ├───common
-│   │       │   ├───dashboard
-│   │       │   ├───loans
-│   │       │   ├───transactions
-│   │       │   └───users
-│   │       └───WEB-INF
-│   │           └───lib
-│   └───test
-│       ├───java
-│       │   └───com
-│       │       └───sleepy
-│       │           └───onlinebankingsystem
-│       └───resources
-└───target
-    ├───classes
-    │   ├───com
-    │   │   └───sleepy
-    │   │       └───onlinebankingsystem
-    │   │           ├───config
-    │   │           ├───controller
-    │   │           │   ├───api
-    │   │           │   └───servlet
-    │   │           ├───exception
-    │   │           ├───filter
-    │   │           ├───model
-    │   │           │   ├───dto
-    │   │           │   │   ├───request
-    │   │           │   │   └───response
-    │   │           │   ├───entity
-    │   │           │   └───enums
-    │   │           ├───repository
-    │   │           ├───security
-    │   │           ├───service
-    │   │           │   └───impl
-    │   │           ├───tools
-    │   │           └───utils
-    │   └───META-INF
-    ├───generated-sources
-    │   └───annotations
-    ├───generated-test-sources
-    │   └───test-annotations
-    ├───onlineBankingSystem-1.0-SNAPSHOT
-    │   ├───error
-    │   ├───jsp
-    │   ├───META-INF
-    │   ├───templates
-    │   ├───views
-    │   │   ├───accounts
-    │   │   ├───auth
-    │   │   ├───cards
-    │   │   ├───common
-    │   │   ├───dashboard
-    │   │   ├───loans
-    │   │   ├───transactions
-    │   │   └───users
-    │   └───WEB-INF
-    │       ├───classes
-    │       │   ├───com
-    │       │   │   └───sleepy
-    │       │   │       └───onlinebankingsystem
-    │       │   │           ├───config
-    │       │   │           ├───controller
-    │       │   │           │   ├───api
-    │       │   │           │   └───servlet
-    │       │   │           ├───exception
-    │       │   │           ├───filter
-    │       │   │           ├───model
-    │       │   │           │   ├───dto
-    │       │   │           │   │   ├───request
-    │       │   │           │   │   └───response
-    │       │   │           │   ├───entity
-    │       │   │           │   └───enums
-    │       │   │           ├───repository
-    │       │   │           ├───security
-    │       │   │           ├───service
-    │       │   │           │   └───impl
-    │       │   │           ├───tools
-    │       │   │           └───utils
-    │       │   └───META-INF
-    │       └───lib
-    └───test-classes
+├── 📂 src/main/
+│   ├── 📂 java/com/sleepy/onlinebankingsystem/
+│   │   ├── 📂 config/              # پیکربندی و Initializer
+│   │   │   ├── DataInitializer.java
+│   │   │   └── LoggingInitializer.java
+│   │   │
+│   │   ├── 📂 controller/
+│   │   │   ├── 📂 api/             # REST API Controllers
+│   │   │   │   ├── AccountApi.java
+│   │   │   │   ├── TransactionApi.java
+│   │   │   │   ├── LoanApi.java
+│   │   │   │   ├── CardApi.java
+│   │   │   │   └── UserApi.java
+│   │   │   │
+│   │   │   └── 📂 servlet/         # Web Servlets
+│   │   │       ├── LoginServlet.java
+│   │   │       ├── RegisterServlet.java
+│   │   │       ├── AccountServlet.java
+│   │   │       └── TransactionServlet.java
+│   │   │
+│   │   ├── 📂 model/
+│   │   │   ├── 📂 entity/          # JPA Entities
+│   │   │   │   ├── User.java
+│   │   │   │   ├── Account.java
+│   │   │   │   ├── Card.java
+│   │   │   │   ├── Transaction.java
+│   │   │   │   ├── Loan.java
+│   │   │   │   └── Base.java (Soft Delete)
+│   │   │   │
+│   │   │   ├── 📂 dto/             # Data Transfer Objects
+│   │   │   │   ├── 📂 request/
+│   │   │   │   └── 📂 response/
+│   │   │   │
+│   │   │   └── 📂 enums/           # Enumerations
+│   │   │       ├── UserRole.java
+│   │   │       ├── AccountStatus.java
+│   │   │       └── TransactionType.java
+│   │   │
+│   │   ├── 📂 repository/          # Data Access Layer
+│   │   │   ├── BaseRepository.java
+│   │   │   ├── UserRepository.java
+│   │   │   ├── AccountRepository.java
+│   │   │   └── ...
+│   │   │
+│   │   ├── 📂 service/             # Business Logic
+│   │   │   ├── 📂 impl/
+│   │   │   ├── UserService.java
+│   │   │   ├── AccountService.java
+│   │   │   └── ...
+│   │   │
+│   │   ├── 📂 security/            # Security Layer
+│   │   │   ├── JwtUtil.java
+│   │   │   ├── SessionManager.java
+│   │   │   └── PasswordUtil.java
+│   │   │
+│   │   ├── 📂 filter/              # Servlet Filters
+│   │   │   ├── AuthenticationFilter.java
+│   │   │   ├── AuthorizationFilter.java
+│   │   │   └── CsrfFilter.java
+│   │   │
+│   │   ├── 📂 exception/           # Custom Exceptions
+│   │   └── 📂 utils/               # Utility Classes
+│   │
+│   ├── 📂 resources/
+│   │   ├── 📂 META-INF/
+│   │   │   ├── persistence.xml     # JPA Configuration
+│   │   │   └── beans.xml           # CDI Configuration
+│   │   │
+│   │   ├── logback.xml             # Logging Config
+│   │   └── tomee-resources.xml     # DataSource Config
+│   │
+│   └── 📂 webapp/
+│       ├── 📂 WEB-INF/
+│       │   ├── web.xml
+│       │   └── resources.xml
+│       │
+│       ├── 📂 views/               # JSP Pages
+│       │   ├── 📂 auth/
+│       │   ├── 📂 accounts/
+│       │   ├── 📂 transactions/
+│       │   ├── 📂 loans/
+│       │   ├── 📂 cards/
+│       │   └── 📂 dashboard/
+│       │
+│       ├── 📂 css/                 # Stylesheets
+│       ├── 📂 js/                  # JavaScript
+│       └── 📂 images/              # Assets
+│
+├── 📄 pom.xml                      # Maven Configuration
+├── 📄 README.md                    # This file
+└── 📄 .gitignore
 ```
 
-🌐 مستندات API
-Account API
-MethodEndpointتوضیحاتGET/api/accountsدریافت تمام حساب‌هاGET/api/accounts/{id}دریافت حساب با IDPOST/api/accountsایجاد حساب جدیدPUT/api/accounts/{id}به‌روزرسانی حسابDELETE/api/accounts/{id}حذف حساب
-Card API
-MethodEndpointتوضیحاتPOST/api/cardsصدور کارت جدیدGET/api/cardsدریافت تمام کارت‌هاPOST/api/cards/{id}/blockمسدودسازی کارت
-Loan API
-MethodEndpointتوضیحاتPOST/api/loans/applyدرخواست وامGET/api/loansدریافت تمام وام‌هاPOST/api/loans/{id}/approveتأیید وامPOST/api/loans/{id}/payپرداخت قسط
-Transaction API
-MethodEndpointتوضیحاتPOST/api/transactions/depositواریزPOST/api/transactions/withdrawalبرداشتPOST/api/transactions/transferانتقال با کارتGET/api/transactionsدریافت تراکنش‌ها
-User API
-MethodEndpointتوضیحاتPOST/api/users/registerثبت‌نامPOST/api/usersایجاد کاربر (ادمین)GET/api/usersدریافت کاربرانPUT/api/users/{id}به‌روزرسانیDELETE/api/users/{id}حذف
-🤝 مشارکت
-مشارکت شما در بهبود این پروژه بسیار ارزشمند است!
-راهنمای مشارکت
+---
 
-1. Fork کردن پروژه
+## 🔒 امنیت
 
-2. کلون کردن Fork
+### لایه‌های امنیتی
 
 ```
-git clone https://github.com/YOUR-USERNAME/onlineBankingSystem.git
-cd onlineBankingSystem
+1️⃣ Authentication Layer
+   ├─ BCrypt Password Hashing (12 rounds)
+   ├─ JWT Token Management
+   └─ Session Management با Timeout
+
+2️⃣ Authorization Layer
+   ├─ Role-Based Access Control (RBAC)
+   ├─ Fine-Grained Permissions
+   └─ Resource-Level Authorization
+
+3️⃣ Data Protection
+   ├─ SQL Injection Prevention (Prepared Statements)
+   ├─ XSS Protection (Input Validation)
+   ├─ CSRF Token Validation
+   └─ Secure Password Storage
+
+4️⃣ Network Security
+   ├─ HTTPS Ready
+   ├─ Secure Headers
+   └─ CORS Configuration
 ```
 
-3. ایجاد Branch جدید
+### Best Practices پیاده‌سازی شده
 
-```
-git checkout -b feature/new-feature
+✅ **Input Validation**: اعتبارسنجی تمام ورودی‌ها در Client و Server  
+✅ **Output Encoding**: Escape کردن خروجی‌ها  
+✅ **Parameterized Queries**: استفاده از JPA/Hibernate  
+✅ **Soft Delete**: حذف منطقی به جای حذف فیزیکی  
+✅ **Audit Logging**: ثبت تمام تغییرات با Timestamp  
+✅ **Session Management**: Timeout خودکار و Invalidation  
+✅ **Error Handling**: پیام‌های خطای امن (بدون افشای اطلاعات)
+
+---
+
+## 🧪 تست
+
+### Unit Testing
+
+```bash
+# اجرای تست‌ها
+mvn test
+
+# تست با Coverage Report
+mvn clean test jacoco:report
 ```
 
-4. Commit و Push تغییرات
+### Integration Testing
 
-```
-git add .
-git commit -m "✨ Add new feature"
-git push origin feature/new-feature
+```bash
+mvn verify -Pintegration-tests
 ```
 
-5. ایجاد Pull Request
+### Manual Testing Checklist
 
-👨‍💻 توسعه‌دهنده
-[نام شما]
-⬆ بازگشت به بالا
-```
+- [ ] ثبت‌نام کاربر جدید
+- [ ] ورود با نقش‌های مختلف
+- [ ] ایجاد حساب بانکی
+- [ ] صدور کارت
+- [ ] انتقال وجه
+- [ ] درخواست وام
+- [ ] تأیید وام (Manager)
+- [ ] پرداخت قسط
+- [ ] مشاهده تاریخچه تراکنش‌ها
+- [ ] تست امنیتی (XSS, CSRF, SQL Injection)
+
+---
+
+## 📊 نمایش پروژه
+
+### صفحه خوش‌آمدگویی
+
+<img src="path/to/welcome-screenshot.png" alt="Welcome Page" width="800"/>
+
+**ویژگی‌ها:**
+- طراحی مدرن و Gradient Background
+- نمایش آمار سیستم (کاربران، حساب‌ها، تراکنش‌ها)
+- دکمه‌های CTA جذاب
+- RTL Support کامل
+
+### صفحه ورود
+
+<img src="path/to/login-screenshot.png" alt="Login Page" width="800"/>
+
+**امکانات:**
+- فرم ورود با Validation
+- پیام‌های خطای واضح
+- Remember Me
+- Link به
