@@ -20,8 +20,6 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.security.SecureRandom;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -111,7 +109,7 @@ public class CardCreateServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // --- اعتبارسنجی ورودی ---
+            // اعتبارسنجی ورودی
             String accountIdParam = req.getParameter("accountId");
             String cardTypeParam = req.getParameter("cardType");
 
@@ -133,19 +131,13 @@ public class CardCreateServlet extends HttpServlet {
                 return;
             }
 
-            // --- دریافت حساب با User لود شده (EAGER) ---
-            Optional<Account> accountOpt = accountService.findByIdWithUser(accountId);
-            if (accountOpt.isEmpty()) {
-                setError(req, resp, "حساب یافت نشد");
-                return;
-            }
+            // دریافت حساب با User
+            Account account = accountService.findByIdWithUser(accountId)
+                    .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-            Account account = accountOpt.get();
             User accountOwner = account.getUser();
 
-            log.info("Creating card for user: {}", accountOwner.getUsername());
-
-            // --- بررسی دسترسی ---
+            // بررسی دسترسی
             if (!userRoles.contains(UserRole.ADMIN) && !userRoles.contains(UserRole.MANAGER)) {
                 if (!accountOwner.getUsername().equals(currentUsername)) {
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "دسترسی غیرمجاز");
@@ -153,64 +145,27 @@ public class CardCreateServlet extends HttpServlet {
                 }
             }
 
-            // --- بررسی وضعیت حساب ---
-            if (account.getStatus() != AccountStatus.ACTIVE) {
-                setError(req, resp, "حساب باید فعال باشد");
-                return;
-            }
+            // فراخوانی Service
+            Card savedCard = cardService.issueCard(accountId, cardType);
 
-            // --- تولید اطلاعات کارت ---
-            String cardNumber = generateCardNumber();
-            String cvv = generateCVV();
-            LocalDate expiryDate = LocalDate.now().plusYears(3);
+            log.info("Card created successfully for account: {} by: {}",
+                    account.getAccountNumber(), currentUsername);
 
-            // --- ساخت و ذخیره کارت ---
-            Card newCard = Card.builder()
-                    .account(account)
-                    .cardNumber(cardNumber)
-                    .cvv(cvv)
-                    .expiryDate(expiryDate)
-                    .type(cardType)
-                    .active(true)
-                    .build();
+            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" +
+                    savedCard.getId() + "&message=card_created");
 
-            Card savedCard = cardService.save(newCard);
-
-            log.info("Card created successfully: {} for account: {} by: {}",
-                    maskCardNumber(cardNumber), account.getAccountNumber(), currentUsername);
-
-            resp.sendRedirect(req.getContextPath() + "/cards/detail?id=" + savedCard.getId() + "&message=card_created");
-
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            log.warn("Validation/Business error in card creation: {}", e.getMessage());
+            setError(req, resp, e.getMessage());
         } catch (Exception e) {
             log.error("Error creating card", e);
             setError(req, resp, "خطا در صدور کارت: " + e.getMessage());
         }
     }
 
-    // --- متد کمکی برای خطاها ---
     private void setError(HttpServletRequest req, HttpServletResponse resp, String message)
             throws ServletException, IOException {
         req.setAttribute("error", message);
         doGet(req, resp);
-    }
-
-    // --- متدهای تولید شماره ---
-    private String generateCardNumber() {
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder("6037");
-        for (int i = 0; i < 12; i++) {
-            sb.append(random.nextInt(10));
-        }
-        return sb.toString();
-    }
-
-    private String generateCVV() {
-        SecureRandom random = new SecureRandom();
-        return String.format("%03d", 100 + random.nextInt(900));
-    }
-
-    private String maskCardNumber(String cardNumber) {
-        if (cardNumber == null || cardNumber.length() < 4) return "****";
-        return "************" + cardNumber.substring(cardNumber.length() - 4);
     }
 }

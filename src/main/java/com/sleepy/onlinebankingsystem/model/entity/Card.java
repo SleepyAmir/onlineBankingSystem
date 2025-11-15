@@ -25,13 +25,7 @@ import java.util.Date;
         @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c "),
         @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.account.user.id = :userId AND c.deleted = false"
         ),
-        @NamedQuery(
-                name = "Card.findByUserWithAccountAndUser",
-                query = "SELECT c FROM Card c " +
-                        "JOIN FETCH c.account a " +
-                        "JOIN FETCH a.user u " +
-                        "WHERE u.id = :userId AND c.deleted = false"
-        )
+        @NamedQuery(name = "Card.findByUserWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user u " + "WHERE u.id = :userId AND c.deleted = false")
 })
 public class Card extends Base {
     public static final String FIND_BY_ACCOUNT = "Card.findByAccount";

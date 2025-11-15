@@ -3,7 +3,6 @@ package com.sleepy.onlinebankingsystem.controller.api;
 import com.sleepy.onlinebankingsystem.model.dto.response.ApiResponse;
 import com.sleepy.onlinebankingsystem.model.entity.Account;
 import com.sleepy.onlinebankingsystem.model.entity.Card;
-import com.sleepy.onlinebankingsystem.model.enums.AccountStatus;
 import com.sleepy.onlinebankingsystem.model.enums.CardType;
 import com.sleepy.onlinebankingsystem.service.AccountService;
 import com.sleepy.onlinebankingsystem.service.CardService;
@@ -13,7 +12,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -38,61 +36,120 @@ public class CardApi {
     @POST
     public Response createCard(CardCreateRequest request) {
         try {
-            log.info("Creating card for account: {}", request.getAccountId());
+            log.info("API: Creating card for account: {}", request.getAccountId());
 
+            // بررسی ورودی
             if (request.getAccountId() == null) {
                 return Response.status(400)
                         .entity(ApiResponse.error("شناسه حساب الزامی است"))
                         .build();
             }
-
             if (request.getType() == null) {
                 return Response.status(400)
                         .entity(ApiResponse.error("نوع کارت الزامی است"))
                         .build();
             }
 
-            Optional<Account> accountOpt = accountService.findById(request.getAccountId());
-            if (accountOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("حساب یافت نشد"))
-                        .build();
-            }
+            // فراخوانی Service
+            Card card = cardService.issueCard(request.getAccountId(), request.getType());
 
-            Account account = accountOpt.get();
-
-            if (account.getStatus() != AccountStatus.ACTIVE) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("حساب باید فعال باشد"))
-                        .build();
-            }
-
-            String cardNumber = generateCardNumber();
-            String cvv = generateCVV();
-            LocalDate expiryDate = LocalDate.now().plusYears(3);
-
-            Card card = Card.builder()
-                    .account(account)
-                    .cardNumber(cardNumber)
-                    .cvv(cvv)
-                    .expiryDate(expiryDate)
-                    .type(request.getType())
-                    .active(true)
-                    .build();
-
-            Card savedCard = cardService.save(card);
-            log.info("Card created successfully: {}", maskCardNumber(cardNumber));
-
-            CardResponse response = new CardResponse(savedCard);
+            // تبدیل به Response
+            CardResponse response = mapToResponse(card);
 
             return Response.status(201)
                     .entity(ApiResponse.success(response))
                     .build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in card creation: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in card creation: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             log.error("Error creating card", e);
             return Response.status(500)
                     .entity(ApiResponse.error("خطا در صدور کارت: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * فعال‌سازی کارت
+     * POST /api/cards/{id}/activate
+     */
+    @POST
+    @Path("/{id}/activate")
+    public Response activateCard(@PathParam("id") Long id) {
+        try {
+            log.info("API: Activating card with ID: {}", id);
+
+            // فراخوانی Service
+            Card card = cardService.activateCard(id);
+
+            // تبدیل به Response
+            CardResponse response = mapToResponse(card);
+
+            return Response.ok()
+                    .entity(ApiResponse.success(response))
+                    .build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in card activation: {}", e.getMessage());
+            return Response.status(404)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in card activation: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error activating card: {}", id, e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در فعال‌سازی کارت: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * مسدودسازی کارت
+     * POST /api/cards/{id}/block
+     */
+    @POST
+    @Path("/{id}/block")
+    public Response blockCard(@PathParam("id") Long id) {
+        try {
+            log.info("API: Blocking card with ID: {}", id);
+
+            // فراخوانی Service
+            Card card = cardService.blockCard(id);
+
+            // تبدیل به Response
+            CardResponse response = mapToResponse(card);
+
+            return Response.ok()
+                    .entity(ApiResponse.success(response))
+                    .build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in card blocking: {}", e.getMessage());
+            return Response.status(404)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in card blocking: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error blocking card: {}", id, e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در مسدودسازی کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -108,7 +165,7 @@ public class CardApi {
         try {
             List<Card> cards = cardService.findAll(page, size);
             List<CardResponse> responses = cards.stream()
-                    .map(CardResponse::new)
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok()
@@ -133,7 +190,7 @@ public class CardApi {
         try {
             List<Card> cards = cardService.findActiveCards();
             List<CardResponse> responses = cards.stream()
-                    .map(CardResponse::new)
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok()
@@ -164,7 +221,7 @@ public class CardApi {
                         .build();
             }
 
-            CardResponse response = new CardResponse(cardOpt.get());
+            CardResponse response = mapToResponse(cardOpt.get());
 
             return Response.ok()
                     .entity(ApiResponse.success(response))
@@ -194,7 +251,7 @@ public class CardApi {
                         .build();
             }
 
-            CardResponse response = new CardResponse(cardOpt.get());
+            CardResponse response = mapToResponse(cardOpt.get());
 
             return Response.ok()
                     .entity(ApiResponse.success(response))
@@ -226,7 +283,7 @@ public class CardApi {
 
             List<Card> cards = cardService.findByAccount(accountOpt.get());
             List<CardResponse> responses = cards.stream()
-                    .map(CardResponse::new)
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok()
@@ -237,92 +294,6 @@ public class CardApi {
             log.error("Error fetching cards for account: {}", accountId, e);
             return Response.status(500)
                     .entity(ApiResponse.error("خطا در دریافت کارت‌ها: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * فعال‌سازی کارت
-     * POST /api/cards/{id}/activate
-     */
-    @POST
-    @Path("/{id}/activate")
-    public Response activateCard(@PathParam("id") Long id) {
-        try {
-            Optional<Card> cardOpt = cardService.findById(id);
-
-            if (cardOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("کارت یافت نشد"))
-                        .build();
-            }
-
-            Card card = cardOpt.get();
-
-            if (card.isActive()) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("کارت از قبل فعال است"))
-                        .build();
-            }
-
-            card.setActive(true);
-            Card updatedCard = cardService.update(card);
-
-            log.info("Card activated: {}", maskCardNumber(card.getCardNumber()));
-
-            CardResponse response = new CardResponse(updatedCard);
-
-            return Response.ok()
-                    .entity(ApiResponse.success(response))
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Error activating card: {}", id, e);
-            return Response.status(500)
-                    .entity(ApiResponse.error("خطا در فعال‌سازی کارت: " + e.getMessage()))
-                    .build();
-        }
-    }
-
-    /**
-     * مسدودسازی کارت
-     * POST /api/cards/{id}/block
-     */
-    @POST
-    @Path("/{id}/block")
-    public Response blockCard(@PathParam("id") Long id) {
-        try {
-            Optional<Card> cardOpt = cardService.findById(id);
-
-            if (cardOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("کارت یافت نشد"))
-                        .build();
-            }
-
-            Card card = cardOpt.get();
-
-            if (!card.isActive()) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("کارت از قبل مسدود است"))
-                        .build();
-            }
-
-            card.setActive(false);
-            Card updatedCard = cardService.update(card);
-
-            log.info("Card blocked: {}", maskCardNumber(card.getCardNumber()));
-
-            CardResponse response = new CardResponse(updatedCard);
-
-            return Response.ok()
-                    .entity(ApiResponse.success(response))
-                    .build();
-
-        } catch (Exception e) {
-            log.error("Error blocking card: {}", id, e);
-            return Response.status(500)
-                    .entity(ApiResponse.error("خطا در مسدودسازی کارت: " + e.getMessage()))
                     .build();
         }
     }
@@ -358,24 +329,25 @@ public class CardApi {
         }
     }
 
+    // ========== متدهای کمکی ==========
 
-
-    private String generateCardNumber() {
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder("6037"); // BIN معمول کارت‌های ایرانی
-
-        for (int i = 0; i < 12; i++) {
-            sb.append(random.nextInt(10));
-        }
-
-        return sb.toString();
+    /**
+     * تبدیل Entity به DTO
+     */
+    private CardResponse mapToResponse(Card card) {
+        return new CardResponse(
+                card.getId(),
+                maskCardNumber(card.getCardNumber()),
+                card.getExpiryDate(),
+                card.getType(),
+                card.isActive(),
+                card.getAccount() != null ? card.getAccount().getId() : null
+        );
     }
 
-    private String generateCVV() {
-        SecureRandom random = new SecureRandom();
-        return String.format("%03d", 100 + random.nextInt(900));
-    }
-
+    /**
+     * پنهان کردن شماره کارت
+     */
     private String maskCardNumber(String cardNumber) {
         if (cardNumber == null || cardNumber.length() < 4) {
             return "****";
@@ -383,7 +355,7 @@ public class CardApi {
         return "************" + cardNumber.substring(cardNumber.length() - 4);
     }
 
-
+    // ========== Request/Response DTOs ==========
 
     public static class CardCreateRequest {
         private Long accountId;
@@ -403,20 +375,14 @@ public class CardApi {
         private boolean active;
         private Long accountId;
 
-        public CardResponse(Card card) {
-            this.id = card.getId();
-            this.cardNumber = maskCardNumber(card.getCardNumber());
-            this.expiryDate = card.getExpiryDate();
-            this.type = card.getType();
-            this.active = card.isActive();
-            this.accountId = card.getAccount() != null ? card.getAccount().getId() : null;
-        }
-
-        private String maskCardNumber(String cardNumber) {
-            if (cardNumber == null || cardNumber.length() < 4) {
-                return "****";
-            }
-            return "************" + cardNumber.substring(cardNumber.length() - 4);
+        public CardResponse(Long id, String cardNumber, LocalDate expiryDate,
+                            CardType type, boolean active, Long accountId) {
+            this.id = id;
+            this.cardNumber = cardNumber;
+            this.expiryDate = expiryDate;
+            this.type = type;
+            this.active = active;
+            this.accountId = accountId;
         }
 
         public Long getId() { return id; }
