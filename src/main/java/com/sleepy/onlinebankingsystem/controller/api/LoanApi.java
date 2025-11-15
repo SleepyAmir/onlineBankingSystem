@@ -2,11 +2,8 @@ package com.sleepy.onlinebankingsystem.controller.api;
 
 import com.sleepy.onlinebankingsystem.model.dto.request.CreateLoanRequest;
 import com.sleepy.onlinebankingsystem.model.dto.response.ApiResponse;
-import com.sleepy.onlinebankingsystem.model.entity.Account;
 import com.sleepy.onlinebankingsystem.model.entity.Loan;
-import com.sleepy.onlinebankingsystem.model.enums.AccountStatus;
 import com.sleepy.onlinebankingsystem.model.enums.LoanStatus;
-import com.sleepy.onlinebankingsystem.service.AccountService;
 import com.sleepy.onlinebankingsystem.service.LoanService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -15,9 +12,6 @@ import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.security.SecureRandom;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,9 +25,6 @@ public class LoanApi {
     @Inject
     private LoanService loanService;
 
-    @Inject
-    private AccountService accountService;
-
     /**
      * درخواست وام جدید
      * POST /api/loans/apply
@@ -42,62 +33,31 @@ public class LoanApi {
     @Path("/apply")
     public Response applyForLoan(CreateLoanRequest request) {
         try {
-            log.info("Processing loan application for account: {}", request.getAccountNumber());
+            log.info("API: Processing loan application for account: {}", request.getAccountNumber());
 
-            String validationError = validateLoanRequest(request);
-            if (validationError != null) {
-                return Response.status(400)
-                        .entity(ApiResponse.error(validationError))
-                        .build();
-            }
-
-            Optional<Account> accountOpt = accountService.findByAccountNumber(request.getAccountNumber());
-            if (accountOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("حساب یافت نشد"))
-                        .build();
-            }
-
-            Account account = accountOpt.get();
-
-            if (account.getStatus() != AccountStatus.ACTIVE) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("حساب باید فعال باشد"))
-                        .build();
-            }
-
-            BigDecimal monthlyPayment = calculateMonthlyPayment(
+            // فراخوانی Service
+            Loan loan = loanService.applyForLoan(
+                    request.getAccountNumber(),
                     request.getPrincipal(),
                     request.getAnnualInterestRate(),
                     request.getDurationMonths()
             );
 
-            Loan loan = Loan.builder()
-                    .account(account)
-                    .user(account.getUser())
-                    .loanNumber(generateLoanNumber())
-                    .principal(request.getPrincipal())
-                    .annualInterestRate(request.getAnnualInterestRate())
-                    .durationMonths(request.getDurationMonths())
-                    .monthlyPayment(monthlyPayment)
-                    .startDate(LocalDate.now())
-                    .status(LoanStatus.PENDING)
-                    .build();
-
-            Loan savedLoan = loanService.save(loan);
-            log.info("Loan application submitted: {}", savedLoan.getLoanNumber());
-
-            LoanResponse response = LoanResponse.builder()
-                    .loanNumber(savedLoan.getLoanNumber())
-                    .principal(savedLoan.getPrincipal())
-                    .annualInterestRate(savedLoan.getAnnualInterestRate())
-                    .durationMonths(savedLoan.getDurationMonths())
-                    .monthlyPayment(savedLoan.getMonthlyPayment())
-                    .status(savedLoan.getStatus())
-                    .build();
+            // تبدیل به Response
+            LoanResponse response = mapToResponse(loan);
 
             return Response.status(201).entity(ApiResponse.success(response)).build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in loan application: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in loan application: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             log.error("Error processing loan application", e);
             return Response.status(500)
@@ -114,42 +74,26 @@ public class LoanApi {
     @Path("/{id}/approve")
     public Response approveLoan(@PathParam("id") Long id) {
         try {
-            Optional<Loan> loanOpt = loanService.findById(id);
+            log.info("API: Approving loan with ID: {}", id);
 
-            if (loanOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("وام یافت نشد"))
-                        .build();
-            }
+            // فراخوانی Service
+            Loan loan = loanService.approveLoan(id);
 
-            Loan loan = loanOpt.get();
-
-            if (loan.getStatus() != LoanStatus.PENDING) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("فقط وام‌های در انتظار قابل تأیید هستند"))
-                        .build();
-            }
-
-            loan.setStatus(LoanStatus.APPROVED);
-            loanService.update(loan);
-
-            Account account = loan.getAccount();
-            account.setBalance(account.getBalance().add(loan.getPrincipal()));
-            accountService.update(account);
-
-            log.info("Loan approved: {}", loan.getLoanNumber());
-
-            LoanResponse response = LoanResponse.builder()
-                    .loanNumber(loan.getLoanNumber())
-                    .principal(loan.getPrincipal())
-                    .annualInterestRate(loan.getAnnualInterestRate())
-                    .durationMonths(loan.getDurationMonths())
-                    .monthlyPayment(loan.getMonthlyPayment())
-                    .status(loan.getStatus())
-                    .build();
+            // تبدیل به Response
+            LoanResponse response = mapToResponse(loan);
 
             return Response.ok().entity(ApiResponse.success(response)).build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in loan approval: {}", e.getMessage());
+            return Response.status(404)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in loan approval: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             log.error("Error approving loan: {}", id, e);
             return Response.status(500)
@@ -166,38 +110,26 @@ public class LoanApi {
     @Path("/{id}/reject")
     public Response rejectLoan(@PathParam("id") Long id) {
         try {
-            Optional<Loan> loanOpt = loanService.findById(id);
+            log.info("API: Rejecting loan with ID: {}", id);
 
-            if (loanOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("وام یافت نشد"))
-                        .build();
-            }
+            // فراخوانی Service
+            Loan loan = loanService.rejectLoan(id);
 
-            Loan loan = loanOpt.get();
-
-            if (loan.getStatus() != LoanStatus.PENDING) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("فقط وام‌های در انتظار قابل رد هستند"))
-                        .build();
-            }
-
-            loan.setStatus(LoanStatus.REJECTED);
-            Loan updatedLoan = loanService.update(loan);
-
-            log.info("Loan rejected: {}", loan.getLoanNumber());
-
-            LoanResponse response = LoanResponse.builder()
-                    .loanNumber(updatedLoan.getLoanNumber())
-                    .principal(updatedLoan.getPrincipal())
-                    .annualInterestRate(updatedLoan.getAnnualInterestRate())
-                    .durationMonths(updatedLoan.getDurationMonths())
-                    .monthlyPayment(updatedLoan.getMonthlyPayment())
-                    .status(updatedLoan.getStatus())
-                    .build();
+            // تبدیل به Response
+            LoanResponse response = mapToResponse(loan);
 
             return Response.ok().entity(ApiResponse.success(response)).build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in loan rejection: {}", e.getMessage());
+            return Response.status(404)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in loan rejection: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             log.error("Error rejecting loan: {}", id, e);
             return Response.status(500)
@@ -214,50 +146,69 @@ public class LoanApi {
     @Path("/{id}/pay")
     public Response payLoanInstallment(@PathParam("id") Long id, PaymentRequest request) {
         try {
-            Optional<Loan> loanOpt = loanService.findById(id);
+            log.info("API: Processing loan payment for ID: {}", id);
 
-            if (loanOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("وام یافت نشد"))
-                        .build();
-            }
+            // فراخوانی Service
+            Loan loan = loanService.payLoanInstallment(id, request.getAmount());
 
-            Loan loan = loanOpt.get();
-
-            // بررسی وضعیت وام
-            if (loan.getStatus() != LoanStatus.APPROVED && loan.getStatus() != LoanStatus.ACTIVE) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("فقط وام‌های فعال قابل پرداخت هستند"))
-                        .build();
-            }
-
-            BigDecimal paymentAmount = request.getAmount() != null ? request.getAmount() : loan.getMonthlyPayment();
-
-            if (paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("مبلغ پرداخت باید بیشتر از صفر باشد"))
-                        .build();
-            }
-
-            loanService.payInstallment(loan, paymentAmount);
-
-            log.info("Loan installment paid: {} amount {}", loan.getLoanNumber(), paymentAmount);
-
-            LoanResponse response = LoanResponse.builder()
-                    .loanNumber(loan.getLoanNumber())
-                    .principal(loan.getPrincipal())
-                    .annualInterestRate(loan.getAnnualInterestRate())
-                    .durationMonths(loan.getDurationMonths())
-                    .monthlyPayment(loan.getMonthlyPayment())
-                    .status(loan.getStatus())
-                    .build();
+            // تبدیل به Response
+            LoanResponse response = mapToResponse(loan);
 
             return Response.ok().entity(ApiResponse.success(response)).build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in loan payment: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in loan payment: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             log.error("Error paying loan installment: {}", id, e);
             return Response.status(500)
                     .entity(ApiResponse.error("خطا در پرداخت قسط: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * محاسبه قسط ماهانه (بدون ذخیره)
+     * POST /api/loans/calculate
+     */
+    @POST
+    @Path("/calculate")
+    public Response calculateMonthlyPayment(CalculateRequest request) {
+        try {
+            log.info("API: Calculating monthly payment");
+
+            // فراخوانی Service
+            BigDecimal monthlyPayment = loanService.calculateMonthlyPayment(
+                    request.getPrincipal(),
+                    request.getAnnualInterestRate(),
+                    request.getDurationMonths()
+            );
+
+            CalculateResponse response = new CalculateResponse(
+                    request.getPrincipal(),
+                    request.getAnnualInterestRate(),
+                    request.getDurationMonths(),
+                    monthlyPayment
+            );
+
+            return Response.ok().entity(ApiResponse.success(response)).build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in calculation: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error calculating monthly payment", e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در محاسبه: " + e.getMessage()))
                     .build();
         }
     }
@@ -273,14 +224,7 @@ public class LoanApi {
         try {
             List<Loan> loans = loanService.findAll(page, size);
             List<LoanResponse> responses = loans.stream()
-                    .map(l -> LoanResponse.builder()
-                            .loanNumber(l.getLoanNumber())
-                            .principal(l.getPrincipal())
-                            .annualInterestRate(l.getAnnualInterestRate())
-                            .durationMonths(l.getDurationMonths())
-                            .monthlyPayment(l.getMonthlyPayment())
-                            .status(l.getStatus())
-                            .build())
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok().entity(ApiResponse.success(responses)).build();
@@ -309,15 +253,7 @@ public class LoanApi {
                         .build();
             }
 
-            Loan loan = loanOpt.get();
-            LoanResponse response = LoanResponse.builder()
-                    .loanNumber(loan.getLoanNumber())
-                    .principal(loan.getPrincipal())
-                    .annualInterestRate(loan.getAnnualInterestRate())
-                    .durationMonths(loan.getDurationMonths())
-                    .monthlyPayment(loan.getMonthlyPayment())
-                    .status(loan.getStatus())
-                    .build();
+            LoanResponse response = mapToResponse(loanOpt.get());
 
             return Response.ok().entity(ApiResponse.success(response)).build();
 
@@ -340,14 +276,7 @@ public class LoanApi {
             LoanStatus loanStatus = LoanStatus.valueOf(status);
             List<Loan> loans = loanService.findByStatus(loanStatus);
             List<LoanResponse> responses = loans.stream()
-                    .map(l -> LoanResponse.builder()
-                            .loanNumber(l.getLoanNumber())
-                            .principal(l.getPrincipal())
-                            .annualInterestRate(l.getAnnualInterestRate())
-                            .durationMonths(l.getDurationMonths())
-                            .monthlyPayment(l.getMonthlyPayment())
-                            .status(l.getStatus())
-                            .build())
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok().entity(ApiResponse.success(responses)).build();
@@ -374,14 +303,7 @@ public class LoanApi {
         try {
             List<Loan> loans = loanService.findActiveLoans();
             List<LoanResponse> responses = loans.stream()
-                    .map(l -> LoanResponse.builder()
-                            .loanNumber(l.getLoanNumber())
-                            .principal(l.getPrincipal())
-                            .annualInterestRate(l.getAnnualInterestRate())
-                            .durationMonths(l.getDurationMonths())
-                            .monthlyPayment(l.getMonthlyPayment())
-                            .status(l.getStatus())
-                            .build())
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok().entity(ApiResponse.success(responses)).build();
@@ -404,14 +326,7 @@ public class LoanApi {
         try {
             List<Loan> loans = loanService.findByStatus(LoanStatus.PENDING);
             List<LoanResponse> responses = loans.stream()
-                    .map(l -> LoanResponse.builder()
-                            .loanNumber(l.getLoanNumber())
-                            .principal(l.getPrincipal())
-                            .annualInterestRate(l.getAnnualInterestRate())
-                            .durationMonths(l.getDurationMonths())
-                            .monthlyPayment(l.getMonthlyPayment())
-                            .status(l.getStatus())
-                            .build())
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok().entity(ApiResponse.success(responses)).build();
@@ -424,68 +339,23 @@ public class LoanApi {
         }
     }
 
+    // ========== متدهای کمکی ==========
 
-    private String validateLoanRequest(CreateLoanRequest request) {
-        if (request.getAccountNumber() == null) {
-            return "شناسه حساب الزامی است";
-        }
-
-        if (request.getPrincipal() == null ||
-                request.getPrincipal().compareTo(BigDecimal.ZERO) <= 0) {
-            return "مبلغ اصل وام باید بیشتر از صفر باشد";
-        }
-
-        if (request.getPrincipal().compareTo(new BigDecimal("1000000000")) > 0) {
-            return "مبلغ وام خیلی زیاد است";
-        }
-
-        if (request.getAnnualInterestRate() == null ||
-                request.getAnnualInterestRate().compareTo(BigDecimal.ZERO) < 0 ||
-                request.getAnnualInterestRate().compareTo(new BigDecimal("100")) > 0) {
-            return "نرخ بهره باید بین 0 تا 100 باشد";
-        }
-
-        if (request.getDurationMonths() == null ||
-                request.getDurationMonths() < 1 ||
-                request.getDurationMonths() > 360) {
-            return "مدت زمان وام باید بین 1 تا 360 ماه باشد";
-        }
-
-        return null;
+    /**
+     * تبدیل Entity به DTO
+     */
+    private LoanResponse mapToResponse(Loan loan) {
+        return LoanResponse.builder()
+                .loanNumber(loan.getLoanNumber())
+                .principal(loan.getPrincipal())
+                .annualInterestRate(loan.getAnnualInterestRate())
+                .durationMonths(loan.getDurationMonths())
+                .monthlyPayment(loan.getMonthlyPayment())
+                .status(loan.getStatus())
+                .build();
     }
 
-    private BigDecimal calculateMonthlyPayment(BigDecimal principal,
-                                               BigDecimal annualRate,
-                                               Integer months) {
-        if (annualRate.compareTo(BigDecimal.ZERO) == 0) {
-            return principal.divide(new BigDecimal(months), 2, RoundingMode.HALF_UP);
-        }
-
-        BigDecimal monthlyRate = annualRate
-                .divide(new BigDecimal("12"), 6, RoundingMode.HALF_UP)
-                .divide(new BigDecimal("100"), 6, RoundingMode.HALF_UP);
-
-        double onePlusR = 1 + monthlyRate.doubleValue();
-        double power = Math.pow(onePlusR, months);
-
-        BigDecimal numerator = monthlyRate.multiply(new BigDecimal(power));
-        BigDecimal denominator = new BigDecimal(power).subtract(BigDecimal.ONE);
-
-        return principal.multiply(numerator)
-                .divide(denominator, 2, RoundingMode.HALF_UP);
-    }
-
-    private String generateLoanNumber() {
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder("LOAN-");
-
-        for (int i = 0; i < 12; i++) {
-            sb.append(random.nextInt(10));
-        }
-
-        return sb.toString();
-    }
-
+    // ========== Request/Response DTOs ==========
 
     public static class PaymentRequest {
         private BigDecimal amount;
@@ -494,6 +364,44 @@ public class LoanApi {
         public void setAmount(BigDecimal amount) { this.amount = amount; }
     }
 
+    public static class CalculateRequest {
+        private BigDecimal principal;
+        private BigDecimal annualInterestRate;
+        private Integer durationMonths;
+
+        public BigDecimal getPrincipal() { return principal; }
+        public void setPrincipal(BigDecimal principal) { this.principal = principal; }
+        public BigDecimal getAnnualInterestRate() { return annualInterestRate; }
+        public void setAnnualInterestRate(BigDecimal annualInterestRate) {
+            this.annualInterestRate = annualInterestRate;
+        }
+        public Integer getDurationMonths() { return durationMonths; }
+        public void setDurationMonths(Integer durationMonths) {
+            this.durationMonths = durationMonths;
+        }
+    }
+
+    public static class CalculateResponse {
+        private BigDecimal principal;
+        private BigDecimal annualInterestRate;
+        private Integer durationMonths;
+        private BigDecimal monthlyPayment;
+
+        public CalculateResponse(BigDecimal principal, BigDecimal annualInterestRate,
+                                 Integer durationMonths, BigDecimal monthlyPayment) {
+            this.principal = principal;
+            this.annualInterestRate = annualInterestRate;
+            this.durationMonths = durationMonths;
+            this.monthlyPayment = monthlyPayment;
+        }
+
+        public BigDecimal getPrincipal() { return principal; }
+        public BigDecimal getAnnualInterestRate() { return annualInterestRate; }
+        public Integer getDurationMonths() { return durationMonths; }
+        public BigDecimal getMonthlyPayment() { return monthlyPayment; }
+    }
+
+    @lombok.Builder
     public static class LoanResponse {
         private String loanNumber;
         private BigDecimal principal;
@@ -502,7 +410,6 @@ public class LoanApi {
         private BigDecimal monthlyPayment;
         private LoanStatus status;
 
-        @lombok.Builder
         public LoanResponse(String loanNumber, BigDecimal principal, BigDecimal annualInterestRate,
                             Integer durationMonths, BigDecimal monthlyPayment, LoanStatus status) {
             this.loanNumber = loanNumber;
@@ -512,5 +419,12 @@ public class LoanApi {
             this.monthlyPayment = monthlyPayment;
             this.status = status;
         }
+
+        public String getLoanNumber() { return loanNumber; }
+        public BigDecimal getPrincipal() { return principal; }
+        public BigDecimal getAnnualInterestRate() { return annualInterestRate; }
+        public Integer getDurationMonths() { return durationMonths; }
+        public BigDecimal getMonthlyPayment() { return monthlyPayment; }
+        public LoanStatus getStatus() { return status; }
     }
 }

@@ -1,7 +1,6 @@
 package com.sleepy.onlinebankingsystem.controller.servlet;
 
 import com.sleepy.onlinebankingsystem.model.entity.Loan;
-import com.sleepy.onlinebankingsystem.model.enums.LoanStatus;
 import com.sleepy.onlinebankingsystem.model.enums.UserRole;
 import com.sleepy.onlinebankingsystem.service.LoanService;
 import jakarta.inject.Inject;
@@ -14,7 +13,6 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -25,13 +23,12 @@ public class LoanRejectServlet extends HttpServlet {
     private LoanService loanService;
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
-            // 1️⃣ بررسی دسترسی (فقط Admin و Manager)
+            // بررسی دسترسی (فقط Admin و Manager)
             HttpSession session = req.getSession(false);
-            
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
@@ -41,9 +38,8 @@ public class LoanRejectServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ دریافت ID وام
+            // دریافت ID وام
             String idParam = req.getParameter("id");
-            
             if (idParam == null || idParam.isBlank()) {
                 resp.sendRedirect(req.getContextPath() + "/loans/list?error=missing_id");
                 return;
@@ -51,36 +47,22 @@ public class LoanRejectServlet extends HttpServlet {
 
             Long loanId = Long.parseLong(idParam);
 
-            // 3️⃣ پیدا کردن وام
-            Optional<Loan> loanOpt = loanService.findById(loanId);
-            
-            if (loanOpt.isEmpty()) {
-                resp.sendRedirect(req.getContextPath() + "/loans/list?error=not_found");
-                return;
-            }
+            // فراخوانی Service
+            Loan loan = loanService.rejectLoan(loanId);
 
-            Loan loan = loanOpt.get();
+            log.info("Loan rejected: {} by manager: {}",
+                    loan.getLoanNumber(), session.getAttribute("username"));
 
-            // 4️⃣ بررسی وضعیت وام (باید PENDING باشد)
-            if (loan.getStatus() != LoanStatus.PENDING) {
-                log.warn("Attempt to reject non-pending loan: {}", loan.getLoanNumber());
-                resp.sendRedirect(req.getContextPath() + "/loans/detail?id=" + 
-                        loanId + "&error=not_pending");
-                return;
-            }
-
-            // 5️⃣ تغییر وضعیت وام به REJECTED
-            loan.setStatus(LoanStatus.REJECTED);
-            loanService.update(loan);
-
-            log.info("Loan rejected: {} for user: {} by manager: {}", 
-                    loan.getLoanNumber(), loan.getUser().getUsername(), 
-                    session.getAttribute("username"));
-
-            // 6️⃣ هدایت به صفحه جزئیات
-            resp.sendRedirect(req.getContextPath() + "/loans/detail?id=" + 
+            // هدایت به صفحه جزئیات
+            resp.sendRedirect(req.getContextPath() + "/loans/detail?id=" +
                     loanId + "&message=rejected");
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in loan rejection: {}", e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/loans/list?error=not_found");
+        } catch (IllegalStateException e) {
+            log.warn("Business error in loan rejection: {}", e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/loans/list?error=" + e.getMessage());
         } catch (Exception e) {
             log.error("Error rejecting loan", e);
             resp.sendRedirect(req.getContextPath() + "/loans/list?error=rejection_failed");
@@ -88,7 +70,7 @@ public class LoanRejectServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "از متد POST استفاده کنید");
     }

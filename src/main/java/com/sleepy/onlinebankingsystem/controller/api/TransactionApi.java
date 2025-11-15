@@ -4,14 +4,9 @@ import com.sleepy.onlinebankingsystem.model.dto.request.TransferRequest;
 import com.sleepy.onlinebankingsystem.model.dto.response.ApiResponse;
 import com.sleepy.onlinebankingsystem.model.dto.response.TransactionResponse;
 import com.sleepy.onlinebankingsystem.model.entity.Account;
-import com.sleepy.onlinebankingsystem.model.entity.Card;
 import com.sleepy.onlinebankingsystem.model.entity.Transaction;
 import com.sleepy.onlinebankingsystem.model.entity.User;
-import com.sleepy.onlinebankingsystem.model.enums.AccountStatus;
-import com.sleepy.onlinebankingsystem.model.enums.TransactionStatus;
-import com.sleepy.onlinebankingsystem.model.enums.TransactionType;
 import com.sleepy.onlinebankingsystem.service.AccountService;
-import com.sleepy.onlinebankingsystem.service.CardService;
 import com.sleepy.onlinebankingsystem.service.TransactionService;
 import com.sleepy.onlinebankingsystem.service.UserService;
 import jakarta.inject.Inject;
@@ -22,11 +17,8 @@ import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-import java.security.PrivateKey;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Path("/transactions")
@@ -45,9 +37,6 @@ public class TransactionApi {
     @Inject
     private UserService userService;
 
-    @Inject
-    private CardService cardService;
-
     /**
      * واریز وجه
      * POST /api/transactions/deposit
@@ -56,60 +45,37 @@ public class TransactionApi {
     @Path("/deposit")
     public Response deposit(DepositRequest request) {
         try {
-            log.info("Processing deposit to account: {}", request.getToAccountNumber());
+            log.info("API: Processing deposit to account: {}", request.getToAccountNumber());
 
-            if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            // بررسی ورودی
+            if (request.getToAccountNumber() == null || request.getToAccountNumber().isBlank()) {
                 return Response.status(400)
-                        .entity(ApiResponse.error("مبلغ باید بیشتر از صفر باشد"))
+                        .entity(ApiResponse.error("شماره حساب مقصد الزامی است"))
                         .build();
             }
 
-            Optional<Account> toAccountOpt = accountService.findByAccountNumber(request.getToAccountNumber());
-            if (toAccountOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("حساب مقصد یافت نشد"))
-                        .build();
-            }
+            // فراخوانی Service
+            Transaction transaction = transactionService.processDeposit(
+                    request.getToAccountNumber(),
+                    request.getAmount(),
+                    request.getDescription()
+            );
 
-            Account toAccount = toAccountOpt.get();
-
-            if (toAccount.getStatus() != AccountStatus.ACTIVE) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("حساب مقصد فعال نیست"))
-                        .build();
-            }
-
-            toAccount.setBalance(toAccount.getBalance().add(request.getAmount()));
-            accountService.update(toAccount);
-
-            Transaction transaction = Transaction.builder()
-                    .transactionId(generateTransactionId())
-                    .toAccount(toAccount)
-                    .amount(request.getAmount())
-                    .type(TransactionType.DEPOSIT)
-                    .transactionDate(LocalDateTime.now())
-                    .status(TransactionStatus.COMPLETED)
-                    .description(request.getDescription() != null ?
-                            request.getDescription() : "واریز وجه")
-                    .referenceNumber(UUID.randomUUID().toString().substring(0, 10))
-                    .build();
-
-            Transaction savedTransaction = transactionService.save(transaction);
-            log.info("Deposit successful: {}", savedTransaction.getTransactionId());
-
-            TransactionResponse response = TransactionResponse.builder()
-                    .transactionId(savedTransaction.getTransactionId())
-                    .fromAccount(savedTransaction.getFromAccount() != null ? savedTransaction.getFromAccount().getAccountNumber() : null)
-                    .toAccount(savedTransaction.getToAccount() != null ? savedTransaction.getToAccount().getAccountNumber() : null)
-                    .amount(savedTransaction.getAmount())
-                    .type(savedTransaction.getType())
-                    .date(savedTransaction.getTransactionDate())
-                    .status(savedTransaction.getStatus())
-                    .referenceNumber(savedTransaction.getReferenceNumber())
-                    .build();
+            // تبدیل به Response
+            TransactionResponse response = mapToResponse(transaction);
 
             return Response.status(201).entity(ApiResponse.success(response)).build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in deposit: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in deposit: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             log.error("Error processing deposit", e);
             return Response.status(500)
@@ -126,66 +92,37 @@ public class TransactionApi {
     @Path("/withdrawal")
     public Response withdrawal(WithdrawalRequest request) {
         try {
-            log.info("Processing withdrawal from account: {}", request.getFromAccountNumber());
+            log.info("API: Processing withdrawal from account: {}", request.getFromAccountNumber());
 
-            if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            // بررسی ورودی
+            if (request.getFromAccountNumber() == null || request.getFromAccountNumber().isBlank()) {
                 return Response.status(400)
-                        .entity(ApiResponse.error("مبلغ باید بیشتر از صفر باشد"))
+                        .entity(ApiResponse.error("شماره حساب مبدأ الزامی است"))
                         .build();
             }
 
-            Optional<Account> fromAccountOpt = accountService.findByAccountNumber(request.getFromAccountNumber());
-            if (fromAccountOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("حساب مبدأ یافت نشد"))
-                        .build();
-            }
+            // فراخوانی Service
+            Transaction transaction = transactionService.processWithdrawal(
+                    request.getFromAccountNumber(),
+                    request.getAmount(),
+                    request.getDescription()
+            );
 
-            Account fromAccount = fromAccountOpt.get();
-
-            if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("حساب مبدأ فعال نیست"))
-                        .build();
-            }
-
-            if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("موجودی کافی نیست"))
-                        .build();
-            }
-
-            fromAccount.setBalance(fromAccount.getBalance().subtract(request.getAmount()));
-            accountService.update(fromAccount);
-
-            Transaction transaction = Transaction.builder()
-                    .transactionId(generateTransactionId())
-                    .fromAccount(fromAccount)
-                    .amount(request.getAmount())
-                    .type(TransactionType.WITHDRAWAL)
-                    .transactionDate(LocalDateTime.now())
-                    .status(TransactionStatus.COMPLETED)
-                    .description(request.getDescription() != null ?
-                            request.getDescription() : "برداشت وجه")
-                    .referenceNumber(UUID.randomUUID().toString().substring(0, 10))
-                    .build();
-
-            Transaction savedTransaction = transactionService.save(transaction);
-            log.info("Withdrawal successful: {}", savedTransaction.getTransactionId());
-
-            TransactionResponse response = TransactionResponse.builder()
-                    .transactionId(savedTransaction.getTransactionId())
-                    .fromAccount(savedTransaction.getFromAccount() != null ? savedTransaction.getFromAccount().getAccountNumber() : null)
-                    .toAccount(savedTransaction.getToAccount() != null ? savedTransaction.getToAccount().getAccountNumber() : null)
-                    .amount(savedTransaction.getAmount())
-                    .type(savedTransaction.getType())
-                    .date(savedTransaction.getTransactionDate())
-                    .status(savedTransaction.getStatus())
-                    .referenceNumber(savedTransaction.getReferenceNumber())
-                    .build();
+            // تبدیل به Response
+            TransactionResponse response = mapToResponse(transaction);
 
             return Response.status(201).entity(ApiResponse.success(response)).build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in withdrawal: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in withdrawal: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             log.error("Error processing withdrawal", e);
             return Response.status(500)
@@ -195,86 +132,41 @@ public class TransactionApi {
     }
 
     /**
-     * انتقال وجه
+     * انتقال وجه (کارت به کارت)
      * POST /api/transactions/transfer
      */
     @POST
     @Path("/transfer")
     public Response transfer(TransferRequest request) {
         try {
-            log.info("Processing transfer from card {} to card {}",
+            log.info("API: Processing card transfer from {} to {}",
                     request.getFromCardNumber(), request.getToCardNumber());
 
-
-            if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            // بررسی ورودی
+            if (request.getFromCardNumber() == null || request.getFromCardNumber().isBlank()) {
                 return Response.status(400)
-                        .entity(ApiResponse.error("مبلغ باید بیشتر از صفر باشد"))
+                        .entity(ApiResponse.error("شماره کارت مبدأ الزامی است"))
                         .build();
             }
-
-            Optional<Card> fromCardOpt = cardService.findByCardNumber(request.getFromCardNumber());
-            if (fromCardOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("کارت مبدأ یافت نشد"))
-                        .build();
-            }
-            Card fromCard = fromCardOpt.get();
-            if (!fromCard.isActive()) {
+            if (request.getToCardNumber() == null || request.getToCardNumber().isBlank()) {
                 return Response.status(400)
-                        .entity(ApiResponse.error("کارت مبدأ غیرفعال است"))
-                        .build();
-            }
-            Account fromAccount = fromCard.getAccount();
-
-            Optional<Card> toCardOpt = cardService.findByCardNumber(request.getToCardNumber());
-            if (toCardOpt.isEmpty()) {
-                return Response.status(404)
-                        .entity(ApiResponse.error("کارت مقصد یافت نشد"))
-                        .build();
-            }
-            Card toCard = toCardOpt.get();
-            if (!toCard.isActive()) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("کارت مقصد غیرفعال است"))
-                        .build();
-            }
-            Account toAccount = toCard.getAccount();
-
-            if (fromAccount.getStatus() != AccountStatus.ACTIVE || toAccount.getStatus() != AccountStatus.ACTIVE) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("هر دو حساب باید فعال باشند"))
+                        .entity(ApiResponse.error("شماره کارت مقصد الزامی است"))
                         .build();
             }
 
-            if (fromAccount.getBalance().compareTo(request.getAmount()) < 0) {
-                return Response.status(400)
-                        .entity(ApiResponse.error("موجودی حساب مبدأ کافی نیست"))
-                        .build();
-            }
+            // فراخوانی Service
+            Transaction transaction = transactionService.processCardTransfer(
+                    request.getFromCardNumber(),
+                    request.getToCardNumber(),
+                    request.getAmount(),
+                    request.getDescription()
+            );
 
-            Transaction transaction = Transaction.builder()
-                    .transactionId(generateTransactionId())
-                    .fromAccount(fromAccount)
-                    .toAccount(toAccount)
-                    .amount(request.getAmount())
-                    .type(TransactionType.TRANSFER)
-                    .transactionDate(LocalDateTime.now())
-                    .status(TransactionStatus.COMPLETED)
-                    .description(request.getDescription())
-                    .referenceNumber(UUID.randomUUID().toString().substring(0, 10))
-                    .build();
-
-            transactionService.save(transaction);
-
-            fromAccount.setBalance(fromAccount.getBalance().subtract(request.getAmount()));
-            toAccount.setBalance(toAccount.getBalance().add(request.getAmount()));
-            accountService.update(fromAccount);
-            accountService.update(toAccount);
-
+            // تبدیل به Response (با شماره کارت)
             TransactionResponse response = TransactionResponse.builder()
                     .transactionId(transaction.getTransactionId())
-                    .fromAccount(fromCard.getCardNumber())  // برگرداندن cardNumber
-                    .toAccount(toCard.getCardNumber())      // برگرداندن cardNumber
+                    .fromAccount(request.getFromCardNumber())  // نمایش کارت
+                    .toAccount(request.getToCardNumber())      // نمایش کارت
                     .amount(transaction.getAmount())
                     .type(transaction.getType())
                     .date(transaction.getTransactionDate())
@@ -284,10 +176,56 @@ public class TransactionApi {
 
             return Response.ok().entity(ApiResponse.success(response)).build();
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in transfer: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in transfer: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
         } catch (Exception e) {
-            log.error("Error in transfer", e);
+            log.error("Error processing transfer", e);
             return Response.status(500)
                     .entity(ApiResponse.error("خطا در انتقال: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * برگشت تراکنش
+     * POST /api/transactions/{transactionId}/reverse
+     */
+    @POST
+    @Path("/{transactionId}/reverse")
+    public Response reverseTransaction(@PathParam("transactionId") String transactionId) {
+        try {
+            log.info("API: Reversing transaction: {}", transactionId);
+
+            // فراخوانی Service
+            Transaction reversedTransaction = transactionService.reverseTransaction(transactionId);
+
+            // تبدیل به Response
+            TransactionResponse response = mapToResponse(reversedTransaction);
+
+            return Response.ok().entity(ApiResponse.success(response)).build();
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in reverse: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (IllegalStateException e) {
+            log.warn("Business logic error in reverse: {}", e.getMessage());
+            return Response.status(400)
+                    .entity(ApiResponse.error(e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            log.error("Error reversing transaction", e);
+            return Response.status(500)
+                    .entity(ApiResponse.error("خطا در برگشت تراکنش: " + e.getMessage()))
                     .build();
         }
     }
@@ -303,16 +241,7 @@ public class TransactionApi {
         try {
             List<Transaction> transactions = transactionService.findAll(page, size);
             List<TransactionResponse> responses = transactions.stream()
-                    .map(t -> TransactionResponse.builder()
-                            .transactionId(t.getTransactionId())
-                            .fromAccount(t.getFromAccount() != null ? t.getFromAccount().getAccountNumber() : null)
-                            .toAccount(t.getToAccount() != null ? t.getToAccount().getAccountNumber() : null)
-                            .amount(t.getAmount())
-                            .type(t.getType())
-                            .date(t.getTransactionDate())
-                            .status(t.getStatus())
-                            .referenceNumber(t.getReferenceNumber())
-                            .build())
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok().entity(ApiResponse.success(responses)).build();
@@ -341,17 +270,7 @@ public class TransactionApi {
                         .build();
             }
 
-            Transaction t = transactionOpt.get();
-            TransactionResponse response = TransactionResponse.builder()
-                    .transactionId(t.getTransactionId())
-                    .fromAccount(t.getFromAccount() != null ? t.getFromAccount().getAccountNumber() : null)
-                    .toAccount(t.getToAccount() != null ? t.getToAccount().getAccountNumber() : null)
-                    .amount(t.getAmount())
-                    .type(t.getType())
-                    .date(t.getTransactionDate())
-                    .status(t.getStatus())
-                    .referenceNumber(t.getReferenceNumber())
-                    .build();
+            TransactionResponse response = mapToResponse(transactionOpt.get());
 
             return Response.ok().entity(ApiResponse.success(response)).build();
 
@@ -379,19 +298,9 @@ public class TransactionApi {
                         .build();
             }
 
-            List<Transaction> transactions = transactionService
-                    .findByAccount(accountOpt.get());
+            List<Transaction> transactions = transactionService.findByAccount(accountOpt.get());
             List<TransactionResponse> responses = transactions.stream()
-                    .map(t -> TransactionResponse.builder()
-                            .transactionId(t.getTransactionId())
-                            .fromAccount(t.getFromAccount() != null ? t.getFromAccount().getAccountNumber() : null)
-                            .toAccount(t.getToAccount() != null ? t.getToAccount().getAccountNumber() : null)
-                            .amount(t.getAmount())
-                            .type(t.getType())
-                            .date(t.getTransactionDate())
-                            .status(t.getStatus())
-                            .referenceNumber(t.getReferenceNumber())
-                            .build())
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok().entity(ApiResponse.success(responses)).build();
@@ -422,16 +331,7 @@ public class TransactionApi {
 
             List<Transaction> transactions = transactionService.findByUser(userOpt.get());
             List<TransactionResponse> responses = transactions.stream()
-                    .map(t -> TransactionResponse.builder()
-                            .transactionId(t.getTransactionId())
-                            .fromAccount(t.getFromAccount() != null ? t.getFromAccount().getAccountNumber() : null)
-                            .toAccount(t.getToAccount() != null ? t.getToAccount().getAccountNumber() : null)
-                            .amount(t.getAmount())
-                            .type(t.getType())
-                            .date(t.getTransactionDate())
-                            .status(t.getStatus())
-                            .referenceNumber(t.getReferenceNumber())
-                            .build())
+                    .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
             return Response.ok().entity(ApiResponse.success(responses)).build();
@@ -444,12 +344,27 @@ public class TransactionApi {
         }
     }
 
+    // ========== متدهای کمکی ==========
 
-    private String generateTransactionId() {
-        return "TRX" + System.currentTimeMillis() + "-" +
-                UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    /**
+     * تبدیل Entity به DTO
+     */
+    private TransactionResponse mapToResponse(Transaction transaction) {
+        return TransactionResponse.builder()
+                .transactionId(transaction.getTransactionId())
+                .fromAccount(transaction.getFromAccount() != null ?
+                        transaction.getFromAccount().getAccountNumber() : null)
+                .toAccount(transaction.getToAccount() != null ?
+                        transaction.getToAccount().getAccountNumber() : null)
+                .amount(transaction.getAmount())
+                .type(transaction.getType())
+                .date(transaction.getTransactionDate())
+                .status(transaction.getStatus())
+                .referenceNumber(transaction.getReferenceNumber())
+                .build();
     }
 
+    // ========== Request DTOs ==========
 
     public static class DepositRequest {
         private String toAccountNumber;
@@ -457,7 +372,9 @@ public class TransactionApi {
         private String description;
 
         public String getToAccountNumber() { return toAccountNumber; }
-        public void setToAccountNumber(String toAccountNumber) { this.toAccountNumber = toAccountNumber; }
+        public void setToAccountNumber(String toAccountNumber) {
+            this.toAccountNumber = toAccountNumber;
+        }
         public BigDecimal getAmount() { return amount; }
         public void setAmount(BigDecimal amount) { this.amount = amount; }
         public String getDescription() { return description; }
@@ -470,7 +387,9 @@ public class TransactionApi {
         private String description;
 
         public String getFromAccountNumber() { return fromAccountNumber; }
-        public void setFromAccountNumber(String fromAccountNumber) { this.fromAccountNumber = fromAccountNumber; }
+        public void setFromAccountNumber(String fromAccountNumber) {
+            this.fromAccountNumber = fromAccountNumber;
+        }
         public BigDecimal getAmount() { return amount; }
         public void setAmount(BigDecimal amount) { this.amount = amount; }
         public String getDescription() { return description; }

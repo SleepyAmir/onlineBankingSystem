@@ -3,8 +3,6 @@ package com.sleepy.onlinebankingsystem.controller.servlet;
 import com.sleepy.onlinebankingsystem.model.entity.Account;
 import com.sleepy.onlinebankingsystem.model.entity.Transaction;
 import com.sleepy.onlinebankingsystem.model.entity.User;
-import com.sleepy.onlinebankingsystem.model.enums.AccountStatus;
-import com.sleepy.onlinebankingsystem.model.enums.TransactionStatus;
 import com.sleepy.onlinebankingsystem.model.enums.UserRole;
 import com.sleepy.onlinebankingsystem.service.AccountService;
 import com.sleepy.onlinebankingsystem.service.TransactionService;
@@ -21,20 +19,26 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 @Slf4j
 @WebServlet("/transactions")
 public class TransactionServlet extends HttpServlet {
 
-    @Inject private TransactionService transactionService;
-    @Inject private AccountService accountService;
-    @Inject private UserService userService;
+    @Inject
+    private TransactionService transactionService;
 
+    @Inject
+    private AccountService accountService;
+
+    @Inject
+    private UserService userService;
+
+    /**
+     * نمایش فرم تراکنش
+     */
     @Override
     @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -68,7 +72,11 @@ public class TransactionServlet extends HttpServlet {
         }
     }
 
+    /**
+     * پردازش تراکنش
+     */
     @Override
+    @Transactional
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
@@ -76,11 +84,11 @@ public class TransactionServlet extends HttpServlet {
             String action = req.getParameter("action");
 
             if (action == null || action.isBlank()) {
-                req.setAttribute("error", "نوع عملیات الزامی است");
-                doGet(req, resp);
+                setError(req, resp, "نوع عملیات الزامی است");
                 return;
             }
 
+            // مسیریابی به متد مربوطه
             switch (action) {
                 case "deposit":
                     handleDeposit(req, resp);
@@ -92,21 +100,21 @@ public class TransactionServlet extends HttpServlet {
                     handleTransfer(req, resp);
                     break;
                 default:
-                    req.setAttribute("error", "عملیات نامعتبر است");
-                    doGet(req, resp);
+                    setError(req, resp, "عملیات نامعتبر است");
                     break;
             }
 
         } catch (Exception e) {
             log.error("Error processing transaction", e);
-            req.setAttribute("error", "خطا در پردازش: " + e.getMessage());
-            doGet(req, resp);
+            setError(req, resp, "خطا در پردازش: " + e.getMessage());
         }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // واریز
-    // ──────────────────────────────────────────────────────────────
+    // ========== متدهای پردازش ==========
+
+    /**
+     * واریز وجه
+     */
     private void handleDeposit(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
 
@@ -114,47 +122,42 @@ public class TransactionServlet extends HttpServlet {
         String amountParam = req.getParameter("amount");
         String description = req.getParameter("description");
 
+        // اعتبارسنجی ورودی
         if (accountId == null || accountId.isBlank()) {
-            req.setAttribute("error", "انتخاب حساب مقصد الزامی است");
-            doGet(req, resp);
+            setError(req, resp, "انتخاب حساب مقصد الزامی است");
             return;
         }
 
-        BigDecimal amount = validateAmount(amountParam, req, resp);
-        if (amount == null) return;
-
-        Optional<Account> toAccountOpt = accountService.findById(Long.parseLong(accountId));
-        if (toAccountOpt.isEmpty()) {
-            req.setAttribute("error", "حساب مقصد یافت نشد");
-            doGet(req, resp);
+        BigDecimal amount = validateAndParseAmount(amountParam);
+        if (amount == null) {
+            setError(req, resp, "مبلغ نامعتبر است");
             return;
         }
 
-        Account toAccount = toAccountOpt.get();
-        if (toAccount.getStatus() != AccountStatus.ACTIVE) {
-            req.setAttribute("error", "حساب مقصد فعال نیست");
-            doGet(req, resp);
+        // دریافت شماره حساب
+        Account account = accountService.findById(Long.parseLong(accountId))
+                .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
+
+        // بررسی دسترسی
+        if (!hasAccessToAccount(req, account)) {
+            setError(req, resp, "شما فقط می‌توانید به حساب خودتان واریز کنید");
             return;
         }
 
-        if (!isAdminOrManager(req) && !toAccount.getUser().getUsername().equals(getCurrentUsername(req))) {
-            req.setAttribute("error", "شما فقط می‌توانید به حساب خودتان واریز کنید");
-            doGet(req, resp);
-            return;
-        }
+        // فراخوانی Service
+        Transaction transaction = transactionService.processDeposit(
+                account.getAccountNumber(),
+                amount,
+                description
+        );
 
-        toAccount.setBalance(toAccount.getBalance().add(amount));
-        accountService.update(toAccount);
-
-        Transaction transaction = createTransaction(null, toAccount, amount, "واریز به حساب", description);
-        transactionService.save(transaction);
-
-        redirectToDetail(resp, transaction.getId(), "deposit_success");
+        // هدایت به صفحه موفقیت
+        redirectToDetail(resp, req.getContextPath(), transaction.getId(), "deposit_success");
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // برداشت
-    // ──────────────────────────────────────────────────────────────
+    /**
+     * برداشت وجه
+     */
     private void handleWithdrawal(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
 
@@ -162,53 +165,42 @@ public class TransactionServlet extends HttpServlet {
         String amountParam = req.getParameter("amount");
         String description = req.getParameter("description");
 
+        // اعتبارسنجی ورودی
         if (accountId == null || accountId.isBlank()) {
-            req.setAttribute("error", "انتخاب حساب مبدأ الزامی است");
-            doGet(req, resp);
+            setError(req, resp, "انتخاب حساب مبدأ الزامی است");
             return;
         }
 
-        BigDecimal amount = validateAmount(amountParam, req, resp);
-        if (amount == null) return;
-
-        Optional<Account> fromAccountOpt = accountService.findById(Long.parseLong(accountId));
-        if (fromAccountOpt.isEmpty()) {
-            req.setAttribute("error", "حساب مبدأ یافت نشد");
-            doGet(req, resp);
+        BigDecimal amount = validateAndParseAmount(amountParam);
+        if (amount == null) {
+            setError(req, resp, "مبلغ نامعتبر است");
             return;
         }
 
-        Account fromAccount = fromAccountOpt.get();
-        if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
-            req.setAttribute("error", "حساب مبدأ فعال نیست");
-            doGet(req, resp);
+        // دریافت شماره حساب
+        Account account = accountService.findById(Long.parseLong(accountId))
+                .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
+
+        // بررسی دسترسی
+        if (!hasAccessToAccount(req, account)) {
+            setError(req, resp, "شما فقط می‌توانید از حساب خودتان برداشت کنید");
             return;
         }
 
-        if (!isAdminOrManager(req) && !fromAccount.getUser().getUsername().equals(getCurrentUsername(req))) {
-            req.setAttribute("error", "شما فقط می‌توانید از حساب خودتان برداشت کنید");
-            doGet(req, resp);
-            return;
-        }
+        // فراخوانی Service
+        Transaction transaction = transactionService.processWithdrawal(
+                account.getAccountNumber(),
+                amount,
+                description
+        );
 
-        if (fromAccount.getBalance().compareTo(amount) < 0) {
-            req.setAttribute("error", "موجودی کافی نیست");
-            doGet(req, resp);
-            return;
-        }
-
-        fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
-        accountService.update(fromAccount);
-
-        Transaction transaction = createTransaction(fromAccount, null, amount, "برداشت از حساب", description);
-        transactionService.save(transaction);
-
-        redirectToDetail(resp, transaction.getId(), "withdrawal_success");
+        // هدایت به صفحه موفقیت
+        redirectToDetail(resp, req.getContextPath(), transaction.getId(), "withdrawal_success");
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // انتقال
-    // ──────────────────────────────────────────────────────────────
+    /**
+     * انتقال وجه
+     */
     private void handleTransfer(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
 
@@ -217,125 +209,98 @@ public class TransactionServlet extends HttpServlet {
         String amountParam = req.getParameter("amount");
         String description = req.getParameter("description");
 
+        // اعتبارسنجی ورودی
         if (fromAccountId == null || fromAccountId.isBlank()) {
-            req.setAttribute("error", "انتخاب حساب مبدأ الزامی است");
-            doGet(req, resp);
+            setError(req, resp, "انتخاب حساب مبدأ الزامی است");
             return;
         }
         if (toAccountNumber == null || toAccountNumber.isBlank()) {
-            req.setAttribute("error", "شماره حساب مقصد الزامی است");
-            doGet(req, resp);
+            setError(req, resp, "شماره حساب مقصد الزامی است");
             return;
         }
 
-        BigDecimal amount = validateAmount(amountParam, req, resp);
-        if (amount == null) return;
-
-        Optional<Account> fromOpt = accountService.findById(Long.parseLong(fromAccountId));
-        Optional<Account> toOpt = accountService.findByAccountNumber(toAccountNumber);
-
-        if (fromOpt.isEmpty()) {
-            req.setAttribute("error", "حساب مبدأ یافت نشد");
-            doGet(req, resp);
-            return;
-        }
-        if (toOpt.isEmpty()) {
-            req.setAttribute("error", "حساب مقصد یافت نشد");
-            doGet(req, resp);
+        BigDecimal amount = validateAndParseAmount(amountParam);
+        if (amount == null) {
+            setError(req, resp, "مبلغ نامعتبر است");
             return;
         }
 
-        Account from = fromOpt.get();
-        Account to = toOpt.get();
+        // دریافت حساب مبدأ
+        Account fromAccount = accountService.findById(Long.parseLong(fromAccountId))
+                .orElseThrow(() -> new IllegalArgumentException("حساب مبدأ یافت نشد"));
 
-        if (from.getId().equals(to.getId())) {
-            req.setAttribute("error", "انتقال به همان حساب امکان‌پذیر نیست");
-            doGet(req, resp);
+        // بررسی دسترسی
+        if (!hasAccessToAccount(req, fromAccount)) {
+            setError(req, resp, "شما فقط می‌توانید از حساب خودتان انتقال دهید");
             return;
         }
 
-        if (from.getStatus() != AccountStatus.ACTIVE || to.getStatus() != AccountStatus.ACTIVE) {
-            req.setAttribute("error", "یکی از حساب‌ها فعال نیست");
-            doGet(req, resp);
-            return;
-        }
+        // فراخوانی Service
+        Transaction transaction = transactionService.processTransfer(
+                fromAccount.getAccountNumber(),
+                toAccountNumber,
+                amount,
+                description
+        );
 
-        if (!isAdminOrManager(req) && !from.getUser().getUsername().equals(getCurrentUsername(req))) {
-            req.setAttribute("error", "شما فقط می‌توانید از حساب خودتان انتقال دهید");
-            doGet(req, resp);
-            return;
-        }
-
-        if (from.getBalance().compareTo(amount) < 0) {
-            req.setAttribute("error", "موجودی کافی نیست");
-            doGet(req, resp);
-            return;
-        }
-
-        from.setBalance(from.getBalance().subtract(amount));
-        to.setBalance(to.getBalance().add(amount));
-        accountService.update(from);
-        accountService.update(to);
-
-        Transaction transaction = createTransaction(from, to, amount, "انتقال وجه", description);
-        transactionService.save(transaction);
-
-        redirectToDetail(resp, transaction.getId(), "transfer_success");
+        // هدایت به صفحه موفقیت
+        redirectToDetail(resp, req.getContextPath(), transaction.getId(), "transfer_success");
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // متدهای کمکی
-    // ──────────────────────────────────────────────────────────────
-    private BigDecimal validateAmount(String amountParam, HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    // ========== متدهای کمکی ==========
+
+    /**
+     * اعتبارسنجی و تبدیل مبلغ
+     */
+    private BigDecimal validateAndParseAmount(String amountParam) {
         if (amountParam == null || amountParam.isBlank()) {
-            req.setAttribute("error", "مبلغ الزامی است");
-            doGet(req, resp);
             return null;
         }
         try {
             BigDecimal amount = new BigDecimal(amountParam);
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                req.setAttribute("error", "مبلغ باید بیشتر از صفر باشد");
-                doGet(req, resp);
                 return null;
             }
             return amount;
         } catch (NumberFormatException e) {
-            req.setAttribute("error", "مبلغ نامعتبر است");
-            doGet(req, resp);
             return null;
         }
     }
 
-    private Transaction createTransaction(Account from, Account to, BigDecimal amount, String defaultDesc, String description) {
-        return Transaction.builder()
-                .transactionId(generateTransactionId())
-                .fromAccount(from)
-                .toAccount(to)
-                .amount(amount)
-                .transactionDate(LocalDateTime.now())
-                .status(TransactionStatus.COMPLETED)
-                .description(description != null && !description.isBlank() ? description : defaultDesc)
-                .referenceNumber(UUID.randomUUID().toString().substring(0, 10))
-                .build();
-    }
+    /**
+     * بررسی دسترسی به حساب
+     */
+    private boolean hasAccessToAccount(HttpServletRequest req, Account account) {
+        HttpSession session = req.getSession(false);
+        String currentUsername = (String) session.getAttribute("username");
 
-    private String generateTransactionId() {
-        return "TRX" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
-    private void redirectToDetail(HttpServletResponse resp, Long id, String message) throws IOException {
-        resp.sendRedirect("/transactions/detail?id=" + id + "&message=" + message);
-    }
-
-    private String getCurrentUsername(HttpServletRequest req) {
-        return (String) req.getSession(false).getAttribute("username");
-    }
-
-    private boolean isAdminOrManager(HttpServletRequest req) {
         @SuppressWarnings("unchecked")
-        Set<UserRole> roles = (Set<UserRole>) req.getSession(false).getAttribute("roles");
-        return roles != null && (roles.contains(UserRole.ADMIN) || roles.contains(UserRole.MANAGER));
+        Set<UserRole> roles = (Set<UserRole>) session.getAttribute("roles");
+
+        // Admin و Manager به همه حساب‌ها دسترسی دارن
+        if (roles.contains(UserRole.ADMIN) || roles.contains(UserRole.MANAGER)) {
+            return true;
+        }
+
+        // کاربر عادی فقط به حساب خودش دسترسی داره
+        return account.getUser().getUsername().equals(currentUsername);
+    }
+
+    /**
+     * نمایش خطا و بازگشت به فرم
+     */
+    private void setError(HttpServletRequest req, HttpServletResponse resp, String message)
+            throws ServletException, IOException {
+        req.setAttribute("error", message);
+        doGet(req, resp);
+    }
+
+    /**
+     * هدایت به صفحه جزئیات تراکنش
+     */
+    private void redirectToDetail(HttpServletResponse resp, String contextPath,
+                                  Long transactionId, String message) throws IOException {
+        resp.sendRedirect(contextPath + "/transactions/detail?id=" +
+                transactionId + "&message=" + message);
     }
 }
