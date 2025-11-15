@@ -14,9 +14,12 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Set;
 
+/**
+ * سرولت تغییر وضعیت حساب
+ * تمام بیزنس لاجیک در AccountService
+ */
 @Slf4j
 @WebServlet("/accounts/status")
 public class AccountStatusServlet extends HttpServlet {
@@ -25,13 +28,13 @@ public class AccountStatusServlet extends HttpServlet {
     private AccountService accountService;
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
-        try {
 
+        try {
+            // 1️⃣ بررسی دسترسی
             HttpSession session = req.getSession(false);
-            
+
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
@@ -40,60 +43,61 @@ public class AccountStatusServlet extends HttpServlet {
                 return;
             }
 
-
+            // 2️⃣ دریافت پارامترها
             String idParam = req.getParameter("id");
             String statusParam = req.getParameter("status");
-            
-            if (idParam == null || idParam.isBlank() || 
-                statusParam == null || statusParam.isBlank()) {
-                resp.sendRedirect(req.getContextPath() + "/accounts/list?error=missing_params");
+
+            if (idParam == null || idParam.isBlank() ||
+                    statusParam == null || statusParam.isBlank()) {
+                resp.sendRedirect(req.getContextPath() +
+                        "/accounts/list?error=missing_params");
                 return;
             }
 
             Long accountId = Long.parseLong(idParam);
             AccountStatus newStatus;
-            
+
             try {
                 newStatus = AccountStatus.valueOf(statusParam);
             } catch (IllegalArgumentException e) {
-                resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" + 
+                resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" +
                         accountId + "&error=invalid_status");
                 return;
             }
 
+            log.info("Changing account status: ID {} to {}", accountId, newStatus);
 
-            Optional<Account> accountOpt = accountService.findById(accountId);
-            
-            if (accountOpt.isEmpty()) {
-                resp.sendRedirect(req.getContextPath() + "/accounts/list?error=not_found");
-                return;
-            }
+            // 3️⃣ فراخوانی Service (تمام اعتبارسنجی اونجاست)
+            Account account = accountService.changeAccountStatus(accountId, newStatus);
 
-            Account account = accountOpt.get();
-
-
-            AccountStatus oldStatus = account.getStatus();
-            account.setStatus(newStatus);
-            
-            accountService.update(account);
-
-            log.info("Account status changed: {} from {} to {} by {}", 
-                    account.getAccountNumber(), oldStatus, newStatus, 
+            log.info("Account status changed: {} to {} by {}",
+                    account.getAccountNumber(), newStatus,
                     session.getAttribute("username"));
 
-
-            resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" + 
+            // 4️⃣ هدایت به صفحه جزئیات
+            resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" +
                     accountId + "&message=status_updated");
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in status change: {}", e.getMessage());
+            resp.sendRedirect(req.getContextPath() +
+                    "/accounts/list?error=not_found");
+        } catch (IllegalStateException e) {
+            log.warn("Business error in status change: {}", e.getMessage());
+            String idParam = req.getParameter("id");
+            resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" +
+                    idParam + "&error=" + e.getMessage());
         } catch (Exception e) {
             log.error("Error changing account status", e);
-            resp.sendRedirect(req.getContextPath() + "/accounts/list?error=status_update_failed");
+            resp.sendRedirect(req.getContextPath() +
+                    "/accounts/list?error=status_update_failed");
         }
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "از متد POST استفاده کنید");
+        resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+                "از متد POST استفاده کنید");
     }
 }

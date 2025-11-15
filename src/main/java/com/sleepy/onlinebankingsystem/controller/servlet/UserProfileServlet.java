@@ -4,7 +4,6 @@ import com.sleepy.onlinebankingsystem.model.entity.Role;
 import com.sleepy.onlinebankingsystem.model.entity.User;
 import com.sleepy.onlinebankingsystem.service.RoleService;
 import com.sleepy.onlinebankingsystem.service.UserService;
-import com.sleepy.onlinebankingsystem.utils.PasswordUtil;
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,8 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
+/**
+ * سرولت پروفایل کاربر
+ * تمام بیزنس لاجیک در UserService
+ */
 @Slf4j
 @WebServlet("/user-profile")
 public class UserProfileServlet extends HttpServlet {
@@ -30,16 +32,11 @@ public class UserProfileServlet extends HttpServlet {
     @Inject
     private RoleService roleService;
 
-    @Inject
-    private PasswordUtil passwordUtil;
-
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^09[0-9]{9}$");
-
     @Override
     @Transactional
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
             // 1️⃣ دریافت نام کاربری از Session
             HttpSession session = req.getSession(false);
@@ -52,7 +49,6 @@ public class UserProfileServlet extends HttpServlet {
 
             // 2️⃣ پیدا کردن کاربر
             Optional<User> userOpt = userService.findByUsername(username);
-            
             if (userOpt.isEmpty()) {
                 log.error("Logged-in user not found: {}", username);
                 resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
@@ -60,28 +56,23 @@ public class UserProfileServlet extends HttpServlet {
             }
 
             User user = userOpt.get();
-
-            // 3️⃣ دریافت نقش‌های کاربر
             List<Role> roles = roleService.findByUser(user);
 
-            // 4️⃣ ارسال اطلاعات به JSP
+            // 3️⃣ ارسال به JSP
             req.setAttribute("user", user);
             req.setAttribute("roles", roles);
-
-            // 5️⃣ نمایش پروفایل
             req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading profile", e);
-            req.setAttribute("error", "خطا در بارگذاری پروفایل: " + e.getMessage());
-            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
+            setError(req, resp, "خطا در بارگذاری پروفایل: " + e.getMessage());
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
             // 1️⃣ دریافت نام کاربری از Session
             HttpSession session = req.getSession(false);
@@ -94,7 +85,6 @@ public class UserProfileServlet extends HttpServlet {
 
             // 2️⃣ پیدا کردن کاربر
             Optional<User> userOpt = userService.findByUsername(username);
-            
             if (userOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
                 return;
@@ -102,7 +92,7 @@ public class UserProfileServlet extends HttpServlet {
 
             User user = userOpt.get();
 
-            // 3️⃣ دریافت پارامترهای فرم
+            // 3️⃣ دریافت پارامترها
             String firstName = req.getParameter("firstName");
             String lastName = req.getParameter("lastName");
             String phone = req.getParameter("phone");
@@ -110,99 +100,103 @@ public class UserProfileServlet extends HttpServlet {
             String newPassword = req.getParameter("newPassword");
             String confirmPassword = req.getParameter("confirmPassword");
 
-            // 4️⃣ اعتبارسنجی
-            String validationError = validateProfileInput(firstName, lastName, phone);
-            
-            if (validationError != null) {
-                req.setAttribute("error", validationError);
-                req.setAttribute("user", user);
-                req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
-                return;
+            log.info("Updating profile for user: {}", username);
+
+            // 4️⃣ به‌روزرسانی اطلاعات پایه
+            if (firstName != null && !firstName.isBlank()) {
+                user.setFirstName(firstName);
+            }
+            if (lastName != null && !lastName.isBlank()) {
+                user.setLastName(lastName);
+            }
+            if (phone != null && !phone.isBlank()) {
+                user.setPhone(phone);
             }
 
-            // 5️⃣ به‌روزرسانی اطلاعات پایه
-            user.setFirstName(firstName);
-            user.setLastName(lastName);
-            user.setPhone(phone);
-
-            // 6️⃣ تغییر رمز عبور (اختیاری)
+            // 5️⃣ تغییر رمز عبور (اگر وارد شده)
             if (newPassword != null && !newPassword.isBlank()) {
-                // بررسی رمز عبور فعلی
-                if (currentPassword == null || currentPassword.isBlank()) {
-                    req.setAttribute("error", "برای تغییر رمز عبور، ابتدا رمز فعلی را وارد کنید");
-                    req.setAttribute("user", user);
-                    req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
-                    return;
-                }
-
-                if (!passwordUtil.matches(currentPassword, user.getPassword())) {
-                    req.setAttribute("error", "رمز عبور فعلی اشتباه است");
-                    req.setAttribute("user", user);
-                    req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
-                    return;
-                }
-
-                // بررسی تطابق رمز جدید با تکرار آن
+                // بررسی تطابق رمز جدید
                 if (!newPassword.equals(confirmPassword)) {
-                    req.setAttribute("error", "رمز عبور جدید و تکرار آن یکسان نیستند");
-                    req.setAttribute("user", user);
-                    req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
+                    setErrorWithUser(req, resp, user, "رمز عبور جدید و تکرار آن یکسان نیستند");
                     return;
                 }
 
-                // بررسی طول رمز جدید
-                if (newPassword.length() < 6) {
-                    req.setAttribute("error", "رمز عبور جدید باید حداقل 6 کاراکتر باشد");
-                    req.setAttribute("user", user);
-                    req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
-                    return;
-                }
-
-                // هش و ذخیره رمز جدید
-                String hashedPassword = passwordUtil.hash(newPassword);
-                user.setPassword(hashedPassword);
+                // فراخوانی Service برای تغییر رمز (اعتبارسنجی اونجاست)
+                userService.changePassword(user.getId(), currentPassword, newPassword);
 
                 log.info("Password changed for user: {}", username);
             }
 
-            // 7️⃣ ذخیره تغییرات
+            // 6️⃣ ذخیره تغییرات
             userService.update(user);
 
-            // 8️⃣ به‌روزرسانی Session
+            // 7️⃣ به‌روزرسانی Session
             session.setAttribute("fullName", user.getFirstName() + " " + user.getLastName());
 
             log.info("Profile updated successfully for user: {}", username);
 
-            // 9️⃣ نمایش پیام موفقیت
-            req.setAttribute("success", "پروفایل شما با موفقیت به‌روزرسانی شد");
-            req.setAttribute("user", user);
-            
-            List<Role> roles = roleService.findByUser(user);
-            req.setAttribute("roles", roles);
-            
-            req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
+            // 8️⃣ نمایش پیام موفقیت
+            setSuccessWithUser(req, resp, user, "پروفایل شما با موفقیت به‌روزرسانی شد");
 
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation error in profile update: {}", e.getMessage());
+            setErrorWithoutRedirect(req, resp, e.getMessage());
         } catch (Exception e) {
             log.error("Error updating profile", e);
-            req.setAttribute("error", "خطا در به‌روزرسانی پروفایل: " + e.getMessage());
-            req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
+            setError(req, resp, "خطا در به‌روزرسانی: " + e.getMessage());
         }
     }
 
-    private String validateProfileInput(String firstName, String lastName, String phone) {
-        
-        if (firstName == null || firstName.isBlank()) {
-            return "نام الزامی است";
+    /**
+     * نمایش خطا با اطلاعات کاربر
+     */
+    private void setErrorWithUser(HttpServletRequest req, HttpServletResponse resp,
+                                  User user, String message)
+            throws ServletException, IOException {
+        try {
+            req.setAttribute("error", message);
+            req.setAttribute("user", user);
+            req.setAttribute("roles", roleService.findByUser(user));
+            req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
+        } catch (Exception e) {
+            log.error("Error setting error with user", e);
+            setError(req, resp, message);
         }
+    }
 
-        if (lastName == null || lastName.isBlank()) {
-            return "نام خانوادگی الزامی است";
+    /**
+     * نمایش موفقیت با اطلاعات کاربر
+     */
+    private void setSuccessWithUser(HttpServletRequest req, HttpServletResponse resp,
+                                    User user, String message)
+            throws ServletException, IOException {
+        try {
+            req.setAttribute("success", message);
+            req.setAttribute("user", user);
+            req.setAttribute("roles", roleService.findByUser(user));
+            req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
+        } catch (Exception e) {
+            log.error("Error setting success with user", e);
+            resp.sendRedirect(req.getContextPath() + "/user-profile");
         }
+    }
 
-        if (phone == null || !PHONE_PATTERN.matcher(phone).matches()) {
-            return "شماره تلفن نامعتبر است (فرمت: 09xxxxxxxxx)";
-        }
+    /**
+     * نمایش خطا بدون redirect
+     */
+    private void setErrorWithoutRedirect(HttpServletRequest req, HttpServletResponse resp,
+                                         String message)
+            throws ServletException, IOException {
+        req.setAttribute("error", message);
+        doGet(req, resp);
+    }
 
-        return null;
+    /**
+     * نمایش خطا و redirect به error page
+     */
+    private void setError(HttpServletRequest req, HttpServletResponse resp, String message)
+            throws ServletException, IOException {
+        req.setAttribute("error", message);
+        req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
     }
 }
