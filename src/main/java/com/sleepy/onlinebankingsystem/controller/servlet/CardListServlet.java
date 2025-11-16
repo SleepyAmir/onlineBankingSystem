@@ -31,7 +31,6 @@ public class CardListServlet extends HttpServlet {
     private static final int PAGE_SIZE = 10;
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
@@ -128,7 +127,6 @@ public class CardListServlet extends HttpServlet {
         return Boolean.parseBoolean(activeParam);
     }
 
-    @Transactional // این خط مهمه!
     private List<Card> getFilteredCards(Boolean filterActive, int page) throws Exception {
         if (filterActive != null && filterActive) {
             return cardService.findActiveCards();
