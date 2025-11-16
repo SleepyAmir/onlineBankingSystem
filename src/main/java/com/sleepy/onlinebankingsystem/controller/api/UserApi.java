@@ -126,12 +126,18 @@ public class UserApi {
             @QueryParam("size") @DefaultValue("10") int size) {
         try {
             List<User> users = userService.findAll(page, size);
+
+            log.debug("Found {} users", users.size());
+
             List<UserResponse> responses = users.stream()
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
+            log.debug("Returning {} user responses", responses.size());
+
+            // مستقیم لیست رو برمی‌گردونیم
             return Response.ok()
-                    .entity(ApiResponse.success(responses))
+                    .entity(responses)
                     .build();
 
         } catch (Exception e) {
