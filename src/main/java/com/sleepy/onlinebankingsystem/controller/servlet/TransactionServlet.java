@@ -66,8 +66,8 @@ public class TransactionServlet extends HttpServlet {
 
             User user = userOpt.get();
 
-            // ✅ دریافت حساب‌ها برای واریز/برداشت
-            List<Account> accounts = accountService.findByUser(user);
+            // ✅ دریافت حساب‌ها با User (JOIN FETCH) برای واریز/برداشت
+            List<Account> accounts = accountService.findByUserWithUser(user);
             req.setAttribute("accounts", accounts);
 
             // ✅ دریافت کارت‌های فعال برای انتقال
@@ -147,8 +147,8 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // دریافت شماره حساب
-        Account account = accountService.findById(Long.parseLong(accountId))
+        // ✅ دریافت شماره حساب با User
+        Account account = accountService.findByIdWithUser(Long.parseLong(accountId))
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
         // بررسی دسترسی
@@ -190,8 +190,8 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // دریافت شماره حساب
-        Account account = accountService.findById(Long.parseLong(accountId))
+        // ✅ دریافت شماره حساب با User
+        Account account = accountService.findByIdWithUser(Long.parseLong(accountId))
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
         // بررسی دسترسی
