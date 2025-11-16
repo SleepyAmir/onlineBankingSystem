@@ -4,140 +4,79 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
 
+    <display-name>Online Banking System</display-name>
+    <description>A secure online banking platform with user authentication, transactions, and loan management.</description>
 
-<!--<display-name>Online Banking System</display-name>-->
-<!--<description>A secure online banking platform with user authentication, transactions, and loan management.</description>-->
+    <!-- ======================================== -->
+    <!-- 1. Session Configuration -->
+    <!-- ======================================== -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <!-- IMPORTANT: Set to false for development, true for production with HTTPS -->
+            <secure>false</secure>
+            <max-age>1800</max-age>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
 
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--        &lt;!&ndash; 1. DataSource Reference (JTA & Non-JTA) &ndash;&gt;-->
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--    <resource-ref>-->
-<!--        <description>JTA Managed DataSource for Transactions</description>-->
-<!--        <res-ref-name>jdbc/JtaDataSource</res-ref-name>-->
-<!--        <res-type>javax.sql.DataSource</res-type>-->
-<!--        <res-auth>Container</res-auth>-->
-<!--        <res-sharing-scope>Shareable</res-sharing-scope>-->
-<!--    </resource-ref>-->
+    <!-- ======================================== -->
+    <!-- 2. Welcome Files -->
+    <!-- ======================================== -->
+    <welcome-file-list>
+        <welcome-file>welcome</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
 
-<!--    <resource-ref>-->
-<!--        <description>Non-JTA DataSource for Read-Only Operations</description>-->
-<!--        <res-ref-name>jdbc/NonJtaDataSource</res-ref-name>-->
-<!--        <res-type>javax.sql.DataSource</res-type>-->
-<!--        <res-auth>Container</res-auth>-->
-<!--        <res-sharing-scope>Shareable</res-sharing-scope>-->
-<!--    </resource-ref>-->
+    <!-- ======================================== -->
+    <!-- 3. CSRF Filter (ONLY for Web UI, NOT for API) -->
+    <!-- ======================================== -->
+    <filter>
+        <filter-name>CsrfFilter</filter-name>
+        <filter-class>com.sleepy.onlinebankingsystem.filter.CsrfFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CsrfFilter</filter-name>
+        <!-- Apply only to JSP/Servlet paths, NOT /api/* -->
+        <url-pattern>*.jsp</url-pattern>
+        <url-pattern>/servlet/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
 
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--        &lt;!&ndash; 2. Session Configuration &ndash;&gt;-->
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--<session-config>-->
-<!--<session-timeout>30</session-timeout>-->
-<!--<cookie-config>-->
-<!--    <http-only>true</http-only>-->
-<!--        <secure>true</secure> &lt;!&ndash; Always true for security; use HTTPS in all environments &ndash;&gt;-->
-<!--    <max-age>1800</max-age>-->
-<!--</cookie-config>-->
-<!--<tracking-mode>COOKIE</tracking-mode>-->
-<!--</session-config>-->
+    <!-- ======================================== -->
+    <!-- 4. Authentication Filter -->
+    <!-- ======================================== -->
+    <!-- This filter is already defined with @WebFilter annotation -->
+    <!-- No need to declare it here -->
 
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--        &lt;!&ndash; 3. Welcome Files &ndash;&gt;-->
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--<welcome-file-list>-->
-<!--<welcome-file>/jsp/login.jsp</welcome-file>-->
-<!--<welcome-file>/jsp/user-dashboard.jsp</welcome-file>-->
-<!--<welcome-file>/jsp/welcome.jsp</welcome-file>-->
-<!--</welcome-file-list>-->
+    <!-- ======================================== -->
+    <!-- 5. Error Pages -->
+    <!-- ======================================== -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/views/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/views/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/views/error.jsp</location>
+    </error-page>
 
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--        &lt;!&ndash; 4. JSF Configuration (Jakarta Faces 3.0+) &ndash;&gt;-->
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--<context-param>-->
-<!--<param-name>jakarta.faces.FACELETS_SKIP_COMMENTS</param-name>-->
-<!--<param-value>true</param-value>-->
-<!--</context-param>-->
+    <!-- ======================================== -->
+    <!-- 6. Session Listener -->
+    <!-- ======================================== -->
+    <listener>
+        <listener-class>com.sleepy.onlinebankingsystem.utils.SessionListener</listener-class>
+    </listener>
 
-<!--<context-param>-->
-<!--<param-name>jakarta.faces.PROJECT_STAGE</param-name>-->
-<!--<param-value>Development</param-value>-->
-<!--</context-param>-->
-
-<!--<context-param>-->
-<!--<param-name>jakarta.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL</param-name>-->
-<!--<param-value>true</param-value>-->
-<!--</context-param>-->
-
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--        &lt;!&ndash; 5. Security Filters &ndash;&gt;-->
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-
-<!--        &lt;!&ndash; CSRF Protection for JSP & Forms &ndash;&gt;-->
-<!--<filter>-->
-<!--<filter-name>CsrfFilter</filter-name>-->
-<!--<filter-class>com.sleepy.onlinebankingsystem.filter.CsrfFilter</filter-class>-->
-<!--</filter>-->
-<!--<filter-mapping>-->
-<!--<filter-name>CsrfFilter</filter-name>-->
-<!--<url-pattern>*.xhtml</url-pattern>-->
-<!--<url-pattern>/faces/*</url-pattern>-->
-<!--<url-pattern>/servlet/*</url-pattern>-->
-<!--</filter-mapping>-->
-
-<!--        &lt;!&ndash; JWT Authentication for REST API &ndash;&gt;-->
-<!--<filter>-->
-<!--<filter-name>JwtAuthenticationFilter</filter-name>-->
-<!--<filter-class>com.sleepy.onlinebankingsystem.filter.JwtAuthenticationFilter</filter-class>-->
-<!--</filter>-->
-<!--<filter-mapping>-->
-<!--<filter-name>JwtAuthenticationFilter</filter-name>-->
-<!--<url-pattern>/api/*</url-pattern>-->
-<!--<dispatcher>REQUEST</dispatcher>-->
-<!--<dispatcher>FORWARD</dispatcher>-->
-<!--</filter-mapping>-->
-
-        <!-- ======================================== -->
-        <!-- 6. Error Pages (User-Friendly) -->
-        <!-- ======================================== -->
-<!--<error-page>-->
-<!--<error-code>404</error-code>-->
-<!--<location>/error/404.jsp</location>-->
-<!--</error-page>-->
-<!--<error-page>-->
-<!--<error-code>403</error-code>-->
-<!--<location>/error/403.jsp</location>-->
-<!--</error-page>-->
-<!--<error-page>-->
-<!--<error-code>500</error-code>-->
-<!--<location>/error/500.jsp</location>-->
-<!--</error-page>-->
-<!--<error-page>-->
-<!--<exception-type>java.lang.Exception</exception-type>-->
-<!--<location>/error/500.jsp</location>-->
-<!--</error-page>-->
-
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--        &lt;!&ndash; 7. Listeners &ndash;&gt;-->
-<!--        &lt;!&ndash; ======================================== &ndash;&gt;-->
-<!--<listener>-->
-<!--<listener-class>com.sleepy.onlinebankingsystem.utils.SessionListener</listener-class>-->
-<!--</listener>-->
-
-<!--    &lt;!&ndash; غیرفعال کردن امنیت برای همه APIها &ndash;&gt;-->
-<!--    <security-constraint>-->
-<!--        <web-resource-collection>-->
-<!--            <web-resource-name>Public APIs</web-resource-name>-->
-<!--            <url-pattern>/api/*</url-pattern>-->
-<!--        </web-resource-collection>-->
-<!--        &lt;!&ndash; هیچ نقش الزامی نیست &ndash;&gt;-->
-<!--    </security-constraint>-->
-
-<!--    &lt;!&ndash; یا کاملاً امنیت رو خاموش کن &ndash;&gt;-->
-<!--    <security-constraint>-->
-<!--        <web-resource-collection>-->
-<!--            <web-resource-name>All APIs</web-resource-name>-->
-<!--            <url-pattern>/api/*</url-pattern>-->
-<!--        </web-resource-collection>-->
-<!--        <auth-constraint />-->
-<!--    </security-constraint>-->
+    <!-- ======================================== -->
+    <!-- 7. NO Security Constraints for API -->
+    <!-- ======================================== -->
+    <!-- API endpoints are handled by their own authentication mechanism -->
+    <!-- Do NOT add security-constraint for /api/* -->
 
 </web-app>

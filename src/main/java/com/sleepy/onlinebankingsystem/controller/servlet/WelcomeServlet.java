@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -18,7 +17,7 @@ import java.util.List;
  * شامل: خانه، درباره ما، خدمات، تماس با ما
  */
 @Slf4j
-@WebServlet({"", "/", "/welcome", "/about", "/services", "/contact"})
+@WebServlet({"/welcome", "/about", "/services", "/contact"})
 public class WelcomeServlet extends HttpServlet {
 
     @Override
@@ -27,16 +26,7 @@ public class WelcomeServlet extends HttpServlet {
 
         String path = req.getServletPath();
 
-        // بررسی لاگین بودن کاربر
-        HttpSession session = req.getSession(false);
-        boolean isLoggedIn = (session != null && session.getAttribute("username") != null);
-
-        // اگر لاگین کرده و صفحه اصلی رو می‌خواد، بره داشبورد
-        if (isLoggedIn && (path.equals("/") || path.equals("/welcome") || path.isEmpty())) {
-            log.info("User already logged in, redirecting to dashboard");
-            resp.sendRedirect(req.getContextPath() + "/user-dashboard");
-            return;
-        }
+        log.info("Welcome page accessed: {}", path);
 
         // تشخیص صفحه مورد نظر
         switch (path) {
@@ -49,7 +39,7 @@ public class WelcomeServlet extends HttpServlet {
             case "/contact":
                 showContactPage(req, resp);
                 break;
-            default: // "/" یا "/welcome"
+            default: // "/welcome"
                 showWelcomePage(req, resp);
                 break;
         }
@@ -75,7 +65,7 @@ public class WelcomeServlet extends HttpServlet {
     private void showWelcomePage(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        log.info("Welcome page accessed");
+        log.info("Showing welcome page");
 
         // آمار سیستم
         req.setAttribute("totalUsers", "1000+");
@@ -105,7 +95,7 @@ public class WelcomeServlet extends HttpServlet {
     private void showAboutPage(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        log.info("About page accessed");
+        log.info("Showing about page");
 
         // اطلاعات سیستم
         req.setAttribute("systemName", "سیستم بانکداری آنلاین");
@@ -147,7 +137,7 @@ public class WelcomeServlet extends HttpServlet {
     private void showServicesPage(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        log.info("Services page accessed");
+        log.info("Showing services page");
 
         // خدمات اصلی
         List<Service> services = Arrays.asList(
@@ -201,7 +191,7 @@ public class WelcomeServlet extends HttpServlet {
     private void showContactPage(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        log.info("Contact page accessed");
+        log.info("Showing contact page");
 
         // اطلاعات تماس
         req.setAttribute("email", "support@onlinebanking.com");
@@ -274,9 +264,9 @@ public class WelcomeServlet extends HttpServlet {
      * ویژگی سیستم
      */
     public static class Feature {
-        public String icon;
-        public String title;
-        public String description;
+        private final String icon;
+        private final String title;
+        private final String description;
 
         public Feature(String icon, String title, String description) {
             this.icon = icon;
@@ -293,9 +283,9 @@ public class WelcomeServlet extends HttpServlet {
      * عضو تیم
      */
     public static class TeamMember {
-        public String name;
-        public String position;
-        public String expertise;
+        private final String name;
+        private final String position;
+        private final String expertise;
 
         public TeamMember(String name, String position, String expertise) {
             this.name = name;
@@ -312,9 +302,9 @@ public class WelcomeServlet extends HttpServlet {
      * ارزش‌های سازمانی
      */
     public static class Value {
-        public String icon;
-        public String title;
-        public String description;
+        private final String icon;
+        private final String title;
+        private final String description;
 
         public Value(String icon, String title, String description) {
             this.icon = icon;
@@ -331,10 +321,10 @@ public class WelcomeServlet extends HttpServlet {
      * خدمات
      */
     public static class Service {
-        public String icon;
-        public String title;
-        public String description;
-        public List<String> features;
+        private final String icon;
+        private final String title;
+        private final String description;
+        private final List<String> features;
 
         public Service(String icon, String title, String description, List<String> features) {
             this.icon = icon;
@@ -353,10 +343,10 @@ public class WelcomeServlet extends HttpServlet {
      * روش‌های تماس
      */
     public static class ContactMethod {
-        public String icon;
-        public String title;
-        public String value;
-        public String description;
+        private final String icon;
+        private final String title;
+        private final String value;
+        private final String description;
 
         public ContactMethod(String icon, String title, String value, String description) {
             this.icon = icon;
@@ -375,8 +365,8 @@ public class WelcomeServlet extends HttpServlet {
      * سوالات متداول
      */
     public static class FAQ {
-        public String question;
-        public String answer;
+        private final String question;
+        private final String answer;
 
         public FAQ(String question, String answer) {
             this.question = question;

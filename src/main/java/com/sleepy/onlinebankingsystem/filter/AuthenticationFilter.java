@@ -11,6 +11,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Authentication Filter
+ * Handles session-based authentication for web UI
+ * API endpoints (/api/*) are excluded and handled separately
+ */
 @Slf4j
 @WebFilter("/*")
 public class AuthenticationFilter implements Filter {
@@ -25,6 +30,7 @@ public class AuthenticationFilter implements Filter {
             "/auth/login",
             "/auth/register",
             "/auth/logout",
+            "/api/",           // ✅ API endpoints are public (handle auth separately)
             "/css/",
             "/js/",
             "/images/",
@@ -42,6 +48,13 @@ public class AuthenticationFilter implements Filter {
         String contextPath = httpRequest.getContextPath();
         String path = requestURI.substring(contextPath.length());
 
+        // ✅ Skip authentication for API endpoints
+        if (path.startsWith("/api/")) {
+            log.debug("API request, skipping session authentication: {}", path);
+            chain.doFilter(request, response);
+            return;
+        }
+
         // بررسی اینکه مسیر public هست یا نه
         boolean isPublicPath = PUBLIC_PATHS.stream()
                 .anyMatch(path::startsWith);
@@ -51,16 +64,32 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        // بررسی Session
+        // بررسی Session برای مسیرهای محافظت‌شده
         HttpSession session = httpRequest.getSession(false);
 
         if (session == null || session.getAttribute("username") == null) {
-            log.warn("Unauthorized access attempt to: {}", path);
-            httpResponse.sendRedirect(contextPath + "/auth/login?error=unauthorized");
+            log.warn("Unauthorized access attempt to: {} from IP: {}",
+                    path, httpRequest.getRemoteAddr());
+
+            // Save the original URL to redirect after login
+            httpRequest.getSession(true).setAttribute("redirectAfterLogin", path);
+
+            httpResponse.sendRedirect(contextPath + "/auth/login?error=unauthorized&redirect=" + path);
             return;
         }
 
         // کاربر لاگین کرده، اجازه دسترسی
+        log.debug("Authenticated request to: {} by user: {}", path, session.getAttribute("username"));
         chain.doFilter(request, response);
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        log.info("AuthenticationFilter initialized");
+    }
+
+    @Override
+    public void destroy() {
+        log.info("AuthenticationFilter destroyed");
     }
 }

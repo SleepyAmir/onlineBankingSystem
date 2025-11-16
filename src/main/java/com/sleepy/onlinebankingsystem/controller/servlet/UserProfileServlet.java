@@ -60,7 +60,7 @@ public class UserProfileServlet extends HttpServlet {
             // 3️⃣ ارسال به JSP
             req.setAttribute("user", user);
             req.setAttribute("roles", roles);
-            req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/users/profile.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading profile", e);
@@ -156,7 +156,7 @@ public class UserProfileServlet extends HttpServlet {
             req.setAttribute("error", message);
             req.setAttribute("user", user);
             req.setAttribute("roles", roleService.findByUser(user));
-            req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/users/profile.jsp").forward(req, resp);
         } catch (Exception e) {
             log.error("Error setting error with user", e);
             setError(req, resp, message);
@@ -173,7 +173,7 @@ public class UserProfileServlet extends HttpServlet {
             req.setAttribute("success", message);
             req.setAttribute("user", user);
             req.setAttribute("roles", roleService.findByUser(user));
-            req.getRequestDispatcher("/views/user-profile.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/users/profile.jsp").forward(req, resp);
         } catch (Exception e) {
             log.error("Error setting success with user", e);
             resp.sendRedirect(req.getContextPath() + "/user-profile");

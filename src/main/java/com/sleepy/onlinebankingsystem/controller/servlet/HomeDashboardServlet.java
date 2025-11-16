@@ -41,9 +41,9 @@ public class HomeDashboardServlet extends HttpServlet {
 
         // هدایت به داشبورد مناسب بر اساس نقش
         if (userRoles.contains(UserRole.ADMIN)) {
-            resp.sendRedirect(req.getContextPath() + "/admin/user-dashboard");
+            resp.sendRedirect(req.getContextPath() + "/admin/admin-dashboard");
         } else if (userRoles.contains(UserRole.MANAGER)) {
-            resp.sendRedirect(req.getContextPath() + "/manager/user-dashboard");
+            resp.sendRedirect(req.getContextPath() + "/manager/manager-dashboard");
         } else if (userRoles.contains(UserRole.CUSTOMER)) {
             resp.sendRedirect(req.getContextPath() + "/customer/user-dashboard");
         } else {

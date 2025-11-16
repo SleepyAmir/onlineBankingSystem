@@ -128,7 +128,7 @@ public class ManagerDashboardServlet extends HttpServlet {
             req.setAttribute("recentUsers", recentUsers);
 
             // 9️⃣ نمایش JSP
-            req.getRequestDispatcher("/views/user-dashboard/manager.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard/manager.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading manager dashboard", e);

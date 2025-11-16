@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@WebServlet("/admin/user-dashboard")
+@WebServlet("/admin/admin-dashboard")
 public class AdminDashboardServlet extends HttpServlet {
 
     @Inject
@@ -176,7 +176,7 @@ public class AdminDashboardServlet extends HttpServlet {
             req.setAttribute("systemStats", systemStats);
 
 
-            req.getRequestDispatcher("/views/user-dashboard/admin.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard/admin.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading admin dashboard", e);
