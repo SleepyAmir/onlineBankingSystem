@@ -28,8 +28,7 @@ public class UserDetailServlet extends HttpServlet {
     private RoleService roleService;
 
     @Override
-    @Transactional
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         
         try {

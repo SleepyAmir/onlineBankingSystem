@@ -34,7 +34,6 @@ public class CardCreateServlet extends HttpServlet {
     @Inject private UserService userService;
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

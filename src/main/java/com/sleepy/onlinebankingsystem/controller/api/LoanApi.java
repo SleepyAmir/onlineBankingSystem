@@ -227,7 +227,9 @@ public class LoanApi {
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
-            return Response.ok().entity(ApiResponse.success(responses)).build();
+            return Response.ok()
+                    .entity(responses)
+                    .build();
 
         } catch (Exception e) {
             log.error("Error fetching loans", e);
@@ -255,7 +257,7 @@ public class LoanApi {
 
             LoanResponse response = mapToResponse(loanOpt.get());
 
-            return Response.ok().entity(ApiResponse.success(response)).build();
+            return Response.ok().entity(response).build();
 
         } catch (Exception e) {
             log.error("Error fetching loan by id: {}", id, e);
@@ -279,7 +281,7 @@ public class LoanApi {
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
-            return Response.ok().entity(ApiResponse.success(responses)).build();
+            return Response.ok().entity(responses).build();
 
         } catch (IllegalArgumentException e) {
             return Response.status(400)
@@ -306,7 +308,7 @@ public class LoanApi {
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
-            return Response.ok().entity(ApiResponse.success(responses)).build();
+            return Response.ok().entity(responses).build();
 
         } catch (Exception e) {
             log.error("Error fetching active loans", e);
@@ -329,7 +331,7 @@ public class LoanApi {
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
-            return Response.ok().entity(ApiResponse.success(responses)).build();
+            return Response.ok().entity(responses).build();
 
         } catch (Exception e) {
             log.error("Error fetching pending loans", e);

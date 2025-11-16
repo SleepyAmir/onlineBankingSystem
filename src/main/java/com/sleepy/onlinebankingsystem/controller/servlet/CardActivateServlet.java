@@ -71,7 +71,6 @@ public class CardActivateServlet extends HttpServlet {
     }
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "از متد POST استفاده کنید");

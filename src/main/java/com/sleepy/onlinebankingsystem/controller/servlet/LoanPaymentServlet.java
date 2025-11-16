@@ -24,7 +24,6 @@ public class LoanPaymentServlet extends HttpServlet {
     private LoanService loanService;
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

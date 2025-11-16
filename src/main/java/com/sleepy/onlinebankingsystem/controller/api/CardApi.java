@@ -169,7 +169,7 @@ public class CardApi {
                     .collect(Collectors.toList());
 
             return Response.ok()
-                    .entity(ApiResponse.success(responses))
+                    .entity(responses)
                     .build();
 
         } catch (Exception e) {
@@ -194,7 +194,7 @@ public class CardApi {
                     .collect(Collectors.toList());
 
             return Response.ok()
-                    .entity(ApiResponse.success(responses))
+                    .entity(responses)
                     .build();
 
         } catch (Exception e) {
@@ -224,7 +224,7 @@ public class CardApi {
             CardResponse response = mapToResponse(cardOpt.get());
 
             return Response.ok()
-                    .entity(ApiResponse.success(response))
+                    .entity(response)
                     .build();
 
         } catch (Exception e) {
@@ -254,7 +254,7 @@ public class CardApi {
             CardResponse response = mapToResponse(cardOpt.get());
 
             return Response.ok()
-                    .entity(ApiResponse.success(response))
+                    .entity(response)
                     .build();
 
         } catch (Exception e) {
@@ -287,7 +287,7 @@ public class CardApi {
                     .collect(Collectors.toList());
 
             return Response.ok()
-                    .entity(ApiResponse.success(responses))
+                    .entity(responses)
                     .build();
 
         } catch (Exception e) {

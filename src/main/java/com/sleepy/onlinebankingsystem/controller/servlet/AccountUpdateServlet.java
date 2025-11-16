@@ -32,7 +32,6 @@ public class AccountUpdateServlet extends HttpServlet {
     private AccountService accountService;
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

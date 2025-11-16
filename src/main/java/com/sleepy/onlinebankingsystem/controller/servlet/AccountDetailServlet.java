@@ -30,8 +30,7 @@ public class AccountDetailServlet extends HttpServlet {
     private UserService userService;
 
     @Override
-    @Transactional
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         
         try {

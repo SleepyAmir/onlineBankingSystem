@@ -244,7 +244,7 @@ public class TransactionApi {
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
-            return Response.ok().entity(ApiResponse.success(responses)).build();
+            return Response.ok().entity(responses).build();
 
         } catch (Exception e) {
             log.error("Error fetching transactions", e);
@@ -272,7 +272,7 @@ public class TransactionApi {
 
             TransactionResponse response = mapToResponse(transactionOpt.get());
 
-            return Response.ok().entity(ApiResponse.success(response)).build();
+            return Response.ok().entity(response).build();
 
         } catch (Exception e) {
             log.error("Error fetching transaction by id: {}", id, e);
@@ -303,7 +303,7 @@ public class TransactionApi {
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
-            return Response.ok().entity(ApiResponse.success(responses)).build();
+            return Response.ok().entity(responses).build();
 
         } catch (Exception e) {
             log.error("Error fetching transactions for account: {}", accountId, e);
@@ -334,7 +334,7 @@ public class TransactionApi {
                     .map(this::mapToResponse)
                     .collect(Collectors.toList());
 
-            return Response.ok().entity(ApiResponse.success(responses)).build();
+            return Response.ok().entity(responses).build();
 
         } catch (Exception e) {
             log.error("Error fetching transactions for user: {}", userId, e);

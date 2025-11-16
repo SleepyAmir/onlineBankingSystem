@@ -22,7 +22,6 @@ import java.util.List;
 public class WelcomeServlet extends HttpServlet {
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

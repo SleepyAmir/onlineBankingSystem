@@ -36,7 +36,6 @@ public class AccountCreateServlet extends HttpServlet {
     private UserService userService;
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

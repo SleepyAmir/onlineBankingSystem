@@ -24,8 +24,7 @@ public class UserListServlet extends HttpServlet {
     private static final int PAGE_SIZE = 10;
 
     @Override
-    @Transactional
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         
         try {

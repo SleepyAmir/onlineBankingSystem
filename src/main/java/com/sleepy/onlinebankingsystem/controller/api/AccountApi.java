@@ -107,7 +107,7 @@ public class AccountApi {
                     .collect(Collectors.toList());
 
             return Response.ok()
-                    .entity(ApiResponse.success(responses))
+                    .entity(responses)
                     .build();
 
         } catch (Exception e) {
@@ -137,7 +137,7 @@ public class AccountApi {
             AccountResponse response = mapToResponse(accountOpt.get());
 
             return Response.ok()
-                    .entity(ApiResponse.success(response))
+                    .entity(response)
                     .build();
 
         } catch (Exception e) {
@@ -167,7 +167,7 @@ public class AccountApi {
             AccountResponse response = mapToResponse(accountOpt.get());
 
             return Response.ok()
-                    .entity(ApiResponse.success(response))
+                    .entity(response)
                     .build();
 
         } catch (Exception e) {
@@ -200,7 +200,7 @@ public class AccountApi {
                     .collect(Collectors.toList());
 
             return Response.ok()
-                    .entity(ApiResponse.success(responses))
+                    .entity(responses)
                     .build();
 
         } catch (Exception e) {

@@ -41,8 +41,7 @@ public class TransactionHistoryServlet extends HttpServlet {
     private static final int PAGE_SIZE = 20;
 
     @Override
-    @Transactional
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         
         try {

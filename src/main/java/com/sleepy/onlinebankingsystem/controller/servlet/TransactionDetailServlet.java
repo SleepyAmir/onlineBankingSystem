@@ -25,7 +25,6 @@ public class TransactionDetailServlet extends HttpServlet {
     private TransactionService transactionService;
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         

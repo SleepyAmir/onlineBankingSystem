@@ -33,7 +33,6 @@ public class UserProfileServlet extends HttpServlet {
     private RoleService roleService;
 
     @Override
-    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

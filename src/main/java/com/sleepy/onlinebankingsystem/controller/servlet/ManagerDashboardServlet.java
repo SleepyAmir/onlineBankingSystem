@@ -39,8 +39,7 @@ public class ManagerDashboardServlet extends HttpServlet {
     private CardService cardService;
 
     @Override
-    @Transactional
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         
         try {
