@@ -40,6 +40,7 @@ public class CustomerDashboardServlet extends HttpServlet {
     private CardService cardService;
 
     @Override
+    @Transactional
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         
@@ -74,22 +75,23 @@ public class CustomerDashboardServlet extends HttpServlet {
 
             // 3️⃣ تراکنش‌های کاربر
             List<Transaction> userTransactions = transactionService.findByUser(user);
-            
-            // آخرین 10 تراکنش
+
+// آخرین 10 تراکنش
             List<Transaction> recentTransactions = userTransactions.stream()
                     .sorted((t1, t2) -> t2.getTransactionDate().compareTo(t1.getTransactionDate()))
                     .limit(10)
                     .collect(Collectors.toList());
 
-            // تراکنش‌های این ماه
+// تراکنش‌های این ماه
             LocalDateTime monthStart = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
             LocalDateTime now = LocalDateTime.now();
-            List<Transaction> monthTransactions = transactionService.findByDateRange(monthStart, now).stream()
-                    .filter(t -> (t.getFromAccount() != null && t.getFromAccount().getUser().getId().equals(user.getId())) ||
-                                 (t.getToAccount() != null && t.getToAccount().getUser().getId().equals(user.getId())))
+
+            List<Transaction> monthTransactions = userTransactions.stream()
+                    .filter(t -> !t.getTransactionDate().isBefore(monthStart) &&
+                            !t.getTransactionDate().isAfter(now))
                     .collect(Collectors.toList());
 
-            // حجم تراکنش‌های این ماه
+// حجم تراکنش‌های این ماه
             BigDecimal monthTransactionVolume = monthTransactions.stream()
                     .map(Transaction::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -186,7 +188,7 @@ public class CustomerDashboardServlet extends HttpServlet {
             req.setAttribute("notifications", notifications.toString());
 
             // 9️⃣ نمایش JSP
-            req.getRequestDispatcher("/views/customer.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard/customer.jsp").forward(req, resp);
 
         } catch (Exception e) {
             log.error("Error loading customer dashboard", e);

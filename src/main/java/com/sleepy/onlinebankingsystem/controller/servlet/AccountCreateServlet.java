@@ -61,6 +61,7 @@ public class AccountCreateServlet extends HttpServlet {
             setError(req, resp, "خطا در بارگذاری فرم: " + e.getMessage());
         }
     }
+// در AccountCreateServlet.java - متد doPost
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -96,35 +97,43 @@ public class AccountCreateServlet extends HttpServlet {
             Long targetUserId;
 
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
-                // Admin/Manager می‌تونن برای هر کاربری حساب بسازن
                 if (userIdParam != null && !userIdParam.isBlank()) {
                     targetUserId = Long.parseLong(userIdParam);
                 } else {
-                    // اگر انتخاب نکردن، برای خودشون
                     Optional<User> currentUserOpt = userService.findByUsername(currentUsername);
                     targetUserId = currentUserOpt.orElseThrow().getId();
                 }
             } else {
-                // کاربر عادی فقط برای خودش
                 Optional<User> currentUserOpt = userService.findByUsername(currentUsername);
                 targetUserId = currentUserOpt.orElseThrow().getId();
             }
 
             // 4️⃣ پردازش موجودی اولیه
             BigDecimal initialBalance = null;
-            if (initialBalanceParam != null && !initialBalanceParam.isBlank()) {
-                try {
-                    initialBalance = new BigDecimal(initialBalanceParam);
-                } catch (NumberFormatException e) {
-                    setError(req, resp, "موجودی اولیه نامعتبر است");
-                    return;
+
+            // ✅ فقط ادمین می‌تواند موجودی اولیه تعیین کند
+            if (userRoles.contains(UserRole.ADMIN)) {
+                if (initialBalanceParam != null && !initialBalanceParam.isBlank()) {
+                    try {
+                        initialBalance = new BigDecimal(initialBalanceParam);
+                        if (initialBalance.compareTo(BigDecimal.ZERO) < 0) {
+                            setError(req, resp, "موجودی اولیه نمی‌تواند منفی باشد");
+                            return;
+                        }
+                    } catch (NumberFormatException e) {
+                        setError(req, resp, "موجودی اولیه نامعتبر است");
+                        return;
+                    }
                 }
+            } else {
+                // ✅ کاربر عادی: موجودی صفر
+                initialBalance = BigDecimal.ZERO;
             }
 
             log.info("Creating account - User: {}, Type: {}, Balance: {}",
                     targetUserId, accountType, initialBalance);
 
-            // 5️⃣ فراخوانی Service (تمام اعتبارسنجی اونجاست)
+            // 5️⃣ فراخوانی Service
             Account savedAccount = accountService.createAccount(
                     targetUserId,
                     accountType,
@@ -149,7 +158,6 @@ public class AccountCreateServlet extends HttpServlet {
             setError(req, resp, "خطا در ایجاد حساب: " + e.getMessage());
         }
     }
-
     /**
      * نمایش خطا و بازگشت به فرم
      */

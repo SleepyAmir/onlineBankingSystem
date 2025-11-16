@@ -1,10 +1,12 @@
 package com.sleepy.onlinebankingsystem.controller.servlet;
 
 import com.sleepy.onlinebankingsystem.model.entity.Account;
+import com.sleepy.onlinebankingsystem.model.entity.Card;
 import com.sleepy.onlinebankingsystem.model.entity.Transaction;
 import com.sleepy.onlinebankingsystem.model.entity.User;
 import com.sleepy.onlinebankingsystem.model.enums.UserRole;
 import com.sleepy.onlinebankingsystem.service.AccountService;
+import com.sleepy.onlinebankingsystem.service.CardService;
 import com.sleepy.onlinebankingsystem.service.TransactionService;
 import com.sleepy.onlinebankingsystem.service.UserService;
 import jakarta.inject.Inject;
@@ -22,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @WebServlet("/transactions")
@@ -35,6 +38,9 @@ public class TransactionServlet extends HttpServlet {
 
     @Inject
     private UserService userService;
+
+    @Inject
+    private CardService cardService;
 
     /**
      * نمایش فرم تراکنش
@@ -59,8 +65,16 @@ public class TransactionServlet extends HttpServlet {
             }
 
             User user = userOpt.get();
+
+            // ✅ دریافت حساب‌ها برای واریز/برداشت
             List<Account> accounts = accountService.findByUser(user);
             req.setAttribute("accounts", accounts);
+
+            // ✅ دریافت کارت‌های فعال برای انتقال
+            List<Card> activeCards = cardService.findByUser(user).stream()
+                    .filter(Card::isActive)
+                    .collect(Collectors.toList());
+            req.setAttribute("activeCards", activeCards);
 
             req.getRequestDispatcher("/views/transactions/form.jsp").forward(req, resp);
 
@@ -198,23 +212,29 @@ public class TransactionServlet extends HttpServlet {
     }
 
     /**
-     * انتقال وجه
+     * انتقال وجه با شماره کارت
      */
     private void handleTransfer(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
 
-        String fromAccountId = req.getParameter("fromAccountId");
-        String toAccountNumber = req.getParameter("toAccountNumber");
+        String fromCardId = req.getParameter("fromCardId");
+        String toCardNumber = req.getParameter("toCardNumber");
         String amountParam = req.getParameter("amount");
         String description = req.getParameter("description");
 
         // اعتبارسنجی ورودی
-        if (fromAccountId == null || fromAccountId.isBlank()) {
-            setError(req, resp, "انتخاب حساب مبدأ الزامی است");
+        if (fromCardId == null || fromCardId.isBlank()) {
+            setError(req, resp, "انتخاب کارت مبدأ الزامی است");
             return;
         }
-        if (toAccountNumber == null || toAccountNumber.isBlank()) {
-            setError(req, resp, "شماره حساب مقصد الزامی است");
+        if (toCardNumber == null || toCardNumber.isBlank()) {
+            setError(req, resp, "شماره کارت مقصد الزامی است");
+            return;
+        }
+
+        // اعتبارسنجی فرمت شماره کارت
+        if (!toCardNumber.matches("\\d{16}")) {
+            setError(req, resp, "شماره کارت باید 16 رقم باشد");
             return;
         }
 
@@ -224,20 +244,29 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // دریافت حساب مبدأ
-        Account fromAccount = accountService.findById(Long.parseLong(fromAccountId))
-                .orElseThrow(() -> new IllegalArgumentException("حساب مبدأ یافت نشد"));
+        // دریافت کارت مبدأ
+        Card fromCard = cardService.findById(Long.parseLong(fromCardId))
+                .orElseThrow(() -> new IllegalArgumentException("کارت مبدأ یافت نشد"));
 
         // بررسی دسترسی
-        if (!hasAccessToAccount(req, fromAccount)) {
-            setError(req, resp, "شما فقط می‌توانید از حساب خودتان انتقال دهید");
+        HttpSession session = req.getSession(false);
+        String currentUsername = (String) session.getAttribute("username");
+
+        if (!fromCard.getAccount().getUser().getUsername().equals(currentUsername)) {
+            setError(req, resp, "شما فقط می‌توانید از کارت خودتان انتقال دهید");
             return;
         }
 
-        // فراخوانی Service
-        Transaction transaction = transactionService.processTransfer(
-                fromAccount.getAccountNumber(),
-                toAccountNumber,
+        // بررسی فعال بودن کارت مبدأ
+        if (!fromCard.isActive()) {
+            setError(req, resp, "کارت مبدأ غیرفعال است");
+            return;
+        }
+
+        // ✅ فراخوانی Service با شماره کارت
+        Transaction transaction = transactionService.processCardTransfer(
+                fromCard.getCardNumber(),
+                toCardNumber,
                 amount,
                 description
         );
