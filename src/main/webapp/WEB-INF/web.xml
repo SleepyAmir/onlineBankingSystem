@@ -13,7 +13,7 @@
     <session-config>
         <session-timeout>30</session-timeout>
         <cookie-config>
-            <http-only>true</http-only>
+            <http-only>false</http-only>
             <!-- IMPORTANT: Set to false for development, true for production with HTTPS -->
             <secure>false</secure>
             <max-age>1800</max-age>

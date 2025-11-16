@@ -84,6 +84,7 @@ public class AccountServiceImpl implements AccountService {
                     .setParameter("id", id)
                     .getSingleResult();
             return Optional.of(account);
+
         } catch (NoResultException e) {
             log.debug("No account found with id: {}", id);
             return Optional.empty();
@@ -103,11 +104,23 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findByUser(user);
     }
 
-    @Override
-    public List<Account> findByUserWithUser(User user) throws Exception {
-        log.info("Fetching accounts with user for user ID: {}", user.getId());
-        return accountRepository.findByUserWithUser(user);
-    }
+//    @Override
+//    public List<Account> findByUserWithUser(User user) throws Exception {
+//        log.info("Fetching accounts with user for user ID: {}", user.getId());
+//        return accountRepository.findByUserWithUser(user);
+//    }
+@Override
+public List<Account> findByUserWithUser(User user) throws Exception {
+    log.info("Fetching accounts with user for user ID: {}", user.getId());
+    List<Account> accounts = accountRepository.findByUserWithUser(user);
+
+    // ✅ Force Initialize برای Enum ها
+    accounts.forEach(account -> {
+        account.getType(); // فقط فراخوانی getter کافیه
+    });
+
+    return accounts;
+}
 
     @Override
     public List<Account> findByStatus(AccountStatus status) throws Exception {
