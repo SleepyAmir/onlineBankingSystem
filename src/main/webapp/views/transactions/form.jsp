@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="/views/common/header.jsp">
     <jsp:param name="title" value="تراکنش بانکی" />
@@ -55,8 +56,10 @@
                         <select class="form-select" id="fromAccountId" name="fromAccountId">
                             <option value="">انتخاب حساب</option>
                             <c:forEach items="${accounts}" var="acc">
-                                <option value="${acc.id}" ${acc.id == param.fromAccountId ? 'selected' : ''}>
-                                        ${acc.accountNumber} - ${acc.type} - موجودی: <c:out value="${acc.balance}"/> ریال
+                                <option value="${acc.id}">
+                                        ${acc.accountNumber} -
+                                    <c:out value="${acc.type}"/> -
+                                    موجودی: <fmt:formatNumber value="${acc.balance}"/> ریال
                                 </option>
                             </c:forEach>
                         </select>

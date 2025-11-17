@@ -66,14 +66,22 @@ public class TransactionServlet extends HttpServlet {
 
             User user = userOpt.get();
 
-            // ✅ دریافت حساب‌ها با User (JOIN FETCH) برای واریز/برداشت
+            // ✅ استفاده از متد جدید که Account را با User لود می‌کند
             List<Account> accounts = accountService.findByUserWithUser(user);
+
+            // ✅ Force initialize کردن Enum ها
+            accounts.forEach(account -> {
+                account.getType(); // این باعث می‌شود Hibernate Enum را لود کند
+            });
+
             req.setAttribute("accounts", accounts);
 
-            // ✅ دریافت کارت‌های فعال برای انتقال
-            List<Card> activeCards = cardService.findByUser(user).stream()
+            // ✅ دریافت کارت‌های فعال با JOIN FETCH
+            List<Card> activeCards = cardService.findByUserWithAccountAndUser(user.getId())
+                    .stream()
                     .filter(Card::isActive)
                     .collect(Collectors.toList());
+
             req.setAttribute("activeCards", activeCards);
 
             req.getRequestDispatcher("/views/transactions/form.jsp").forward(req, resp);

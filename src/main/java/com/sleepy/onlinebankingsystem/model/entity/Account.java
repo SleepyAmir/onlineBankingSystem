@@ -23,8 +23,7 @@ import java.util.Set;
         @NamedQuery(name = "Account.findByUser", query = "SELECT a FROM Account a WHERE a.user = :user"),
         @NamedQuery(name = "Account.findByAccountNumber", query = "SELECT a FROM Account a WHERE a.accountNumber = :accountNumber"),
         @NamedQuery(name = "Account.findByStatus", query = "SELECT a FROM Account a WHERE a.status = :status"),
-        @NamedQuery(name = "Account.findByUserWithUser", query = "SELECT DISTINCT a FROM Account a " + "JOIN FETCH a.user u " + "WHERE a.user = :user AND a.deleted = false"),
-        @NamedQuery(name = "Account.findAll", query = "SELECT a FROM Account a"),
+        @NamedQuery(name = "Account.findByUserWithUser", query = "SELECT DISTINCT a FROM Account a " + "JOIN FETCH a.user u " + "WHERE a.user = :user AND a.deleted = false"),        @NamedQuery(name = "Account.findAll", query = "SELECT a FROM Account a"),
         @NamedQuery(name = "Account.findByIdWithUser", query = "SELECT a FROM Account a JOIN FETCH a.user WHERE a.id = :id AND a.deleted = false")
 })
 public class Account extends Base {
@@ -59,6 +58,7 @@ public class Account extends Base {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Basic(fetch = FetchType.EAGER)
     private AccountStatus status = AccountStatus.ACTIVE;
 
     @OneToMany(mappedBy = "fromAccount", fetch = FetchType.LAZY)

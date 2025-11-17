@@ -102,12 +102,21 @@ public class CardServiceImpl implements CardService {
     @Override
     public List<Card> findByUserWithAccountAndUser(Long userId) throws Exception {
         log.debug("Fetching cards with account and user for user ID: {}", userId);
-        return cardRepository.getEntityManager()
+        List<Card> cards = cardRepository.getEntityManager()
                 .createNamedQuery(Card.FIND_BY_USER_WITH_ACCOUNT_AND_USER, Card.class)
                 .setParameter("userId", userId)
                 .getResultList();
-    }
 
+        // ✅ Force initialize
+        cards.forEach(card -> {
+            card.getType(); // Force load enum
+            if (card.getAccount() != null) {
+                card.getAccount().getType(); // Force load Account enum
+            }
+        });
+
+        return cards;
+    }
     @Override
     public List<Card> findByUserWithAccount(Long userId) throws Exception {
         log.debug("Fetching cards with account for user ID: {}", userId);

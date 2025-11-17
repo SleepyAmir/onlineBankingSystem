@@ -12,6 +12,7 @@ import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -114,9 +115,12 @@ public List<Account> findByUserWithUser(User user) throws Exception {
     log.info("Fetching accounts with user for user ID: {}", user.getId());
     List<Account> accounts = accountRepository.findByUserWithUser(user);
 
-    // ✅ Force Initialize برای Enum ها
+    // ✅ Force Initialize کردن Enum ها
     accounts.forEach(account -> {
-        account.getType(); // فقط فراخوانی getter کافیه
+        // این خط باعث می‌شود Hibernate تمام فیلدهای lazy را بارگذاری کند
+        Hibernate.initialize(account);
+        account.getType(); // Force load enum
+        account.getStatus(); // Force load enum
     });
 
     return accounts;
