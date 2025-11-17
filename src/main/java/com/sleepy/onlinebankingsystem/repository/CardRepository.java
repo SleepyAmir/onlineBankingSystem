@@ -5,6 +5,7 @@ import com.sleepy.onlinebankingsystem.model.entity.Card;
 import com.sleepy.onlinebankingsystem.model.entity.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,16 @@ public class CardRepository extends BaseRepository<Card> {
 
     public List<Card> findActiveCards() {
         return em.createNamedQuery(Card.FIND_ACTIVE_CARDS, Card.class).getResultList();
+    }
+    public Optional<Card> findByIdWithAccount(Long id) {
+        try {
+            Card card = em.createNamedQuery(Card.FIND_BY_ID_WITH_ACCOUNT, Card.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+            return Optional.of(card);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     public List<Card> findAllCards() {

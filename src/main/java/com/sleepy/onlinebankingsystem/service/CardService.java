@@ -61,4 +61,6 @@ public interface CardService {
      * @throws Exception اگر صدور کارت امکان‌پذیر نباشد
      */
     void validateCardIssuance(Long accountId) throws Exception;
+
+    Optional<Card> findByIdWithAccount(Long id) throws Exception;
 }

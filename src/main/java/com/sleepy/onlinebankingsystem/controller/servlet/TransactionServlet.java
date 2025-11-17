@@ -252,8 +252,8 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // دریافت کارت مبدأ
-        Card fromCard = cardService.findById(Long.parseLong(fromCardId))
+        // ✅ دریافت کارت مبدأ با JOIN FETCH
+        Card fromCard = cardService.findByIdWithAccount(Long.parseLong(fromCardId))
                 .orElseThrow(() -> new IllegalArgumentException("کارت مبدأ یافت نشد"));
 
         // بررسی دسترسی
@@ -271,7 +271,7 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // ✅ فراخوانی Service با شماره کارت
+        // فراخوانی Service
         Transaction transaction = transactionService.processCardTransfer(
                 fromCard.getCardNumber(),
                 toCardNumber,

@@ -253,6 +253,11 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    public Optional<Card> findByIdWithAccount(Long id) throws Exception {
+        return cardRepository.findByIdWithAccount(id);
+    }
+
+    @Override
     public void validateCardIssuance(Long accountId) throws Exception {
 
         // 1. بررسی وجود حساب
