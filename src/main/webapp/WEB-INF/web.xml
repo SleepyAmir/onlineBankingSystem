@@ -28,6 +28,23 @@
         <welcome-file>welcome</welcome-file>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
+    <!-- ======================================== -->
+    <!-- 3. Character Encoding Filter (MUST BE FIRST) -->
+    <!-- ======================================== -->
+    <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>com.sleepy.onlinebankingsystem.filter.CharacterEncodingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
+        <dispatcher>ERROR</dispatcher>
+    </filter-mapping>
+
+
 
     <!-- ======================================== -->
     <!-- 3. CSRF Filter (ONLY for Web UI, NOT for API) -->

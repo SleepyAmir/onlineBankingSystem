@@ -1,14 +1,10 @@
 package com.sleepy.onlinebankingsystem.model.entity;
 
-
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import org.hibernate.annotations.Where;
-
 import java.util.HashSet;
 import java.util.Set;
-
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -29,10 +25,8 @@ public class User extends Base {
     public static final String FIND_BY_NATIONAL_CODE = "User.findByNationalCode";
     public static final String FIND_ACTIVE_USERS = "User.findActiveUsers";
 
-
-
     @NotBlank @Size(min = 2, max = 50)
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, columnDefinition = "NVARCHAR2(50)")
     private String username;
 
     @NotBlank
@@ -41,11 +35,11 @@ public class User extends Base {
     private String password;
 
     @NotBlank @Size(max = 100)
-    @Column(length = 100)
+    @Column(length = 100, columnDefinition = "NVARCHAR2(100)")
     private String firstName;
 
     @NotBlank @Size(max = 100)
-    @Column(length = 100)
+    @Column(length = 100, columnDefinition = "NVARCHAR2(100)")
     private String lastName;
 
     @NotBlank @Pattern(regexp = "^09[0-9]{9}$")
@@ -58,8 +52,6 @@ public class User extends Base {
 
     @Column
     private boolean active = true;
-
-
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
@@ -88,5 +80,4 @@ public class User extends Base {
         accounts.remove(account);
         account.setUser(null);
     }
-
 }

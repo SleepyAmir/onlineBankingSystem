@@ -1,14 +1,11 @@
 package com.sleepy.onlinebankingsystem.model.entity;
 
-
 import com.sleepy.onlinebankingsystem.model.enums.TransactionStatus;
 import com.sleepy.onlinebankingsystem.model.enums.TransactionType;
 import lombok.*;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
 
 @Getter
 @Setter
@@ -53,12 +50,11 @@ public class Transaction extends Base {
     @Column(nullable = false)
     private LocalDateTime transactionDate;
 
-
-    @Enumerated(EnumType.STRING) // ✅ این خط رو اضافه کن
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionStatus status;
 
-    @Column(length = 255)
+    @Column(length = 255, columnDefinition = "NVARCHAR2(255)")
     private String description;
 
     @Column(length = 50)
