@@ -48,7 +48,9 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
-        
+//        if (req.getCharacterEncoding() == null) {
+//            req.setCharacterEncoding("UTF-8");
+//        }
         // نمایش صفحه لاگین (فرم HTML/JSP)
         req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
     }
@@ -57,9 +59,11 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         
-        resp.setContentType("text/html; charset=UTF-8");
-        resp.setCharacterEncoding("UTF-8");
-
+//        resp.setContentType("text/html; charset=UTF-8");
+//        resp.setCharacterEncoding("UTF-8");
+//        if (req.getCharacterEncoding() == null) {
+//            req.setCharacterEncoding("UTF-8");
+//        }
         try {
             // 1️⃣ دریافت پارامترهای فرم
             String username = req.getParameter("username");
