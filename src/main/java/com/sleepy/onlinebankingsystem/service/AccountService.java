@@ -86,4 +86,7 @@ public interface AccountService {
      * @return شماره حساب 16 رقمی
      */
     String generateAccountNumber() throws Exception;
+
+    Optional<Account> findByAccountNumberWithUser(String accountNumber) throws Exception;
+
 }

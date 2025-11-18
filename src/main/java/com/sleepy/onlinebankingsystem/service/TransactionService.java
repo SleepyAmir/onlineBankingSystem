@@ -79,4 +79,8 @@ public interface TransactionService {
      * @return تراکنش برگشت خورده
      */
     Transaction reverseTransaction(String transactionId) throws Exception;
+
+
+    Optional<Transaction> findByIdWithAccounts(Long id) throws Exception;
+    Optional<Transaction> findByTransactionIdWithAccounts(String transactionId) throws Exception;
 }

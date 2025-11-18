@@ -333,6 +333,20 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
+    // در TransactionServiceImpl.java - اضافه کنید
+
+    @Override
+    public Optional<Transaction> findByIdWithAccounts(Long id) throws Exception {
+        log.debug("Fetching transaction with accounts by ID: {}", id);
+        return transactionRepository.findByIdWithAccounts(id);
+    }
+
+    @Override
+    public Optional<Transaction> findByTransactionIdWithAccounts(String transactionId) throws Exception {
+        log.debug("Fetching transaction with accounts by transaction ID: {}", transactionId);
+        return transactionRepository.findByTransactionIdWithAccounts(transactionId);
+    }
+
     @Transactional
     @Override
     public Transaction reverseTransaction(String transactionId) throws Exception {

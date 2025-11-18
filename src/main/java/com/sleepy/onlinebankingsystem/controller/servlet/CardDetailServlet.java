@@ -40,12 +40,13 @@ public class CardDetailServlet extends HttpServlet {
             }
 
             Optional<Card> cardOpt;
-            
+
+            // تغییر این قسمت:
             if (cardNumberParam != null && !cardNumberParam.isBlank()) {
-                cardOpt = cardService.findByCardNumber(cardNumberParam);
+                cardOpt = cardService.findByCardNumberWithAccount(cardNumberParam);
             } else {
                 Long cardId = Long.parseLong(idParam);
-                cardOpt = cardService.findById(cardId);
+                cardOpt = cardService.findByIdWithAccount(cardId);
             }
 
             if (cardOpt.isEmpty()) {

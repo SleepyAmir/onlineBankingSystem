@@ -23,13 +23,10 @@ import java.util.Date;
         @NamedQuery(name = "Card.findByUser", query = "SELECT c FROM Card c WHERE c.account.user = :user"),
         @NamedQuery(name = "Card.findActiveCards", query = "SELECT c FROM Card c WHERE c.active = true "),
         @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c "),
-        @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.account.user.id = :userId AND c.deleted = false"
-        ),
-        @NamedQuery(
-                name = "Card.findByIdWithAccount",
-                query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.id = :id AND c.deleted = false"
-        ),
-        @NamedQuery(name = "Card.findByUserWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user u " + "WHERE u.id = :userId AND c.deleted = false")
+        @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.account.user.id = :userId AND c.deleted = false"),
+        @NamedQuery(name = "Card.findByIdWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.id = :id AND c.deleted = false"),
+        @NamedQuery(name = "Card.findByUserWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user u " + "WHERE u.id = :userId AND c.deleted = false"),
+        @NamedQuery(name = "Card.findByCardNumberWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account a JOIN FETCH a.user WHERE c.cardNumber = :cardNumber AND c.deleted = false")
 })
 public class Card extends Base {
     public static final String FIND_BY_ACCOUNT = "Card.findByAccount";
@@ -40,6 +37,7 @@ public class Card extends Base {
     public static final String FIND_BY_USER_WITH_ACCOUNT = "Card.findByUserWithAccount";
     public static final String FIND_BY_USER_WITH_ACCOUNT_AND_USER = "Card.findByUserWithAccountAndUser";
     public static final String FIND_BY_ID_WITH_ACCOUNT = "Card.findByIdWithAccount";
+    public static final String FIND_BY_CARD_NUMBER_WITH_ACCOUNT = "Card.findByCardNumberWithAccount";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)

@@ -5,6 +5,7 @@ import com.sleepy.onlinebankingsystem.model.entity.User;
 import com.sleepy.onlinebankingsystem.model.enums.LoanStatus;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +39,28 @@ public class LoanRepository extends BaseRepository<Loan> {
     public List<Loan> findByStatus(LoanStatus status) {
         return em.createNamedQuery(Loan.FIND_BY_STATUS, Loan.class)
                 .setParameter("status", status).getResultList();
+    }
+
+    public Optional<Loan> findByIdWithUserAndAccount(Long id) {
+        try {
+            Loan loan = em.createNamedQuery(Loan.FIND_BY_ID_WITH_USER_AND_ACCOUNT, Loan.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+            return Optional.of(loan);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Loan> findByLoanNumberWithUserAndAccount(String loanNumber) {
+        try {
+            Loan loan = em.createNamedQuery(Loan.FIND_BY_LOAN_NUMBER_WITH_USER_AND_ACCOUNT, Loan.class)
+                    .setParameter("loanNumber", loanNumber)
+                    .getSingleResult();
+            return Optional.of(loan);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     public List<Loan> findActiveLoans() {

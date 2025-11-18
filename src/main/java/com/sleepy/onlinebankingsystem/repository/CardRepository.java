@@ -53,6 +53,16 @@ public class CardRepository extends BaseRepository<Card> {
         }
     }
 
+    public Optional<Card> findByCardNumberWithAccount(String cardNumber) {
+        try {
+            Card card = em.createNamedQuery(Card.FIND_BY_CARD_NUMBER_WITH_ACCOUNT, Card.class)
+                    .setParameter("cardNumber", cardNumber)
+                    .getSingleResult();
+            return Optional.of(card);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
     public List<Card> findAllCards() {
         return em.createNamedQuery(Card.FIND_ALL, Card.class).getResultList();
     }

@@ -367,6 +367,20 @@ public class LoanServiceImpl implements LoanService {
         }
     }
 
+    // در LoanServiceImpl.java - اضافه کنید
+
+    @Override
+    public Optional<Loan> findByIdWithUserAndAccount(Long id) throws Exception {
+        log.debug("Fetching loan with user and account by ID: {}", id);
+        return loanRepository.findByIdWithUserAndAccount(id);
+    }
+
+    @Override
+    public Optional<Loan> findByLoanNumberWithUserAndAccount(String loanNumber) throws Exception {
+        log.debug("Fetching loan with user and account by loan number: {}", loanNumber);
+        return loanRepository.findByLoanNumberWithUserAndAccount(loanNumber);
+    }
+
     // ========== متدهای کمکی ==========
 
     private String generateLoanNumber() {

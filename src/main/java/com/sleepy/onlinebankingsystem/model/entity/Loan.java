@@ -21,7 +21,9 @@ import java.time.LocalDate;
         @NamedQuery(name = "Loan.findByLoanNumber", query = "SELECT l FROM Loan l WHERE l.loanNumber = :loanNumber "),
         @NamedQuery(name = "Loan.findByStatus", query = "SELECT l FROM Loan l WHERE l.status = :status"),
         @NamedQuery(name = "Loan.findActiveLoans", query = "SELECT l FROM Loan l WHERE l.status = 'ACTIVE' "),
-        @NamedQuery(name = "Loan.findAll", query = "SELECT l FROM Loan l ")
+        @NamedQuery(name = "Loan.findAll", query = "SELECT l FROM Loan l "),
+        @NamedQuery(name = "Loan.findByIdWithUserAndAccount", query = "SELECT l FROM Loan l JOIN FETCH l.user JOIN FETCH l.account a JOIN FETCH a.user WHERE l.id = :id AND l.deleted = false"),
+        @NamedQuery(name = "Loan.findByLoanNumberWithUserAndAccount", query = "SELECT l FROM Loan l JOIN FETCH l.user JOIN FETCH l.account a JOIN FETCH a.user WHERE l.loanNumber = :loanNumber AND l.deleted = false")
 })
 public class Loan extends Base {
     public static final String FIND_BY_USER = "Loan.findByUser";
@@ -30,6 +32,8 @@ public class Loan extends Base {
     public static final String FIND_BY_LOAN_TYPE = "Loan.findByLoanType";
     public static final String FIND_ACTIVE_LOANS = "Loan.findActiveLoans";
     public static final String FIND_ALL = "Loan.findAll";
+    public static final String FIND_BY_ID_WITH_USER_AND_ACCOUNT = "Loan.findByIdWithUserAndAccount";
+    public static final String FIND_BY_LOAN_NUMBER_WITH_USER_AND_ACCOUNT = "Loan.findByLoanNumberWithUserAndAccount";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)

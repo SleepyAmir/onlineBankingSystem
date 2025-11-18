@@ -79,4 +79,7 @@ public interface LoanService {
     void validateLoanApplication(String accountNumber, BigDecimal principal,
                                  BigDecimal annualInterestRate,
                                  Integer durationMonths) throws Exception;
+
+    Optional<Loan> findByIdWithUserAndAccount(Long id) throws Exception;
+    Optional<Loan> findByLoanNumberWithUserAndAccount(String loanNumber) throws Exception;
 }

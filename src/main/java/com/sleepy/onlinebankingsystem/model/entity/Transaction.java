@@ -20,7 +20,9 @@ import java.time.LocalDateTime;
         @NamedQuery(name = "Transaction.findByUser", query = "SELECT t FROM Transaction t WHERE (t.fromAccount.user = :user OR t.toAccount.user = :user)"),
         @NamedQuery(name = "Transaction.findByTransactionId", query = "SELECT t FROM Transaction t WHERE t.transactionId = :transactionId "),
         @NamedQuery(name = "Transaction.findByDateRange", query = "SELECT t FROM Transaction t WHERE t.transactionDate BETWEEN :startDate AND :endDate "),
-        @NamedQuery(name = "Transaction.findAll", query = "SELECT t FROM Transaction t ")
+        @NamedQuery(name = "Transaction.findAll", query = "SELECT t FROM Transaction t "),
+        @NamedQuery(name = "Transaction.findByIdWithAccounts", query = "SELECT t FROM Transaction t LEFT JOIN FETCH t.fromAccount fa LEFT JOIN FETCH fa.user LEFT JOIN FETCH t.toAccount ta LEFT JOIN FETCH ta.user WHERE t.id = :id AND t.deleted = false"),
+        @NamedQuery(name = "Transaction.findByTransactionIdWithAccounts", query = "SELECT t FROM Transaction t LEFT JOIN FETCH t.fromAccount fa LEFT JOIN FETCH fa.user LEFT JOIN FETCH t.toAccount ta LEFT JOIN FETCH ta.user WHERE t.transactionId = :transactionId AND t.deleted = false")
 })
 public class Transaction extends Base {
     public static final String FIND_BY_ACCOUNT = "Transaction.findByAccount";
@@ -28,6 +30,8 @@ public class Transaction extends Base {
     public static final String FIND_BY_TRANSACTION_ID = "Transaction.findByTransactionId";
     public static final String FIND_BY_DATE_RANGE = "Transaction.findByDateRange";
     public static final String FIND_ALL = "Transaction.findAll";
+    public static final String FIND_BY_ID_WITH_ACCOUNTS = "Transaction.findByIdWithAccounts";
+    public static final String FIND_BY_TRANSACTION_ID_WITH_ACCOUNTS = "Transaction.findByTransactionIdWithAccounts";
 
     @Column(nullable = false, unique = true, length = 50)
     private String transactionId;

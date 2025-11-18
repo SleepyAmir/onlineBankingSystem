@@ -5,6 +5,7 @@ import com.sleepy.onlinebankingsystem.model.entity.Transaction;
 import com.sleepy.onlinebankingsystem.model.entity.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,6 +45,28 @@ public class TransactionRepository extends BaseRepository<Transaction> {
                 .setParameter("startDate", start)
                 .setParameter("endDate", end)
                 .getResultList();
+    }
+
+    public Optional<Transaction> findByIdWithAccounts(Long id) {
+        try {
+            Transaction transaction = em.createNamedQuery(Transaction.FIND_BY_ID_WITH_ACCOUNTS, Transaction.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+            return Optional.of(transaction);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Transaction> findByTransactionIdWithAccounts(String transactionId) {
+        try {
+            Transaction transaction = em.createNamedQuery(Transaction.FIND_BY_TRANSACTION_ID_WITH_ACCOUNTS, Transaction.class)
+                    .setParameter("transactionId", transactionId)
+                    .getSingleResult();
+            return Optional.of(transaction);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     public List<Transaction> findAllTransactions() {

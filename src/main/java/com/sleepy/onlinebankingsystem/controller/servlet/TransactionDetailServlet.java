@@ -42,12 +42,13 @@ public class TransactionDetailServlet extends HttpServlet {
 
             // 2️⃣ پیدا کردن تراکنش
             Optional<Transaction> transactionOpt;
-            
+
+            // تغییر این قسمت:
             if (transactionIdParam != null && !transactionIdParam.isBlank()) {
-                transactionOpt = transactionService.findByTransactionId(transactionIdParam);
+                transactionOpt = transactionService.findByTransactionIdWithAccounts(transactionIdParam);
             } else {
                 Long id = Long.parseLong(idParam);
-                transactionOpt = transactionService.findById(id);
+                transactionOpt = transactionService.findByIdWithAccounts(id);
             }
 
             if (transactionOpt.isEmpty()) {

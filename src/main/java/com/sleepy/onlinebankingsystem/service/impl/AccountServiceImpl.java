@@ -105,6 +105,12 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findByUser(user);
     }
 
+    @Override
+    public Optional<Account> findByAccountNumberWithUser(String accountNumber) throws Exception {
+        log.debug("Fetching account with user by account number: {}", accountNumber);
+        return accountRepository.findByAccountNumberWithUser(accountNumber);
+    }
+
 //    @Override
 //    public List<Account> findByUserWithUser(User user) throws Exception {
 //        log.info("Fetching accounts with user for user ID: {}", user.getId());

@@ -252,6 +252,13 @@ public class CardServiceImpl implements CardService {
         log.debug("Card validated successfully: {}", maskCardNumber(cardNumber));
     }
 
+
+    @Override
+    public Optional<Card> findByCardNumberWithAccount(String cardNumber) throws Exception {
+        log.debug("Fetching card with account by card number: {}", cardNumber);
+        return cardRepository.findByCardNumberWithAccount(cardNumber);
+    }
+
     @Override
     public Optional<Card> findByIdWithAccount(Long id) throws Exception {
         return cardRepository.findByIdWithAccount(id);

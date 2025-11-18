@@ -45,12 +45,13 @@ public class AccountDetailServlet extends HttpServlet {
             }
 
             Optional<Account> accountOpt;
-            
+
+            // تغییر این قسمت:
             if (accountNumber != null && !accountNumber.isBlank()) {
-                accountOpt = accountService.findByAccountNumber(accountNumber);
+                accountOpt = accountService.findByAccountNumberWithUser(accountNumber);
             } else {
                 Long accountId = Long.parseLong(idParam);
-                accountOpt = accountService.findById(accountId);
+                accountOpt = accountService.findByIdWithUser(accountId);
             }
 
             if (accountOpt.isEmpty()) {

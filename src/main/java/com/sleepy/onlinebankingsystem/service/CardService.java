@@ -55,12 +55,10 @@ public interface CardService {
      */
     void validateCardForTransaction(String cardNumber) throws Exception;
 
-    /**
-     * بررسی امکان صدور کارت برای حساب
-     * @param accountId شناسه حساب
-     * @throws Exception اگر صدور کارت امکان‌پذیر نباشد
-     */
     void validateCardIssuance(Long accountId) throws Exception;
+
+    Optional<Card> findByCardNumberWithAccount(String cardNumber) throws Exception;
+
 
     Optional<Card> findByIdWithAccount(Long id) throws Exception;
 }

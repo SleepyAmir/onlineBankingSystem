@@ -42,12 +42,13 @@ public class LoanDetailServlet extends HttpServlet {
 
             // 2️⃣ پیدا کردن وام
             Optional<Loan> loanOpt;
-            
+
+            // تغییر این قسمت:
             if (loanNumberParam != null && !loanNumberParam.isBlank()) {
-                loanOpt = loanService.findByLoanNumber(loanNumberParam);
+                loanOpt = loanService.findByLoanNumberWithUserAndAccount(loanNumberParam);
             } else {
                 Long loanId = Long.parseLong(idParam);
-                loanOpt = loanService.findById(loanId);
+                loanOpt = loanService.findByIdWithUserAndAccount(loanId);
             }
 
             if (loanOpt.isEmpty()) {
