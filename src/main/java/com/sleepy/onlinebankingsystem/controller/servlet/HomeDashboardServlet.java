@@ -19,11 +19,11 @@ public class HomeDashboardServlet extends HttpServlet {
 
     @Override
     @Transactional
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         HttpSession session = req.getSession(false);
-        
+
         if (session == null) {
             resp.sendRedirect(req.getContextPath() + "/auth/login");
             return;
@@ -39,13 +39,13 @@ public class HomeDashboardServlet extends HttpServlet {
             return;
         }
 
-        // هدایت به داشبورد مناسب بر اساس نقش
+        // ✅ هدایت به داشبورد مناسب بر اساس نقش (اصلاح شده)
         if (userRoles.contains(UserRole.ADMIN)) {
-            resp.sendRedirect(req.getContextPath() + "/admin/admin-dashboard");
+            resp.sendRedirect(req.getContextPath() + "/admin/admin-dashboard");  // ✅ اصلاح شد
         } else if (userRoles.contains(UserRole.MANAGER)) {
-            resp.sendRedirect(req.getContextPath() + "/manager/manager-dashboard");
+            resp.sendRedirect(req.getContextPath() + "/manager/user-dashboard");  // ✅ اصلاح شد
         } else if (userRoles.contains(UserRole.CUSTOMER)) {
-            resp.sendRedirect(req.getContextPath() + "/customer/user-dashboard");
+            resp.sendRedirect(req.getContextPath() + "/customer/user-dashboard");  // ✅ درست است
         } else {
             log.error("Unknown role for user: {}", username);
             resp.sendRedirect(req.getContextPath() + "/auth/login?error=unknown_role");

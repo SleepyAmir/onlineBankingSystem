@@ -46,33 +46,24 @@ public class LoginServlet extends HttpServlet {
     private JwtUtil jwtUtil;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-//        if (req.getCharacterEncoding() == null) {
-//            req.setCharacterEncoding("UTF-8");
-//        }
-        // نمایش صفحه لاگین (فرم HTML/JSP)
         req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
-//        resp.setContentType("text/html; charset=UTF-8");
-//        resp.setCharacterEncoding("UTF-8");
-//        if (req.getCharacterEncoding() == null) {
-//            req.setCharacterEncoding("UTF-8");
-//        }
+
         try {
             // 1️⃣ دریافت پارامترهای فرم
             String username = req.getParameter("username");
             String password = req.getParameter("password");
 
             // 2️⃣ اعتبارسنجی ورودی
-            if (username == null || username.isBlank() || 
-                password == null || password.isBlank()) {
-                
+            if (username == null || username.isBlank() ||
+                    password == null || password.isBlank()) {
+
                 req.setAttribute("error", "نام کاربری و رمز عبور الزامی است");
                 req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
                 return;
@@ -82,7 +73,7 @@ public class LoginServlet extends HttpServlet {
 
             // 3️⃣ پیدا کردن کاربر
             Optional<User> userOpt = userService.findByUsername(username);
-            
+
             if (userOpt.isEmpty()) {
                 log.warn("Login failed: User not found - {}", username);
                 req.setAttribute("error", "نام کاربری یا رمز عبور اشتباه است");
@@ -145,10 +136,10 @@ public class LoginServlet extends HttpServlet {
             // 🔟 ثبت Session در SessionManager
             SessionManager.addSession(user.getUsername(), session);
 
-            log.info("Login successful for user: {} with roles: {}", 
+            log.info("Login successful for user: {} with roles: {}",
                     user.getUsername(), userRoles);
 
-            // 1️⃣1️⃣ هدایت به داشبورد بر اساس نقش
+            // 1️⃣1️⃣ هدایت به داشبورد بر اساس نقش (✅ اصلاح شده)
             String redirectUrl = determineRedirectUrl(userRoles);
             resp.sendRedirect(req.getContextPath() + redirectUrl);
 
@@ -160,15 +151,15 @@ public class LoginServlet extends HttpServlet {
     }
 
     /**
-     * تعیین URL مقصد بر اساس نقش کاربر
+     * تعیین URL مقصد بر اساس نقش کاربر (✅ اصلاح شده)
      */
     private String determineRedirectUrl(Set<UserRole> roles) {
         if (roles.contains(UserRole.ADMIN)) {
-            return "/admin/user-dashboard";
+            return "/admin/admin-dashboard";  // ✅ اصلاح شد
         } else if (roles.contains(UserRole.MANAGER)) {
-            return "/manager/user-dashboard";
+            return "/manager/user-dashboard";  // ✅ درست است
         } else {
-            return "/customer/user-dashboard";
+            return "/customer/user-dashboard";  // ✅ درست است
         }
     }
 }
