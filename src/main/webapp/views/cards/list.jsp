@@ -94,7 +94,7 @@
                         <c:forEach items="${cards}" var="card">
                             <tr>
                                 <td><c:out value="${card.id}" /></td>
-                                <td>**** **** **** <c:out value="${fn:substring(card.cardNumber, 12, 16)}" /></td>
+                                <td><c:out value="${card.cardNumber}" /></td>
                                 <td><c:out value="${card.type}" /></td>
                                 <!-- بعد (درست) -->
                                 <fmt:formatDate value="${card.expiryDateAsDate}" pattern="yyyy-MM-dd"/>                                    <c:choose>
