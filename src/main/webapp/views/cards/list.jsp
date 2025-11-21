@@ -96,7 +96,6 @@
                                 <td><c:out value="${card.id}" /></td>
                                 <td><c:out value="${card.cardNumber}" /></td>
                                 <td><c:out value="${card.type}" /></td>
-                                <!-- بعد (درست) -->
                                 <fmt:formatDate value="${card.expiryDateAsDate}" pattern="yyyy-MM-dd"/>                                    <c:choose>
                                         <c:when test="${card.active}"><span class="badge bg-success">فعال</span></c:when>
                                         <c:otherwise><span class="badge bg-danger">غیرفعال</span></c:otherwise>
