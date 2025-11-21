@@ -99,7 +99,7 @@
                                 <tr>
                                     <td><c:out value="${loan.user.username}" /></td>
                                     <td><fmt:formatNumber value="${loan.principal}" type="currency" currencySymbol="ریال" /></td>
-                                    <td><fmt:formatDate value="${loan.createdAt}" pattern="yyyy/MM/dd HH:mm" /></td>
+                                    <td>${loan.createdAt.toLocalDate()} ${loan.createdAt.toLocalTime().withNano(0)}</td>
                                 </tr>
                             </c:forEach>
                             </tbody>
@@ -126,7 +126,7 @@
                                 <tr>
                                     <td><c:out value="${tx.type}" /></td>
                                     <td><fmt:formatNumber value="${tx.amount}" type="currency" currencySymbol="ریال" /></td>
-                                    <td><fmt:formatDate value="${tx.transactionDate}" pattern="yyyy/MM/dd HH:mm" /></td>
+                                    <td>${tx.transactionDate.toLocalDate()} ${tx.transactionDate.toLocalTime().withNano(0)}</td>
                                 </tr>
                             </c:forEach>
                             </tbody>
@@ -139,6 +139,9 @@
 </div>
 
 <jsp:include page="/views/common/footer.jsp" />
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     // چارت وام‌ها (Bar Chart)
@@ -156,3 +159,5 @@
         options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
 </script>
+</body>
+</html>

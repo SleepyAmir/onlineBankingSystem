@@ -2,7 +2,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-
 <jsp:include page="/views/common/header.jsp">
     <jsp:param name="title" value="داشبورد مشتری" />
     <jsp:param name="isDashboard" value="true" />
@@ -99,7 +98,7 @@
                                 <tr>
                                     <td><c:out value="${tx.type}" /></td>
                                     <td><fmt:formatNumber value="${tx.amount}" type="currency" currencySymbol="ریال" /></td>
-                                    <td><fmt:formatDate value="${tx.transactionDate}" pattern="yyyy/MM/dd HH:mm" /></td>
+                                    <td>${tx.transactionDate.toLocalDate()} ${tx.transactionDate.toLocalTime().withNano(0)}</td>
                                 </tr>
                             </c:forEach>
                             </tbody>
@@ -116,7 +115,7 @@
                         <table class="table table-hover">
                             <thead>
                             <tr>
-                                <th>نوع</th>
+                                <th>شماره وام</th>
                                 <th>مبلغ</th>
                                 <th>وضعیت</th>
                             </tr>
@@ -124,7 +123,7 @@
                             <tbody>
                             <c:forEach items="${activeLoans}" var="loan">
                                 <tr>
-                                    <td><c:out value="${loan.type}" /></td>
+                                    <td><c:out value="${loan.loanNumber}" /></td>
                                     <td><fmt:formatNumber value="${loan.principal}" type="currency" currencySymbol="ریال" /></td>
                                     <td><c:out value="${loan.status}" /></td>
                                 </tr>
@@ -139,6 +138,9 @@
 </div>
 
 <jsp:include page="/views/common/footer.jsp" />
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     // چارت خلاصه مالی (Doughnut Chart)
@@ -155,3 +157,5 @@
         options: { responsive: true }
     });
 </script>
+</body>
+</html>
