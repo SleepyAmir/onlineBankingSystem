@@ -24,16 +24,18 @@ public class CardDetailServlet extends HttpServlet {
     @Inject
     private CardService cardService;
 
+    // CardDetailServlet.java - متد doGet را اصلاح کنید:
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
             String idParam = req.getParameter("id");
             String cardNumberParam = req.getParameter("cardNumber");
 
-            if ((idParam == null || idParam.isBlank()) && 
-                (cardNumberParam == null || cardNumberParam.isBlank())) {
+            if ((idParam == null || idParam.isBlank()) &&
+                    (cardNumberParam == null || cardNumberParam.isBlank())) {
                 log.warn("Card detail requested without identifier");
                 resp.sendRedirect(req.getContextPath() + "/cards/list?error=missing_id");
                 return;
@@ -41,7 +43,7 @@ public class CardDetailServlet extends HttpServlet {
 
             Optional<Card> cardOpt;
 
-            // تغییر این قسمت:
+            // ✅ استفاده از متدهای WITH_ACCOUNT که User را هم لود می‌کنند
             if (cardNumberParam != null && !cardNumberParam.isBlank()) {
                 cardOpt = cardService.findByCardNumberWithAccount(cardNumberParam);
             } else {
@@ -59,13 +61,14 @@ public class CardDetailServlet extends HttpServlet {
 
             HttpSession session = req.getSession(false);
             String currentUsername = (String) session.getAttribute("username");
-            
+
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
+            // ✅ حالا این خط کار می‌کند چون User با JOIN FETCH لود شده
             if (!userRoles.contains(UserRole.ADMIN) && !userRoles.contains(UserRole.MANAGER)) {
                 if (!card.getAccount().getUser().getUsername().equals(currentUsername)) {
-                    log.warn("Unauthorized access to card {} by user {}", 
+                    log.warn("Unauthorized access to card {} by user {}",
                             maskCardNumber(card.getCardNumber()), currentUsername);
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "دسترسی غیرمجاز");
                     return;
@@ -84,7 +87,6 @@ public class CardDetailServlet extends HttpServlet {
             req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
-
     /**
      * پنهان کردن شماره کارت (نمایش 4 رقم آخر)
      */

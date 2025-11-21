@@ -24,7 +24,7 @@ import java.util.Date;
         @NamedQuery(name = "Card.findActiveCards", query = "SELECT c FROM Card c WHERE c.active = true "),
         @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c "),
         @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.account.user.id = :userId AND c.deleted = false"),
-        @NamedQuery(name = "Card.findByIdWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.id = :id AND c.deleted = false"),
+        @NamedQuery(name = "Card.findByIdWithAccount", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user " + "WHERE c.id = :id AND c.deleted = false"),
         @NamedQuery(name = "Card.findByUserWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user u " + "WHERE u.id = :userId AND c.deleted = false"),
         @NamedQuery(name = "Card.findByCardNumberWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account a JOIN FETCH a.user WHERE c.cardNumber = :cardNumber AND c.deleted = false")
 })

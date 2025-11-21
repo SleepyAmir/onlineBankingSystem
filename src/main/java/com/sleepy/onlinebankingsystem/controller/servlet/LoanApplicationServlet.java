@@ -75,6 +75,8 @@ public class LoanApplicationServlet extends HttpServlet {
         }
     }
 
+// در LoanApplicationServlet.java - متد doPost را اصلاح کنید:
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -100,11 +102,11 @@ public class LoanApplicationServlet extends HttpServlet {
             BigDecimal interestRate = new BigDecimal(interestRateParam);
             Integer duration = Integer.parseInt(durationParam);
 
-            // پیدا کردن حساب
-            Account account = accountService.findById(accountId)
+            // ✅ استفاده از findByIdWithUser به جای findById
+            Account account = accountService.findByIdWithUser(accountId)
                     .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-            // بررسی مالکیت حساب
+            // ✅ حالا می‌توانیم به User دسترسی داشته باشیم
             if (!account.getUser().getUsername().equals(currentUsername)) {
                 setError(req, resp, "شما فقط می‌توانید برای حساب خودتان درخواست وام دهید");
                 return;
@@ -133,7 +135,6 @@ public class LoanApplicationServlet extends HttpServlet {
             setError(req, resp, "خطا در ثبت درخواست وام: " + e.getMessage());
         }
     }
-
     private void setError(HttpServletRequest req, HttpServletResponse resp, String message)
             throws ServletException, IOException {
         req.setAttribute("error", message);
