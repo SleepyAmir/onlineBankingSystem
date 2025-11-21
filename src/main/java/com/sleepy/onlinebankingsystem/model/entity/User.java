@@ -6,17 +6,21 @@ import jakarta.validation.constraints.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "username"),
-        @UniqueConstraint(columnNames = "nationalCode")
-})
-@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @NamedQueries({
         @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
         @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u WHERE u.username = :username"),
         @NamedQuery(name = "User.findActiveUsers", query = "SELECT u FROM User u WHERE u.active = true"),
         @NamedQuery(name = "User.findByNationalCode", query = "SELECT u FROM User u WHERE u.nationalCode = :nationalCode")
+})
+@Entity
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "nationalCode")
 })
 public class User extends Base {
 

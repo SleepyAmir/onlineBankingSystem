@@ -59,6 +59,7 @@ public class Loan extends Base {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Basic(fetch = FetchType.EAGER)
     private LoanStatus status = LoanStatus.PENDING;
 
     @ManyToOne(fetch = FetchType.LAZY)

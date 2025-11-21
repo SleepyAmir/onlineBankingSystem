@@ -39,9 +39,7 @@ public class Card extends Base {
     public static final String FIND_BY_ID_WITH_ACCOUNT = "Card.findByIdWithAccount";
     public static final String FIND_BY_CARD_NUMBER_WITH_ACCOUNT = "Card.findByCardNumberWithAccount";
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+
 
     @Column(nullable = false, unique = true, length = 16)
     private String cardNumber;
@@ -54,10 +52,15 @@ public class Card extends Base {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Basic(fetch = FetchType.EAGER)
     private CardType type;
 
     @Column(nullable = false)
     private boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
     public Date getExpiryDateAsDate() {
         return Date.from(this.expiryDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
