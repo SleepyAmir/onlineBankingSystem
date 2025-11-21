@@ -56,7 +56,6 @@ public class Transaction extends Base {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Basic(fetch = FetchType.EAGER)
     private TransactionStatus status;
 
     @Column(length = 255, columnDefinition = "NVARCHAR2(255)")

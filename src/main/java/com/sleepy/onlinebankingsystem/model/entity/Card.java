@@ -52,7 +52,6 @@ public class Card extends Base {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Basic(fetch = FetchType.EAGER)
     private CardType type;
 
     @Column(nullable = false)
