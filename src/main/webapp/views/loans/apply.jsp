@@ -26,8 +26,9 @@
                         <label for="accountId" class="form-label">حساب</label>
                         <select class="form-select" id="accountId" name="accountId" required>
                             <option value="">انتخاب حساب</option>
-                            <c:forEach items="${activeAccounts}" var="account">
+                            <c:forEach items="${accounts}" var="account">
                                 <option value="${account.id}"><c:out value="${account.accountNumber} - موجودی: ${account.balance}" /></option>
+
                             </c:forEach>
                         </select>
                     </div>
