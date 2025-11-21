@@ -1,13 +1,12 @@
 package com.sleepy.onlinebankingsystem.model.entity;
 
-
 import com.sleepy.onlinebankingsystem.model.enums.CardType;
 import lombok.*;
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
-
 
 @Getter
 @Setter
@@ -18,17 +17,47 @@ import java.util.Date;
 @Table(name = "cards",
         uniqueConstraints = @UniqueConstraint(columnNames = "cardNumber"))
 @NamedQueries({
-        @NamedQuery(name = "Card.findByAccount", query = "SELECT c FROM Card c WHERE c.account = :account "),
-        @NamedQuery(name = "Card.findByCardNumber", query = "SELECT c FROM Card c WHERE c.cardNumber = :cardNumber "),
-        @NamedQuery(name = "Card.findByUser", query = "SELECT c FROM Card c WHERE c.account.user = :user"),
-        @NamedQuery(name = "Card.findActiveCards", query = "SELECT c FROM Card c WHERE c.active = true "),
-        @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c "),
-        @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account WHERE c.account.user.id = :userId AND c.deleted = false"),
-        @NamedQuery(name = "Card.findByIdWithAccount", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user " + "WHERE c.id = :id AND c.deleted = false"),
-        @NamedQuery(name = "Card.findByUserWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user u " + "WHERE u.id = :userId AND c.deleted = false"),
-        @NamedQuery(name = "Card.findByCardNumberWithAccount", query = "SELECT c FROM Card c JOIN FETCH c.account a JOIN FETCH a.user WHERE c.cardNumber = :cardNumber AND c.deleted = false")
+        @NamedQuery(name = "Card.findByAccount",
+                query = "SELECT c FROM Card c WHERE c.account = :account"),
+
+        @NamedQuery(name = "Card.findByCardNumber",
+                query = "SELECT c FROM Card c WHERE c.cardNumber = :cardNumber"),
+
+        @NamedQuery(name = "Card.findByUser",
+                query = "SELECT c FROM Card c WHERE c.account.user = :user"),
+
+        @NamedQuery(name = "Card.findActiveCards",
+                query = "SELECT c FROM Card c WHERE c.active = true"),
+
+        @NamedQuery(name = "Card.findAll",
+                query = "SELECT c FROM Card c"),
+
+        @NamedQuery(name = "Card.findByUserWithAccount",
+                query = "SELECT c FROM Card c " +
+                        "JOIN FETCH c.account " +
+                        "WHERE c.account.user.id = :userId AND c.deleted = false"),
+
+        // ✅ اصلاح شده - User هم JOIN FETCH می‌شود
+        @NamedQuery(name = "Card.findByIdWithAccount",
+                query = "SELECT c FROM Card c " +
+                        "JOIN FETCH c.account a " +
+                        "JOIN FETCH a.user " +
+                        "WHERE c.id = :id AND c.deleted = false"),
+
+        @NamedQuery(name = "Card.findByUserWithAccountAndUser",
+                query = "SELECT c FROM Card c " +
+                        "JOIN FETCH c.account a " +
+                        "JOIN FETCH a.user u " +
+                        "WHERE u.id = :userId AND c.deleted = false"),
+
+        @NamedQuery(name = "Card.findByCardNumberWithAccount",
+                query = "SELECT c FROM Card c " +
+                        "JOIN FETCH c.account a " +
+                        "JOIN FETCH a.user " +
+                        "WHERE c.cardNumber = :cardNumber AND c.deleted = false")
 })
 public class Card extends Base {
+
     public static final String FIND_BY_ACCOUNT = "Card.findByAccount";
     public static final String FIND_BY_CARD_NUMBER = "Card.findByCardNumber";
     public static final String FIND_BY_USER = "Card.findByUser";
@@ -38,8 +67,6 @@ public class Card extends Base {
     public static final String FIND_BY_USER_WITH_ACCOUNT_AND_USER = "Card.findByUserWithAccountAndUser";
     public static final String FIND_BY_ID_WITH_ACCOUNT = "Card.findByIdWithAccount";
     public static final String FIND_BY_CARD_NUMBER_WITH_ACCOUNT = "Card.findByCardNumberWithAccount";
-
-
 
     @Column(nullable = false, unique = true, length = 16)
     private String cardNumber;
@@ -61,7 +88,34 @@ public class Card extends Base {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
+    // ✅ متد کمکی برای تبدیل به Date (برای JSP)
     public Date getExpiryDateAsDate() {
+        if (this.expiryDate == null) return null;
         return Date.from(this.expiryDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    // ✅ متد فرمت‌شده
+    public String getFormattedExpiryDate() {
+        if (this.expiryDate == null) return "";
+        return this.expiryDate.format(java.time.format.DateTimeFormatter.ofPattern("MM/yy"));
+    }
+
+    // ✅ بررسی انقضا
+    public boolean isExpired() {
+        return this.expiryDate != null && this.expiryDate.isBefore(LocalDate.now());
+    }
+
+    // ✅ بررسی نزدیک به انقضا (3 ماه)
+    public boolean isExpiringSoon() {
+        if (this.expiryDate == null) return false;
+        return this.expiryDate.isBefore(LocalDate.now().plusMonths(3));
+    }
+
+    // ✅ شماره کارت ماسک شده
+    public String getMaskedCardNumber() {
+        if (this.cardNumber == null || this.cardNumber.length() < 4) {
+            return "****";
+        }
+        return "************" + this.cardNumber.substring(this.cardNumber.length() - 4);
     }
 }

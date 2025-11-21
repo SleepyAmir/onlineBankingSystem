@@ -7,11 +7,13 @@ import org.hibernate.annotations.Where;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 @Getter
 @Setter
 @MappedSuperclass
-@Where(clause = "deleted = 0")  // همه انتیتی‌هایی که از Base ارث می‌برن، فیلتر میشن
+@Where(clause = "deleted = 0")
 public abstract class Base implements Serializable {
 
     @Id
@@ -26,7 +28,7 @@ public abstract class Base implements Serializable {
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted", nullable = false)
-    private boolean deleted = false;  // فیلد اصلی soft delete
+    private boolean deleted = false;
 
     @PrePersist
     protected void onCreate() {
@@ -39,12 +41,37 @@ public abstract class Base implements Serializable {
         updatedAt = LocalDateTime.now();
     }
 
-    // فقط یک isDeleted() در Base
     public boolean isDeleted() {
         return deleted;
     }
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    // ✅ متدهای کمکی برای تبدیل به Date (برای JSP)
+    public Date getCreatedAtAsDate() {
+        if (this.createdAt == null) return null;
+        return Date.from(this.createdAt.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public Date getUpdatedAtAsDate() {
+        if (this.updatedAt == null) return null;
+        return Date.from(this.updatedAt.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    // ✅ متدهای فرمت‌شده برای نمایش مستقیم
+    public String getFormattedCreatedAt() {
+        if (this.createdAt == null) return "";
+        return this.createdAt.format(
+                java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+        );
+    }
+
+    public String getFormattedUpdatedAt() {
+        if (this.updatedAt == null) return "";
+        return this.updatedAt.format(
+                java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+        );
     }
 }

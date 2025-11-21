@@ -4,8 +4,12 @@ import com.sleepy.onlinebankingsystem.model.enums.TransactionStatus;
 import com.sleepy.onlinebankingsystem.model.enums.TransactionType;
 import lombok.*;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -16,15 +20,33 @@ import java.time.LocalDateTime;
 @Table(name = "transactions",
         uniqueConstraints = @UniqueConstraint(columnNames = "transactionId"))
 @NamedQueries({
-        @NamedQuery(name = "Transaction.findByAccount", query = "SELECT t FROM Transaction t WHERE (t.fromAccount = :account OR t.toAccount = :account) "),
-        @NamedQuery(name = "Transaction.findByUser", query = "SELECT t FROM Transaction t WHERE (t.fromAccount.user = :user OR t.toAccount.user = :user)"),
-        @NamedQuery(name = "Transaction.findByTransactionId", query = "SELECT t FROM Transaction t WHERE t.transactionId = :transactionId "),
-        @NamedQuery(name = "Transaction.findByDateRange", query = "SELECT t FROM Transaction t WHERE t.transactionDate BETWEEN :startDate AND :endDate "),
-        @NamedQuery(name = "Transaction.findAll", query = "SELECT t FROM Transaction t "),
-        @NamedQuery(name = "Transaction.findByIdWithAccounts", query = "SELECT t FROM Transaction t LEFT JOIN FETCH t.fromAccount fa LEFT JOIN FETCH fa.user LEFT JOIN FETCH t.toAccount ta LEFT JOIN FETCH ta.user WHERE t.id = :id AND t.deleted = false"),
-        @NamedQuery(name = "Transaction.findByTransactionIdWithAccounts", query = "SELECT t FROM Transaction t LEFT JOIN FETCH t.fromAccount fa LEFT JOIN FETCH fa.user LEFT JOIN FETCH t.toAccount ta LEFT JOIN FETCH ta.user WHERE t.transactionId = :transactionId AND t.deleted = false")
+        @NamedQuery(name = "Transaction.findByAccount",
+                query = "SELECT t FROM Transaction t WHERE (t.fromAccount = :account OR t.toAccount = :account)"),
+        @NamedQuery(name = "Transaction.findByUser",
+                query = "SELECT t FROM Transaction t WHERE (t.fromAccount.user = :user OR t.toAccount.user = :user)"),
+        @NamedQuery(name = "Transaction.findByTransactionId",
+                query = "SELECT t FROM Transaction t WHERE t.transactionId = :transactionId"),
+        @NamedQuery(name = "Transaction.findByDateRange",
+                query = "SELECT t FROM Transaction t WHERE t.transactionDate BETWEEN :startDate AND :endDate"),
+        @NamedQuery(name = "Transaction.findAll",
+                query = "SELECT t FROM Transaction t"),
+        @NamedQuery(name = "Transaction.findByIdWithAccounts",
+                query = "SELECT t FROM Transaction t " +
+                        "LEFT JOIN FETCH t.fromAccount fa " +
+                        "LEFT JOIN FETCH fa.user " +
+                        "LEFT JOIN FETCH t.toAccount ta " +
+                        "LEFT JOIN FETCH ta.user " +
+                        "WHERE t.id = :id AND t.deleted = false"),
+        @NamedQuery(name = "Transaction.findByTransactionIdWithAccounts",
+                query = "SELECT t FROM Transaction t " +
+                        "LEFT JOIN FETCH t.fromAccount fa " +
+                        "LEFT JOIN FETCH fa.user " +
+                        "LEFT JOIN FETCH t.toAccount ta " +
+                        "LEFT JOIN FETCH ta.user " +
+                        "WHERE t.transactionId = :transactionId AND t.deleted = false")
 })
 public class Transaction extends Base {
+
     public static final String FIND_BY_ACCOUNT = "Transaction.findByAccount";
     public static final String FIND_BY_USER = "Transaction.findByUser";
     public static final String FIND_BY_TRANSACTION_ID = "Transaction.findByTransactionId";
@@ -63,4 +85,28 @@ public class Transaction extends Base {
 
     @Column(length = 50)
     private String referenceNumber;
+
+    // ✅ متد کمکی برای تبدیل به Date (برای JSP با fmt:formatDate)
+    public Date getTransactionDateAsDate() {
+        if (this.transactionDate == null) return null;
+        return Date.from(this.transactionDate.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    // ✅ متد فرمت‌شده برای نمایش مستقیم در JSP
+    public String getFormattedTransactionDate() {
+        if (this.transactionDate == null) return "";
+        return this.transactionDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+    }
+
+    // ✅ فقط تاریخ
+    public String getFormattedDate() {
+        if (this.transactionDate == null) return "";
+        return this.transactionDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+    }
+
+    // ✅ فقط ساعت
+    public String getFormattedTime() {
+        if (this.transactionDate == null) return "";
+        return this.transactionDate.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+    }
 }

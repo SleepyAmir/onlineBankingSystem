@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -75,8 +74,6 @@ public class LoanApplicationServlet extends HttpServlet {
         }
     }
 
-// در LoanApplicationServlet.java - متد doPost را اصلاح کنید:
-
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -106,7 +103,7 @@ public class LoanApplicationServlet extends HttpServlet {
             Account account = accountService.findByIdWithUser(accountId)
                     .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-            // ✅ حالا می‌توانیم به User دسترسی داشته باشیم
+            // ✅ حالا می‌توانیم به User دسترسی داشته باشیم بدون خطای LazyInitialization
             if (!account.getUser().getUsername().equals(currentUsername)) {
                 setError(req, resp, "شما فقط می‌توانید برای حساب خودتان درخواست وام دهید");
                 return;
@@ -135,6 +132,7 @@ public class LoanApplicationServlet extends HttpServlet {
             setError(req, resp, "خطا در ثبت درخواست وام: " + e.getMessage());
         }
     }
+
     private void setError(HttpServletRequest req, HttpServletResponse resp, String message)
             throws ServletException, IOException {
         req.setAttribute("error", message);

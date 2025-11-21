@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -23,8 +22,6 @@ public class CardDetailServlet extends HttpServlet {
 
     @Inject
     private CardService cardService;
-
-    // CardDetailServlet.java - متد doGet را اصلاح کنید:
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -43,7 +40,7 @@ public class CardDetailServlet extends HttpServlet {
 
             Optional<Card> cardOpt;
 
-            // ✅ استفاده از متدهای WITH_ACCOUNT که User را هم لود می‌کنند
+            // ✅ استفاده از متدهای با JOIN FETCH که User را هم لود می‌کنند
             if (cardNumberParam != null && !cardNumberParam.isBlank()) {
                 cardOpt = cardService.findByCardNumberWithAccount(cardNumberParam);
             } else {
@@ -87,6 +84,7 @@ public class CardDetailServlet extends HttpServlet {
             req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
         }
     }
+
     /**
      * پنهان کردن شماره کارت (نمایش 4 رقم آخر)
      */

@@ -2,121 +2,160 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<jsp:include page="/views/common/header.jsp">
-    <jsp:param name="title" value="تاریخچه تراکنش‌ها" />
-</jsp:include>
-
-<jsp:include page="/views/common/navbar.jsp" />
-<jsp:include page="/views/common/sidebar.jsp" />
-
-<div class="content-wrapper">
-    <div class="container-fluid px-4 py-4">
-        <h1 class="display-5 fw-bold">تاریخچه تراکنش‌ها</h1>
-        <p class="lead text-muted">مشاهده تمام تراکنش‌های انجام شده</p>
-
-        <!-- فیلترها -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form action="${pageContext.request.contextPath}/transactions/history" method="get">
-                    <div class="row">
-                        <c:if test="${not empty userAccounts}">
-                            <div class="col-md-4 mb-3">
-                                <label for="accountId" class="form-label">حساب</label>
-                                <select class="form-select" id="accountId" name="accountId">
-                                    <option value="">همه حساب‌ها</option>
-                                    <c:forEach items="${userAccounts}" var="acc">
-                                        <option value="${acc.id}">${acc.accountNumber}</option>
-                                    </c:forEach>
-                                </select>
-                            </div>
-                        </c:if>
-                        <div class="col-md-3 mb-3">
-                            <label for="startDate" class="form-label">از تاریخ</label>
-                            <input type="date" class="form-control" id="startDate" name="startDate">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="endDate" class="form-label">تا تاریخ</label>
-                            <input type="date" class="form-control" id="endDate" name="endDate">
-                        </div>
-                        <div class="col-md-2 mt-4">
-                            <button type="submit" class="btn btn-primary w-100">فیلتر</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تاریخچه تراکنش‌ها</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">تاریخچه تراکنش‌ها</h4>
+            <a href="${pageContext.request.contextPath}/transactions" class="btn btn-light btn-sm">
+                تراکنش جدید
+            </a>
         </div>
+        <div class="card-body">
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger">${error}</div>
+            </c:if>
 
-        <!-- جدول تراکنش‌ها -->
-        <div class="card shadow-lg border-0 rounded-3">
-            <div class="card-body">
-                <c:if test="${empty transactions}">
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle me-2"></i>هیچ تراکنشی یافت نشد
-                    </div>
-                </c:if>
-                <c:if test="${not empty transactions}">
-                    <table class="table table-hover table-striped">
-                        <thead>
-                        <tr>
-                            <th>نوع</th>
-                            <th>مبلغ</th>
-                            <th>از حساب</th>
-                            <th>به حساب</th>
-                            <th>تاریخ</th>
-                            <th>وضعیت</th>
-                            <th>عملیات</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <c:forEach items="${transactions}" var="tx">
+            <c:if test="${not empty message}">
+                <div class="alert alert-success">${message}</div>
+            </c:if>
+
+            <c:choose>
+                <c:when test="${empty transactions}">
+                    <div class="alert alert-info">تراکنشی یافت نشد.</div>
+                </c:when>
+                <c:otherwise>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
                             <tr>
-                                <td><c:out value="${tx.type}" /></td>
-                                <td><fmt:formatNumber value="${tx.amount}" type="currency" currencySymbol="ریال" /></td>
-                                <td><c:out value="${tx.fromAccount != null ? tx.fromAccount.accountNumber : '-'}" /></td>
-                                <td><c:out value="${tx.toAccount != null ? tx.toAccount.accountNumber : '-'}" /></td>
-                                <td><fmt:formatDate value="${tx.transactionDate}" pattern="yyyy/MM/dd HH:mm" /></td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${tx.status == 'COMPLETED'}">
-                                            <span class="badge bg-success">موفق</span>
-                                        </c:when>
-                                        <c:when test="${tx.status == 'PENDING'}">
-                                            <span class="badge bg-warning">در انتظار</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="badge bg-danger">ناموفق</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>
-                                    <a href="${pageContext.request.contextPath}/transactions/detail?id=${tx.id}"
-                                       class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
+                                <th>شناسه</th>
+                                <th>نوع</th>
+                                <th>مبلغ</th>
+                                <th>از حساب</th>
+                                <th>به حساب</th>
+                                <th>تاریخ</th>
+                                <th>وضعیت</th>
+                                <th>عملیات</th>
                             </tr>
-                        </c:forEach>
-                        </tbody>
-                    </table>
-                </c:if>
-            </div>
-        </div>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="transaction" items="${transactions}">
+                                <tr>
+                                    <td>
+                                        <small>${transaction.transactionId}</small>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${transaction.type == 'DEPOSIT'}">
+                                                <span class="badge bg-success">واریز</span>
+                                            </c:when>
+                                            <c:when test="${transaction.type == 'WITHDRAWAL'}">
+                                                <span class="badge bg-danger">برداشت</span>
+                                            </c:when>
+                                            <c:when test="${transaction.type == 'TRANSFER'}">
+                                                <span class="badge bg-info">انتقال</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-secondary">${transaction.type}</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <fmt:formatNumber value="${transaction.amount}"
+                                                          type="number"
+                                                          groupingUsed="true"/>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${transaction.fromAccount != null}">
+                                                ${transaction.fromAccount.accountNumber}
+                                            </c:when>
+                                            <c:otherwise>-</c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${transaction.toAccount != null}">
+                                                ${transaction.toAccount.accountNumber}
+                                            </c:when>
+                                            <c:otherwise>-</c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                            <%-- ✅ استفاده از متد کمکی --%>
+                                        <fmt:formatDate value="${transaction.transactionDateAsDate}"
+                                                        pattern="yyyy/MM/dd HH:mm"/>
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${transaction.status == 'COMPLETED'}">
+                                                <span class="badge bg-success">موفق</span>
+                                            </c:when>
+                                            <c:when test="${transaction.status == 'PENDING'}">
+                                                <span class="badge bg-warning">در انتظار</span>
+                                            </c:when>
+                                            <c:when test="${transaction.status == 'FAILED'}">
+                                                <span class="badge bg-danger">ناموفق</span>
+                                            </c:when>
+                                            <c:when test="${transaction.status == 'REVERSED'}">
+                                                <span class="badge bg-secondary">برگشت</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${transaction.status}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>
+                                        <a href="${pageContext.request.contextPath}/transactions/detail?id=${transaction.id}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            جزئیات
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
 
-        <!-- صفحه‌بندی -->
-        <nav aria-label="Pagination" class="mt-4">
-            <ul class="pagination justify-content-center">
-                <li class="page-item ${currentPage == 0 ? 'disabled' : ''}">
-                    <a class="page-link" href="?page=${currentPage - 1}">قبلی</a>
-                </li>
-                <li class="page-item active">
-                    <span class="page-link">${currentPage + 1}</span>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page=${currentPage + 1}">بعدی</a>
-                </li>
-            </ul>
-        </nav>
+                    <%-- صفحه‌بندی --%>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <c:if test="${currentPage > 0}">
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="${pageContext.request.contextPath}/transactions/history?page=${currentPage - 1}">
+                                        قبلی
+                                    </a>
+                                </li>
+                            </c:if>
+                            <li class="page-item active">
+                                <span class="page-link">${currentPage + 1}</span>
+                            </li>
+                            <c:if test="${transactions.size() >= pageSize}">
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       href="${pageContext.request.contextPath}/transactions/history?page=${currentPage + 1}">
+                                        بعدی
+                                    </a>
+                                </li>
+                            </c:if>
+                        </ul>
+                    </nav>
+                </c:otherwise>
+            </c:choose>
+        </div>
     </div>
 </div>
 
-<jsp:include page="/views/common/footer.jsp" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
