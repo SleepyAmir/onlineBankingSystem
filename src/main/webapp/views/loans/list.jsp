@@ -123,6 +123,26 @@
                                             جزئیات
                                         </a>
 
+                                            <%-- ✅ دکمه‌های مدیریتی (فقط برای Admin و Manager) --%>
+                                        <c:if test="${loan.status == 'PENDING'}">
+                                            <c:if test="${sessionScope.roles.contains('ADMIN') or sessionScope.roles.contains('MANAGER')}">
+                                                <form action="${pageContext.request.contextPath}/loans/approve" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="${loan.id}">
+                                                    <button type="submit" class="btn btn-sm btn-success"
+                                                            onclick="return confirm('تأیید این وام؟')">
+                                                        تأیید
+                                                    </button>
+                                                </form>
+                                                <form action="${pageContext.request.contextPath}/loans/reject" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="${loan.id}">
+                                                    <button type="submit" class="btn btn-sm btn-danger"
+                                                            onclick="return confirm('رد این وام؟')">
+                                                        رد
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                        </c:if>
+
                                             <%-- دکمه پرداخت قسط --%>
                                         <c:if test="${loan.status == 'APPROVED' or loan.status == 'ACTIVE'}">
                                             <a href="${pageContext.request.contextPath}/loans/payment?id=${loan.id}"
