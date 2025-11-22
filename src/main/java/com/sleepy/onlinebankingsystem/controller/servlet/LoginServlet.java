@@ -56,14 +56,11 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ دریافت پارامترهای فرم
             String username = req.getParameter("username");
             String password = req.getParameter("password");
 
-            // 2️⃣ اعتبارسنجی ورودی
             if (username == null || username.isBlank() ||
                     password == null || password.isBlank()) {
-
                 req.setAttribute("error", "نام کاربری و رمز عبور الزامی است");
                 req.getRequestDispatcher("/views/auth/login.jsp").forward(req, resp);
                 return;
@@ -71,7 +68,6 @@ public class LoginServlet extends HttpServlet {
 
             log.info("Login attempt for username: {}", username);
 
-            // 3️⃣ پیدا کردن کاربر
             Optional<User> userOpt = userService.findByUsername(username);
 
             if (userOpt.isEmpty()) {
@@ -83,7 +79,6 @@ public class LoginServlet extends HttpServlet {
 
             User user = userOpt.get();
 
-            // 4️⃣ بررسی فعال بودن کاربر
             if (!user.isActive()) {
                 log.warn("Login failed: User is inactive - {}", username);
                 req.setAttribute("error", "حساب کاربری شما غیرفعال شده است");
@@ -91,7 +86,6 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            // 5️⃣ بررسی رمز عبور
             if (!passwordUtil.matches(password, user.getPassword())) {
                 log.warn("Login failed: Invalid password - {}", username);
                 req.setAttribute("error", "نام کاربری یا رمز عبور اشتباه است");
@@ -99,7 +93,7 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            // 6️⃣ دریافت نقش‌های کاربر
+            // دریافت نقش‌های کاربر
             List<Role> roles = roleService.findByUser(user);
             Set<UserRole> userRoles = roles.stream()
                     .map(Role::getRole)
@@ -112,10 +106,15 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
 
-            // 7️⃣ تولید JWT Token
+            // ✅ تبدیل نقش‌ها به String برای استفاده در JSP
+            Set<String> roleNames = userRoles.stream()
+                    .map(UserRole::name)
+                    .collect(Collectors.toSet());
+
+            // تولید JWT Token
             String jwtToken = jwtUtil.generateToken(user.getUsername(), userRoles);
 
-            // 8️⃣ ذخیره Token در دیتابیس
+            // ذخیره Token در دیتابیس
             Token token = Token.builder()
                     .tokenValue(jwtToken)
                     .username(user.getUsername())
@@ -124,22 +123,30 @@ public class LoginServlet extends HttpServlet {
                     .build();
             tokenService.save(token);
 
-            // 9️⃣ ایجاد Session
+            // ایجاد Session
             HttpSession session = req.getSession(true);
             session.setAttribute("username", user.getUsername());
             session.setAttribute("userId", user.getId());
             session.setAttribute("fullName", user.getFirstName() + " " + user.getLastName());
             session.setAttribute("roles", userRoles);
             session.setAttribute("token", jwtToken);
-            session.setMaxInactiveInterval(15 * 60); // 15 دقیقه
 
-            // 🔟 ثبت Session در SessionManager
+            // ✅ اضافه شد: نام نقش‌ها به صورت String برای JSP
+            session.setAttribute("roleNames", roleNames);
+
+            // ✅ اضافه شد: flag های boolean برای بررسی آسان در JSP
+            session.setAttribute("isAdmin", userRoles.contains(UserRole.ADMIN));
+            session.setAttribute("isManager", userRoles.contains(UserRole.MANAGER));
+            session.setAttribute("isCustomer", userRoles.contains(UserRole.CUSTOMER));
+
+            session.setMaxInactiveInterval(15 * 60);
+
+            // ثبت Session در SessionManager
             SessionManager.addSession(user.getUsername(), session);
 
-            log.info("Login successful for user: {} with roles: {}",
-                    user.getUsername(), userRoles);
+            log.info("Login successful for user: {} with roles: {}", user.getUsername(), userRoles);
 
-            // 1️⃣1️⃣ هدایت به داشبورد بر اساس نقش (✅ اصلاح شده)
+            // هدایت به داشبورد بر اساس نقش
             String redirectUrl = determineRedirectUrl(userRoles);
             resp.sendRedirect(req.getContextPath() + redirectUrl);
 
@@ -150,16 +157,13 @@ public class LoginServlet extends HttpServlet {
         }
     }
 
-    /**
-     * تعیین URL مقصد بر اساس نقش کاربر (✅ اصلاح شده)
-     */
     private String determineRedirectUrl(Set<UserRole> roles) {
         if (roles.contains(UserRole.ADMIN)) {
-            return "/admin/admin-dashboard";  // ✅ اصلاح شد
+            return "/admin/admin-dashboard";
         } else if (roles.contains(UserRole.MANAGER)) {
-            return "/manager/user-dashboard";  // ✅ درست است
+            return "/manager/user-dashboard";
         } else {
-            return "/customer/user-dashboard";  // ✅ درست است
+            return "/customer/user-dashboard";
         }
     }
 }
