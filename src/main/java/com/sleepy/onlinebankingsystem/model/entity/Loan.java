@@ -52,7 +52,12 @@ import java.util.Date;
                 query = "SELECT l FROM Loan l " +
                         "JOIN FETCH l.user " +
                         "JOIN FETCH l.account " +
-                        "WHERE l.status = :status AND l.deleted = false")
+                        "WHERE l.status = :status AND l.deleted = false"),
+        @NamedQuery(name = "Loan.findByIdForPayment",
+                query = "SELECT l FROM Loan l " +
+                        "JOIN FETCH l.user u " +
+                        "JOIN FETCH l.account a " +
+                        "WHERE l.id = :id AND l.deleted = false")
 })
 public class Loan extends Base {
 
@@ -64,6 +69,7 @@ public class Loan extends Base {
     public static final String FIND_BY_ID_WITH_USER_AND_ACCOUNT = "Loan.findByIdWithUserAndAccount";
     public static final String FIND_BY_LOAN_NUMBER_WITH_USER_AND_ACCOUNT = "Loan.findByLoanNumberWithUserAndAccount";
     public static final String FIND_BY_STATUS_WITH_USER_AND_ACCOUNT = "Loan.findByStatusWithUserAndAccount";
+    public static final String FIND_BY_ID_FOR_PAYMENT = "Loan.findByIdForPayment";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
@@ -125,14 +131,18 @@ public class Loan extends Base {
         return endDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
     }
 
-    // ✅ محاسبه کل مبلغ بازپرداخت
+
+
+
     public BigDecimal getTotalRepayment() {
-        if (this.monthlyPayment == null || this.durationMonths == null) return BigDecimal.ZERO;
+        if (this.monthlyPayment == null || this.durationMonths == null)
+            return BigDecimal.ZERO;
         return this.monthlyPayment.multiply(new BigDecimal(this.durationMonths));
     }
 
-    // ✅ محاسبه کل سود
     public BigDecimal getTotalInterest() {
-        return getTotalRepayment().subtract(this.principal != null ? this.principal : BigDecimal.ZERO);
+        return getTotalRepayment().subtract(
+                this.principal != null ? this.principal : BigDecimal.ZERO
+        );
     }
 }

@@ -1,6 +1,9 @@
+// ✅ LoanPaymentServlet.java
+
 package com.sleepy.onlinebankingsystem.controller.servlet;
 
 import com.sleepy.onlinebankingsystem.model.entity.Loan;
+import com.sleepy.onlinebankingsystem.service.LoanCalculationService;
 import com.sleepy.onlinebankingsystem.service.LoanService;
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -9,7 +12,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -23,12 +25,15 @@ public class LoanPaymentServlet extends HttpServlet {
     @Inject
     private LoanService loanService;
 
+    // ✅ Inject کردن Service جدید
+    @Inject
+    private LoanCalculationService loanCalculationService;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
         try {
-            // دریافت ID وام
             String idParam = req.getParameter("id");
             if (idParam == null || idParam.isBlank()) {
                 resp.sendRedirect(req.getContextPath() + "/loans/list?error=missing_id");
@@ -36,9 +41,8 @@ public class LoanPaymentServlet extends HttpServlet {
             }
 
             Long loanId = Long.parseLong(idParam);
+            Optional<Loan> loanOpt = loanService.findByIdForPayment(loanId);
 
-            // پیدا کردن وام
-            Optional<Loan> loanOpt = loanService.findById(loanId);
             if (loanOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() + "/loans/list?error=not_found");
                 return;
@@ -46,7 +50,6 @@ public class LoanPaymentServlet extends HttpServlet {
 
             Loan loan = loanOpt.get();
 
-            // بررسی مالکیت
             HttpSession session = req.getSession(false);
             String currentUsername = (String) session.getAttribute("username");
 
@@ -55,9 +58,20 @@ public class LoanPaymentServlet extends HttpServlet {
                 return;
             }
 
-            // ارسال اطلاعات به JSP
+            // ✅ محاسبات از طریق Service
+            BigDecimal remainingBalance = loanCalculationService.calculateRemainingBalance(loan);
+            BigDecimal paidAmount = loanCalculationService.calculatePaidAmount(loan);
+            int paymentProgress = loanCalculationService.calculatePaymentProgress(loan);
+            int remainingInstallments = loanCalculationService.calculateRemainingInstallments(loan);
+            int paidInstallments = loanCalculationService.calculatePaidInstallments(loan);
+
             req.setAttribute("loan", loan);
             req.setAttribute("account", loan.getAccount());
+            req.setAttribute("remainingBalance", remainingBalance);
+            req.setAttribute("paidAmount", paidAmount);
+            req.setAttribute("paymentProgress", paymentProgress);
+            req.setAttribute("remainingInstallments", remainingInstallments);
+            req.setAttribute("paidInstallments", paidInstallments);
 
             req.getRequestDispatcher("/views/loans/payment.jsp").forward(req, resp);
 
@@ -76,7 +90,6 @@ public class LoanPaymentServlet extends HttpServlet {
             HttpSession session = req.getSession(false);
             String currentUsername = (String) session.getAttribute("username");
 
-            // دریافت پارامترها
             String loanIdParam = req.getParameter("loanId");
             String paymentAmountParam = req.getParameter("paymentAmount");
 
@@ -92,26 +105,25 @@ public class LoanPaymentServlet extends HttpServlet {
                 paymentAmount = new BigDecimal(paymentAmountParam);
             }
 
-            // بررسی مالکیت
-            Optional<Loan> loanOpt = loanService.findById(loanId);
+            Optional<Loan> loanOpt = loanService.findByIdForPayment(loanId);
+
             if (loanOpt.isEmpty()) {
                 setError(req, resp, "وام یافت نشد");
                 return;
             }
 
             Loan loan = loanOpt.get();
+
             if (!loan.getUser().getUsername().equals(currentUsername)) {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, "دسترسی غیرمجاز");
                 return;
             }
 
-            // فراخوانی Service
             loanService.payLoanInstallment(loanId, paymentAmount);
 
             log.info("Loan installment paid: {} by user: {}",
                     loan.getLoanNumber(), currentUsername);
 
-            // هدایت به صفحه موفقیت
             resp.sendRedirect(req.getContextPath() + "/loans/detail?id=" +
                     loanId + "&message=payment_success");
 

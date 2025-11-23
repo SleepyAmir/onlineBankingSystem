@@ -84,4 +84,6 @@ public interface LoanService {
     Optional<Loan> findByLoanNumberWithUserAndAccount(String loanNumber) throws Exception;
 
     List<Loan> findByStatusWithUserAndAccount(LoanStatus status) throws Exception;
+
+    Optional<Loan> findByIdForPayment(Long id) throws Exception;
 }
