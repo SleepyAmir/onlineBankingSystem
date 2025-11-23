@@ -77,6 +77,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public List<Account> findAllWithUsers(int page, int size) throws Exception {
+        log.info("Fetching all accounts with users - page: {}, size: {}", page, size);
+        return accountRepository.findAllWithUsers(page, size);
+    }
+
+    @Override
     public Optional<Account> findByIdWithUser(Long id) throws Exception {
         log.debug("Fetching account with user by ID: {}", id);
         try {

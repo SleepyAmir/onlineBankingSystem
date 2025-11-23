@@ -1,3 +1,5 @@
+// ✅ TransactionHistoryServlet.java
+
 package com.sleepy.onlinebankingsystem.controller.servlet;
 
 import com.sleepy.onlinebankingsystem.model.entity.Account;
@@ -14,13 +16,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -43,18 +42,18 @@ public class TransactionHistoryServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
             HttpSession session = req.getSession(false);
             String currentUsername = (String) session.getAttribute("username");
-            
+
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
             // 1️⃣ دریافت شماره صفحه
             String pageParam = req.getParameter("page");
             int page = 0;
-            
+
             if (pageParam != null) {
                 try {
                     page = Integer.parseInt(pageParam);
@@ -74,52 +73,54 @@ public class TransactionHistoryServlet extends HttpServlet {
 
             // 3️⃣ اگر Admin یا Manager است، همه تراکنش‌ها را نمایش بده
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
-                
-                if (startDateParam != null && endDateParam != null && 
-                    !startDateParam.isBlank() && !endDateParam.isBlank()) {
-                    // فیلتر بر اساس بازه زمانی
+
+                if (startDateParam != null && endDateParam != null &&
+                        !startDateParam.isBlank() && !endDateParam.isBlank()) {
+                    // ✅ فیلتر بر اساس بازه زمانی با JOIN FETCH
                     LocalDateTime startDate = LocalDateTime.parse(startDateParam + "T00:00:00");
                     LocalDateTime endDate = LocalDateTime.parse(endDateParam + "T23:59:59");
-                    transactions = transactionService.findByDateRange(startDate, endDate);
+                    transactions = transactionService.findByDateRangeWithAccounts(startDate, endDate);
+
                 } else if (accountIdParam != null && !accountIdParam.isBlank()) {
-                    // فیلتر بر اساس حساب خاص
+                    // ✅ فیلتر بر اساس حساب خاص با JOIN FETCH
                     Long accountId = Long.parseLong(accountIdParam);
                     Optional<Account> accountOpt = accountService.findById(accountId);
-                    
+
                     if (accountOpt.isPresent()) {
-                        transactions = transactionService.findByAccount(accountOpt.get());
+                        transactions = transactionService.findByAccountWithAccounts(accountOpt.get());
                     } else {
-                        transactions = transactionService.findAll(page, PAGE_SIZE);
+                        transactions = transactionService.findAllWithAccounts(page, PAGE_SIZE);
                     }
                 } else {
-                    // همه تراکنش‌ها
-                    transactions = transactionService.findAll(page, PAGE_SIZE);
+                    // ✅ همه تراکنش‌ها با JOIN FETCH
+                    transactions = transactionService.findAllWithAccounts(page, PAGE_SIZE);
                 }
+
             } else {
                 // 4️⃣ کاربر عادی فقط تراکنش‌های خودش را می‌بیند
                 Optional<User> userOpt = userService.findByUsername(currentUsername);
-                
+
                 if (userOpt.isEmpty()) {
                     resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
                     return;
                 }
-                
+
                 User user = userOpt.get();
 
                 if (accountIdParam != null && !accountIdParam.isBlank()) {
-                    // فیلتر بر اساس حساب خاص کاربر
+                    // ✅ فیلتر بر اساس حساب خاص کاربر با JOIN FETCH
                     Long accountId = Long.parseLong(accountIdParam);
                     Optional<Account> accountOpt = accountService.findById(accountId);
-                    
-                    if (accountOpt.isPresent() && 
-                        accountOpt.get().getUser().getId().equals(user.getId())) {
-                        transactions = transactionService.findByAccount(accountOpt.get());
+
+                    if (accountOpt.isPresent() &&
+                            accountOpt.get().getUser().getId().equals(user.getId())) {
+                        transactions = transactionService.findByAccountWithAccounts(accountOpt.get());
                     } else {
-                        transactions = transactionService.findByUser(user);
+                        transactions = transactionService.findByUserWithAccounts(user);
                     }
                 } else {
-                    // همه تراکنش‌های کاربر
-                    transactions = transactionService.findByUser(user);
+                    // ✅ همه تراکنش‌های کاربر با JOIN FETCH
+                    transactions = transactionService.findByUserWithAccounts(user);
                 }
 
                 // دریافت حساب‌های کاربر برای فیلتر

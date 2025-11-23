@@ -43,7 +43,48 @@ import java.util.Date;
                         "LEFT JOIN FETCH fa.user " +
                         "LEFT JOIN FETCH t.toAccount ta " +
                         "LEFT JOIN FETCH ta.user " +
-                        "WHERE t.transactionId = :transactionId AND t.deleted = false")
+                        "WHERE t.transactionId = :transactionId AND t.deleted = false"),
+        @NamedQuery(name = "Transaction.findAllWithAccounts",
+                query = "SELECT t FROM Transaction t " +
+                        "LEFT JOIN FETCH t.fromAccount fa " +
+                        "LEFT JOIN FETCH fa.user " +
+                        "LEFT JOIN FETCH t.toAccount ta " +
+                        "LEFT JOIN FETCH ta.user " +
+                        "WHERE t.deleted = false " +
+                        "ORDER BY t.transactionDate DESC"),
+
+        // ✅ جدید - تراکنش‌های یک کاربر با Account و User
+        @NamedQuery(name = "Transaction.findByUserWithAccounts",
+                query = "SELECT DISTINCT t FROM Transaction t " +
+                        "LEFT JOIN FETCH t.fromAccount fa " +
+                        "LEFT JOIN FETCH fa.user " +
+                        "LEFT JOIN FETCH t.toAccount ta " +
+                        "LEFT JOIN FETCH ta.user " +
+                        "WHERE (fa.user = :user OR ta.user = :user) " +
+                        "AND t.deleted = false " +
+                        "ORDER BY t.transactionDate DESC"),
+
+        // ✅ جدید - تراکنش‌های یک حساب با Account و User
+        @NamedQuery(name = "Transaction.findByAccountWithAccounts",
+                query = "SELECT t FROM Transaction t " +
+                        "LEFT JOIN FETCH t.fromAccount fa " +
+                        "LEFT JOIN FETCH fa.user " +
+                        "LEFT JOIN FETCH t.toAccount ta " +
+                        "LEFT JOIN FETCH ta.user " +
+                        "WHERE (t.fromAccount = :account OR t.toAccount = :account) " +
+                        "AND t.deleted = false " +
+                        "ORDER BY t.transactionDate DESC"),
+
+        // ✅ جدید - تراکنش‌های بازه زمانی با Account و User
+        @NamedQuery(name = "Transaction.findByDateRangeWithAccounts",
+                query = "SELECT t FROM Transaction t " +
+                        "LEFT JOIN FETCH t.fromAccount fa " +
+                        "LEFT JOIN FETCH fa.user " +
+                        "LEFT JOIN FETCH t.toAccount ta " +
+                        "LEFT JOIN FETCH ta.user " +
+                        "WHERE t.transactionDate BETWEEN :startDate AND :endDate " +
+                        "AND t.deleted = false " +
+                        "ORDER BY t.transactionDate DESC")
 })
 public class Transaction extends Base {
 
@@ -54,6 +95,10 @@ public class Transaction extends Base {
     public static final String FIND_ALL = "Transaction.findAll";
     public static final String FIND_BY_ID_WITH_ACCOUNTS = "Transaction.findByIdWithAccounts";
     public static final String FIND_BY_TRANSACTION_ID_WITH_ACCOUNTS = "Transaction.findByTransactionIdWithAccounts";
+    public static final String FIND_ALL_WITH_ACCOUNTS = "Transaction.findAllWithAccounts";
+    public static final String FIND_BY_USER_WITH_ACCOUNTS = "Transaction.findByUserWithAccounts";
+    public static final String FIND_BY_ACCOUNT_WITH_ACCOUNTS = "Transaction.findByAccountWithAccounts";
+    public static final String FIND_BY_DATE_RANGE_WITH_ACCOUNTS = "Transaction.findByDateRangeWithAccounts";
 
     @Column(nullable = false, unique = true, length = 50)
     private String transactionId;

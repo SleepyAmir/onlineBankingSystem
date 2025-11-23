@@ -131,6 +131,18 @@ public class CardServiceImpl implements CardService {
         }
     }
 
+    @Override
+    public List<Card> findActiveCardsWithAccountAndUser() throws Exception {
+        log.info("Fetching active cards with account and user");
+        return cardRepository.findActiveCardsWithAccountAndUser();
+    }
+
+    @Override
+    public List<Card> findAllWithAccountAndUser(int page, int size) throws Exception {
+        log.info("Fetching all cards with account and user - page: {}, size: {}", page, size);
+        return cardRepository.findAllWithAccountAndUser(page, size);
+    }
+
     // ========== متدهای بیزنس جدید ==========
 
     @Transactional

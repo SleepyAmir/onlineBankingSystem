@@ -80,6 +80,11 @@ public interface TransactionService {
      */
     Transaction reverseTransaction(String transactionId) throws Exception;
 
+    List<Transaction> findAllWithAccounts(int page, int size) throws Exception;
+    List<Transaction> findByUserWithAccounts(User user) throws Exception;
+    List<Transaction> findByAccountWithAccounts(Account account) throws Exception;
+    List<Transaction> findByDateRangeWithAccounts(LocalDateTime start, LocalDateTime end) throws Exception;
+
 
     Optional<Transaction> findByIdWithAccounts(Long id) throws Exception;
     Optional<Transaction> findByTransactionIdWithAccounts(String transactionId) throws Exception;

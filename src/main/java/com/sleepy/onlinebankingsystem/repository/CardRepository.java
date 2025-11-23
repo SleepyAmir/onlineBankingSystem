@@ -53,6 +53,18 @@ public class CardRepository extends BaseRepository<Card> {
         }
     }
 
+    public List<Card> findActiveCardsWithAccountAndUser() {
+        return em.createNamedQuery(Card.FIND_ACTIVE_CARDS_WITH_ACCOUNT_AND_USER, Card.class)
+                .getResultList();
+    }
+
+    public List<Card> findAllWithAccountAndUser(int page, int size) {
+        return em.createNamedQuery(Card.FIND_ALL_WITH_ACCOUNT_AND_USER, Card.class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
     public Optional<Card> findByCardNumberWithAccount(String cardNumber) {
         try {
             Card card = em.createNamedQuery(Card.FIND_BY_CARD_NUMBER_WITH_ACCOUNT, Card.class)

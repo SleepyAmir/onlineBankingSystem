@@ -62,6 +62,12 @@ public class AccountRepository extends BaseRepository<Account> {
             return Optional.empty();
         }
     }
+    public List<Account> findAllWithUsers(int page, int size) {
+        return em.createNamedQuery(Account.FIND_ALL_WITH_USERS, Account.class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+    }
 
     public List<Account> findByStatus(AccountStatus status) {
         return em.createNamedQuery(Account.FIND_BY_STATUS, Account.class)

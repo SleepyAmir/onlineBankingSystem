@@ -1,3 +1,5 @@
+// ✅ CardListServlet.java
+
 package com.sleepy.onlinebankingsystem.controller.servlet;
 
 import com.sleepy.onlinebankingsystem.model.entity.Card;
@@ -61,14 +63,16 @@ public class CardListServlet extends HttpServlet {
 
                     if (userOpt.isPresent()) {
                         User targetUser = userOpt.get();
-                        // متد جدید با JOIN FETCH user
+                        // ✅ استفاده از متد با JOIN FETCH
                         cards = cardService.findByUserWithAccountAndUser(targetUser.getId());
                         req.setAttribute("selectedUser", targetUser);
                     } else {
-                        cards = getFilteredCards(filterActive, page);
+                        // ✅ استفاده از متد جدید
+                        cards = getFilteredCardsWithJoin(filterActive, page);
                     }
                 } else {
-                    cards = getFilteredCards(filterActive, page);
+                    // ✅ استفاده از متد جدید
+                    cards = getFilteredCardsWithJoin(filterActive, page);
                 }
 
                 req.setAttribute("users", userService.findActiveUsers());
@@ -82,7 +86,8 @@ public class CardListServlet extends HttpServlet {
                 }
 
                 User user = userOpt.get();
-                cards = cardService.findByUserWithAccountAndUser(user.getId()); // متد جدید
+                // ✅ استفاده از متد با JOIN FETCH
+                cards = cardService.findByUserWithAccountAndUser(user.getId());
 
                 if (filterActive != null) {
                     boolean active = filterActive;
@@ -126,12 +131,12 @@ public class CardListServlet extends HttpServlet {
         return Boolean.parseBoolean(activeParam);
     }
 
-    private List<Card> getFilteredCards(Boolean filterActive, int page) throws Exception {
+    // ✅ متد جدید برای فیلتر کردن کارت‌ها
+    private List<Card> getFilteredCardsWithJoin(Boolean filterActive, int page) throws Exception {
         if (filterActive != null && filterActive) {
-            return cardService.findActiveCards();
+            return cardService.findActiveCardsWithAccountAndUser();
         } else {
-            return cardService.findAll(page, PAGE_SIZE);
+            return cardService.findAllWithAccountAndUser(page, PAGE_SIZE);
         }
     }
-
 }

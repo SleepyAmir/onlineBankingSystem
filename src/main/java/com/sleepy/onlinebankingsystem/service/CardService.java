@@ -61,4 +61,7 @@ public interface CardService {
 
 
     Optional<Card> findByIdWithAccount(Long id) throws Exception;
+
+    List<Card> findActiveCardsWithAccountAndUser() throws Exception;
+    List<Card> findAllWithAccountAndUser(int page, int size) throws Exception;
 }

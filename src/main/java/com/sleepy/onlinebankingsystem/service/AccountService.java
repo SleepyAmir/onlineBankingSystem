@@ -88,5 +88,7 @@ public interface AccountService {
     String generateAccountNumber() throws Exception;
 
     Optional<Account> findByAccountNumberWithUser(String accountNumber) throws Exception;
+    List<Account> findAllWithUsers(int page, int size) throws Exception;
+
 
 }

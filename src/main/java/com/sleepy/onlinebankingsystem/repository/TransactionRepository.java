@@ -57,6 +57,31 @@ public class TransactionRepository extends BaseRepository<Transaction> {
             return Optional.empty();
         }
     }
+    public List<Transaction> findAllWithAccounts(int page, int size) {
+        return em.createNamedQuery(Transaction.FIND_ALL_WITH_ACCOUNTS, Transaction.class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
+    public List<Transaction> findByUserWithAccounts(User user) {
+        return em.createNamedQuery(Transaction.FIND_BY_USER_WITH_ACCOUNTS, Transaction.class)
+                .setParameter("user", user)
+                .getResultList();
+    }
+
+    public List<Transaction> findByAccountWithAccounts(Account account) {
+        return em.createNamedQuery(Transaction.FIND_BY_ACCOUNT_WITH_ACCOUNTS, Transaction.class)
+                .setParameter("account", account)
+                .getResultList();
+    }
+
+    public List<Transaction> findByDateRangeWithAccounts(LocalDateTime start, LocalDateTime end) {
+        return em.createNamedQuery(Transaction.FIND_BY_DATE_RANGE_WITH_ACCOUNTS, Transaction.class)
+                .setParameter("startDate", start)
+                .setParameter("endDate", end)
+                .getResultList();
+    }
 
     public Optional<Transaction> findByTransactionIdWithAccounts(String transactionId) {
         try {

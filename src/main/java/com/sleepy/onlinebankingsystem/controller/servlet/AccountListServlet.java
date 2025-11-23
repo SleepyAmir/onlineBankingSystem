@@ -1,3 +1,5 @@
+// ✅ AccountListServlet.java
+
 package com.sleepy.onlinebankingsystem.controller.servlet;
 
 import com.sleepy.onlinebankingsystem.model.entity.Account;
@@ -12,7 +14,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -35,17 +36,17 @@ public class AccountListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         try {
             HttpSession session = req.getSession(false);
             String currentUsername = (String) session.getAttribute("username");
-            
+
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
             String pageParam = req.getParameter("page");
             int page = 0;
-            
+
             if (pageParam != null) {
                 try {
                     page = Integer.parseInt(pageParam);
@@ -60,29 +61,33 @@ public class AccountListServlet extends HttpServlet {
 
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
                 String userIdParam = req.getParameter("userId");
-                
+
                 if (userIdParam != null && !userIdParam.isBlank()) {
                     Long userId = Long.parseLong(userIdParam);
                     Optional<User> userOpt = userService.findById(userId);
-                    
+
                     if (userOpt.isPresent()) {
-                        accounts = accountService.findByUser(userOpt.get());
+                        // ✅ استفاده از متد با JOIN FETCH
+                        accounts = accountService.findByUserWithUser(userOpt.get());
                         req.setAttribute("selectedUser", userOpt.get());
                     } else {
-                        accounts = accountService.findAll(page, PAGE_SIZE);
+                        // ✅ استفاده از متد جدید
+                        accounts = accountService.findAllWithUsers(page, PAGE_SIZE);
                     }
                 } else {
-                    accounts = accountService.findAll(page, PAGE_SIZE);
+                    // ✅ استفاده از متد جدید
+                    accounts = accountService.findAllWithUsers(page, PAGE_SIZE);
                 }
             } else {
                 Optional<User> userOpt = userService.findByUsername(currentUsername);
-                
+
                 if (userOpt.isEmpty()) {
                     log.error("Current user not found: {}", currentUsername);
                     resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
                     return;
                 }
 
+                // ✅ استفاده از متد با JOIN FETCH
                 accounts = accountService.findByUserWithUser(userOpt.get());
             }
 

@@ -333,7 +333,30 @@ public class TransactionServiceImpl implements TransactionService {
         }
     }
 
-    // در TransactionServiceImpl.java - اضافه کنید
+    @Override
+    public List<Transaction> findAllWithAccounts(int page, int size) throws Exception {
+        log.info("Fetching all transactions with accounts - page: {}, size: {}", page, size);
+        return transactionRepository.findAllWithAccounts(page, size);
+    }
+
+    @Override
+    public List<Transaction> findByUserWithAccounts(User user) throws Exception {
+        log.info("Fetching transactions with accounts for user: {}", user.getUsername());
+        return transactionRepository.findByUserWithAccounts(user);
+    }
+
+    @Override
+    public List<Transaction> findByAccountWithAccounts(Account account) throws Exception {
+        log.info("Fetching transactions with accounts for account: {}", account.getAccountNumber());
+        return transactionRepository.findByAccountWithAccounts(account);
+    }
+
+    @Override
+    public List<Transaction> findByDateRangeWithAccounts(LocalDateTime start, LocalDateTime end) throws Exception {
+        log.info("Fetching transactions with accounts for date range: {} to {}", start, end);
+        return transactionRepository.findByDateRangeWithAccounts(start, end);
+    }
+
 
     @Override
     public Optional<Transaction> findByIdWithAccounts(Long id) throws Exception {

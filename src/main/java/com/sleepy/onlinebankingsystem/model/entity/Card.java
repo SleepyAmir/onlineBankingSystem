@@ -54,7 +54,19 @@ import java.util.Date;
                 query = "SELECT c FROM Card c " +
                         "JOIN FETCH c.account a " +
                         "JOIN FETCH a.user " +
-                        "WHERE c.cardNumber = :cardNumber AND c.deleted = false")
+                        "WHERE c.cardNumber = :cardNumber AND c.deleted = false"),
+        @NamedQuery(name = "Card.findActiveCardsWithAccountAndUser",
+                query = "SELECT c FROM Card c " +
+                        "JOIN FETCH c.account a " +
+                        "JOIN FETCH a.user " +
+                        "WHERE c.active = true AND c.deleted = false " +
+                        "ORDER BY c.createdAt DESC"),
+        @NamedQuery(name = "Card.findAllWithAccountAndUser",
+                query = "SELECT c FROM Card c " +
+                        "JOIN FETCH c.account a " +
+                        "JOIN FETCH a.user " +
+                        "WHERE c.deleted = false " +
+                        "ORDER BY c.createdAt DESC")
 })
 public class Card extends Base {
 
@@ -67,6 +79,8 @@ public class Card extends Base {
     public static final String FIND_BY_USER_WITH_ACCOUNT_AND_USER = "Card.findByUserWithAccountAndUser";
     public static final String FIND_BY_ID_WITH_ACCOUNT = "Card.findByIdWithAccount";
     public static final String FIND_BY_CARD_NUMBER_WITH_ACCOUNT = "Card.findByCardNumberWithAccount";
+    public static final String FIND_ACTIVE_CARDS_WITH_ACCOUNT_AND_USER = "Card.findActiveCardsWithAccountAndUser";
+    public static final String FIND_ALL_WITH_ACCOUNT_AND_USER = "Card.findAllWithAccountAndUser";
 
     @Column(nullable = false, unique = true, length = 16)
     private String cardNumber;
