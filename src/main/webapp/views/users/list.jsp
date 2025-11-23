@@ -77,7 +77,7 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td><fmt:formatDate value="${user.createdAt}" pattern="yyyy/MM/dd HH:mm" /></td>
+                            <td>${user.formattedCreatedAt}</td>
                             <td>
                                 <a href="${pageContext.request.contextPath}/users/detail?id=${user.id}" class="btn btn-sm btn-info me-1">
                                     <i class="fas fa-eye"></i>

@@ -55,8 +55,8 @@
                                     <c:if test="${!status.last}">, </c:if>
                                 </c:forEach>
                             </li>
-                            <li class="list-group-item"><strong>تاریخ ایجاد:</strong> <fmt:formatDate value="${user.createdAt}" pattern="yyyy/MM/dd HH:mm" /></li>
-                            <li class="list-group-item"><strong>آخرین به‌روزرسانی:</strong> <fmt:formatDate value="${user.updatedAt}" pattern="yyyy/MM/dd HH:mm" /></li>
+                            <li class="list-group-item"><strong>تاریخ ایجاد:</strong>  ${user.formattedCreatedAt}</li>
+                            <li class="list-group-item"><strong>آخرین به‌روزرسانی:</strong>  ${user.formattedCreatedAt}</li>
                         </ul>
                     </div>
                 </div>

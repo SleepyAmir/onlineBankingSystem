@@ -86,8 +86,10 @@ public class AdminDashboardServlet extends HttpServlet {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             // آمار وام ها
+
+
             List<Loan> allLoans = loanService.findAll(0, 1000);
-            List<Loan> pendingLoans = loanService.findByStatus(LoanStatus.PENDING);
+            List<Loan> pendingLoans = loanService.findByStatusWithUserAndAccount(LoanStatus.PENDING);
             List<Loan> approvedLoans = loanService.findByStatus(LoanStatus.APPROVED);
             List<Loan> activeLoans = loanService.findActiveLoans();
             List<Loan> rejectedLoans = loanService.findByStatus(LoanStatus.REJECTED);
@@ -126,13 +128,6 @@ public class AdminDashboardServlet extends HttpServlet {
             List<Loan> recentLoans = pendingLoans.stream()
                     .sorted((l1, l2) -> l2.getCreatedAt().compareTo(l1.getCreatedAt()))
                     .limit(5)
-                    .peek(loan -> {
-                        // Force initialize User
-                        if (loan.getUser() != null) {
-                            loan.getUser().getFirstName();
-                            loan.getUser().getLastName();
-                        }
-                    })
                     .collect(Collectors.toList());
 
             // آمار سیستمی

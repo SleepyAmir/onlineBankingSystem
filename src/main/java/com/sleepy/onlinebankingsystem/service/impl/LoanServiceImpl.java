@@ -380,6 +380,11 @@ public class LoanServiceImpl implements LoanService {
         log.debug("Fetching loan with user and account by loan number: {}", loanNumber);
         return loanRepository.findByLoanNumberWithUserAndAccount(loanNumber);
     }
+    @Override
+    public List<Loan> findByStatusWithUserAndAccount(LoanStatus status) throws Exception {
+        log.debug("Fetching loans with user and account by status: {}", status);
+        return loanRepository.findByStatusWithUserAndAccount(status);
+    }
 
     // ========== متدهای کمکی ==========
 

@@ -51,6 +51,11 @@ public class LoanRepository extends BaseRepository<Loan> {
             return Optional.empty();
         }
     }
+    public List<Loan> findByStatusWithUserAndAccount(LoanStatus status) {
+        return em.createNamedQuery(Loan.FIND_BY_STATUS_WITH_USER_AND_ACCOUNT, Loan.class)
+                .setParameter("status", status)
+                .getResultList();
+    }
 
     public Optional<Loan> findByLoanNumberWithUserAndAccount(String loanNumber) {
         try {

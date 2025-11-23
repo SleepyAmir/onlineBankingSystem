@@ -47,7 +47,12 @@ import java.util.Date;
                         "JOIN FETCH l.user " +
                         "JOIN FETCH l.account a " +
                         "JOIN FETCH a.user " +
-                        "WHERE l.loanNumber = :loanNumber AND l.deleted = false")
+                        "WHERE l.loanNumber = :loanNumber AND l.deleted = false"),
+        @NamedQuery(name = "Loan.findByStatusWithUserAndAccount",
+                query = "SELECT l FROM Loan l " +
+                        "JOIN FETCH l.user " +
+                        "JOIN FETCH l.account " +
+                        "WHERE l.status = :status AND l.deleted = false")
 })
 public class Loan extends Base {
 
@@ -58,6 +63,7 @@ public class Loan extends Base {
     public static final String FIND_ALL = "Loan.findAll";
     public static final String FIND_BY_ID_WITH_USER_AND_ACCOUNT = "Loan.findByIdWithUserAndAccount";
     public static final String FIND_BY_LOAN_NUMBER_WITH_USER_AND_ACCOUNT = "Loan.findByLoanNumberWithUserAndAccount";
+    public static final String FIND_BY_STATUS_WITH_USER_AND_ACCOUNT = "Loan.findByStatusWithUserAndAccount";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
