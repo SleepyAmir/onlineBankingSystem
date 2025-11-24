@@ -12,8 +12,8 @@
 
 [ویژگی‌ها](#-ویژگیها) • [نصب](#-نصب-و-راهاندازی) • [مستندات](#-مستندات-api) • [دمو](#-نمایش-پروژه)
 
-<img src="/docs/screenshots/dashboard.png" alt="Register Page" width="800"/>
 ---
+<img src="/docs/screenshots/dashboard.png" alt="Register Page" width="800"/>
 
 </div>
 
