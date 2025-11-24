@@ -28,6 +28,21 @@
         position: relative;
         overflow: hidden;
         margin-top: 5rem;
+        margin-right: var(--sidebar-width, 280px);
+        transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* اگر sidebar جمع شد */
+    .sidebar.mini ~ * .modern-footer,
+    body.sidebar-mini .modern-footer {
+        margin-right: 85px;
+    }
+
+    /* برای موبایل footer تمام عرض */
+    @media (max-width: 768px) {
+        .modern-footer {
+            margin-right: 0 !important;
+        }
     }
 
     .modern-footer::before {

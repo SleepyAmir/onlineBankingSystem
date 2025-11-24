@@ -13,6 +13,13 @@
         }
     }
 
+    /* متغیرهای اصلی */
+    :root {
+        --sidebar-width: 280px;
+        --sidebar-collapsed-width: 80px;
+        --transition-speed: 0.3s;
+    }
+
     .sidebar {
         position: fixed;
         top: var(--navbar-height);
@@ -24,10 +31,49 @@
         overflow-y: auto;
         overflow-x: hidden;
         z-index: 999;
-        transition: all 0.3s ease;
+        transition: width var(--transition-speed) ease, transform var(--transition-speed) ease;
         animation: slideInRight 0.5s ease-out;
     }
 
+    /* حالت جمع شده */
+    .sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+    }
+
+    /* دکمه جمع/باز کردن */
+    .sidebar-toggle-btn {
+        position: absolute;
+        top: 1rem;
+        left: -15px;
+        width: 30px;
+        height: 30px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .sidebar-toggle-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.6);
+    }
+
+    .sidebar-toggle-btn i {
+        transition: transform var(--transition-speed) ease;
+    }
+
+    .sidebar.collapsed .sidebar-toggle-btn i {
+        transform: rotate(180deg);
+    }
+
+    /* اسکرول بار */
     .sidebar::-webkit-scrollbar {
         width: 6px;
     }
@@ -41,16 +87,13 @@
         border-radius: 10px;
     }
 
-    .sidebar.collapsed {
-        transform: translateX(100%);
-    }
-
     .sidebar-menu {
         list-style: none;
         padding: 1.5rem 0;
         margin: 0;
     }
 
+    /* عنوان بخش‌ها */
     .menu-section-title {
         padding: 1.75rem 1.5rem 0.75rem;
         font-size: 0.7rem;
@@ -59,6 +102,15 @@
         text-transform: uppercase;
         letter-spacing: 1.5px;
         position: relative;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: all var(--transition-speed) ease;
+    }
+
+    .sidebar.collapsed .menu-section-title {
+        opacity: 0;
+        padding: 0.5rem 0;
+        height: 0;
     }
 
     .menu-section-title::after {
@@ -71,9 +123,18 @@
         background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
     }
 
+    .sidebar.collapsed .menu-section-title::after {
+        display: none;
+    }
+
+    /* آیتم‌های منو */
     .menu-item {
         margin: 0.4rem 1rem;
         animation: slideInRight 0.5s ease-out backwards;
+    }
+
+    .sidebar.collapsed .menu-item {
+        margin: 0.4rem 0.5rem;
     }
 
     .menu-item:nth-child(1) { animation-delay: 0.05s; }
@@ -99,6 +160,11 @@
         overflow: hidden;
     }
 
+    .sidebar.collapsed .menu-link {
+        padding: 1rem;
+        justify-content: center;
+    }
+
     .menu-link::before {
         content: '';
         position: absolute;
@@ -117,6 +183,10 @@
         box-shadow: 0 5px 20px rgba(102, 126, 234, 0.25);
     }
 
+    .sidebar.collapsed .menu-link:hover {
+        transform: translateX(0) scale(1.05);
+    }
+
     .menu-link:hover::before {
         width: 100%;
     }
@@ -128,10 +198,15 @@
         transform: translateX(-5px);
     }
 
+    .sidebar.collapsed .menu-link.active {
+        transform: translateX(0);
+    }
+
     .menu-link.active::before {
         width: 0;
     }
 
+    /* آیکون منو */
     .menu-icon {
         width: 40px;
         height: 40px;
@@ -153,12 +228,22 @@
         transform: rotate(-10deg) scale(1.1);
     }
 
+    /* متن منو */
     .menu-text {
         position: relative;
         z-index: 1;
         flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: all var(--transition-speed) ease;
     }
 
+    .sidebar.collapsed .menu-text {
+        opacity: 0;
+        width: 0;
+    }
+
+    /* بج اطلاعات */
     .menu-badge {
         margin-right: auto;
         padding: 0.35rem 0.65rem;
@@ -172,6 +257,14 @@
         position: relative;
         z-index: 1;
         box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
+        transition: all var(--transition-speed) ease;
+    }
+
+    .sidebar.collapsed .menu-badge {
+        opacity: 0;
+        width: 0;
+        padding: 0;
+        margin: 0;
     }
 
     .menu-link:hover .menu-badge,
@@ -180,7 +273,7 @@
         color: var(--danger-color);
     }
 
-    /* افکت برای آیتم‌های خاص */
+    /* آیتم ویژه */
     .menu-item-featured .menu-link {
         background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
         border: 2px solid #bfdbfe;
@@ -191,20 +284,72 @@
         color: white;
     }
 
+    /* تنظیمات محتوا */
+    .content-wrapper {
+        margin-right: var(--sidebar-width);
+        transition: margin-right var(--transition-speed) ease;
+    }
+
+    .content-wrapper.sidebar-collapsed {
+        margin-right: var(--sidebar-collapsed-width);
+    }
+
+    /* Tooltip برای حالت جمع شده */
+    .sidebar.collapsed .menu-link {
+        position: relative;
+    }
+
+    .sidebar.collapsed .menu-link::after {
+        content: attr(data-title);
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #1f2937;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        margin-left: 1rem;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1001;
+    }
+
+    .sidebar.collapsed .menu-link:hover::after {
+        opacity: 1;
+        margin-left: 1.5rem;
+    }
+
+    /* پاسخ‌گویی موبایل */
     @media (max-width: 768px) {
         .sidebar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 300px;
-            height: 100vh;
             transform: translateX(100%);
-            transition: transform 0.3s ease;
-            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+            width: 300px;
         }
 
         .sidebar.show {
             transform: translateX(0);
+        }
+
+        .sidebar.collapsed {
+            width: 300px;
+            transform: translateX(100%);
+        }
+
+        .sidebar.collapsed.show {
+            transform: translateX(0);
+        }
+
+        .content-wrapper {
+            margin-right: 0 !important;
+        }
+
+        .sidebar-toggle-btn {
+            display: none;
         }
 
         /* Overlay برای موبایل */
@@ -226,9 +371,20 @@
             visibility: visible;
         }
     }
+
+    @media (min-width: 769px) {
+        .sidebar-overlay {
+            display: none;
+        }
+    }
 </style>
 
 <aside class="sidebar" id="sidebar">
+    <!-- دکمه جمع/باز کردن -->
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="جمع/باز کردن منو">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
     <ul class="sidebar-menu">
         <!-- Dashboard Section -->
         <li class="menu-section-title">
@@ -237,7 +393,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/customer/user-dashboard"
-               class="menu-link ${requestURI.contains('/user-dashboard') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/user-dashboard') ? 'active' : ''}"
+               data-title="داشبورد">
                 <div class="menu-icon">
                     <i class="fas fa-tachometer-alt"></i>
                 </div>
@@ -252,7 +409,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/accounts/list"
-               class="menu-link ${requestURI.contains('/accounts') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/accounts') ? 'active' : ''}"
+               data-title="حساب‌های من">
                 <div class="menu-icon">
                     <i class="fas fa-wallet"></i>
                 </div>
@@ -261,7 +419,8 @@
         </li>
         <li class="menu-item menu-item-featured">
             <a href="${pageContext.request.contextPath}/transactions"
-               class="menu-link ${requestURI.contains('/transactions/form') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/transactions/form') ? 'active' : ''}"
+               data-title="انتقال وجه">
                 <div class="menu-icon">
                     <i class="fas fa-exchange-alt"></i>
                 </div>
@@ -270,7 +429,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/transactions/history"
-               class="menu-link ${requestURI.contains('/transactions/history') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/transactions/history') ? 'active' : ''}"
+               data-title="تاریخچه تراکنش">
                 <div class="menu-icon">
                     <i class="fas fa-history"></i>
                 </div>
@@ -279,7 +439,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/loans/apply"
-               class="menu-link ${requestURI.contains('/loans/apply') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/loans/apply') ? 'active' : ''}"
+               data-title="درخواست وام">
                 <div class="menu-icon">
                     <i class="fas fa-hand-holding-usd"></i>
                 </div>
@@ -288,7 +449,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/loans/list"
-               class="menu-link ${requestURI.contains('/loans/list') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/loans/list') ? 'active' : ''}"
+               data-title="وام‌های من">
                 <div class="menu-icon">
                     <i class="fas fa-list"></i>
                 </div>
@@ -297,7 +459,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/cards/list"
-               class="menu-link ${requestURI.contains('/cards/list') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/cards/list') ? 'active' : ''}"
+               data-title="کارت‌های بانکی">
                 <div class="menu-icon">
                     <i class="fas fa-credit-card"></i>
                 </div>
@@ -314,7 +477,8 @@
             <c:if test="${sessionScope.roles.contains('ADMIN')}">
                 <li class="menu-item">
                     <a href="${pageContext.request.contextPath}/users/list"
-                       class="menu-link ${requestURI.contains('/users/list') ? 'active' : ''}">
+                       class="menu-link ${requestURI.contains('/users/list') ? 'active' : ''}"
+                       data-title="مدیریت کاربران">
                         <div class="menu-icon">
                             <i class="fas fa-users"></i>
                         </div>
@@ -324,7 +488,8 @@
             </c:if>
             <li class="menu-item">
                 <a href="${pageContext.request.contextPath}/loans/list?status=PENDING"
-                   class="menu-link ${requestURI.contains('/loans/list?status=PENDING') ? 'active' : ''}">
+                   class="menu-link ${requestURI.contains('/loans/list?status=PENDING') ? 'active' : ''}"
+                   data-title="تأیید وام‌ها">
                     <div class="menu-icon">
                         <i class="fas fa-tasks"></i>
                     </div>
@@ -343,7 +508,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/user-profile"
-               class="menu-link ${requestURI.contains('/user-profile') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/user-profile') ? 'active' : ''}"
+               data-title="پروفایل کاربری">
                 <div class="menu-icon">
                     <i class="fas fa-user"></i>
                 </div>
@@ -352,7 +518,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/settings"
-               class="menu-link ${requestURI.contains('/settings') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/settings') ? 'active' : ''}"
+               data-title="تنظیمات">
                 <div class="menu-icon">
                     <i class="fas fa-cog"></i>
                 </div>
@@ -361,7 +528,8 @@
         </li>
         <li class="menu-item">
             <a href="${pageContext.request.contextPath}/help"
-               class="menu-link ${requestURI.contains('/help') ? 'active' : ''}">
+               class="menu-link ${requestURI.contains('/help') ? 'active' : ''}"
+               data-title="راهنما و پشتیبانی">
                 <div class="menu-icon">
                     <i class="fas fa-question-circle"></i>
                 </div>
@@ -374,16 +542,57 @@
 <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <script>
+    // دریافت المان‌ها
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const contentWrapper = document.querySelector('.content-wrapper');
+
+    // بررسی وضعیت ذخیره شده
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true') {
+        sidebar.classList.add('collapsed');
+        if (contentWrapper) {
+            contentWrapper.classList.add('sidebar-collapsed');
+        }
+    }
+
+    // تابع جمع/باز کردن sidebar
+    function toggleSidebarCollapse() {
+        sidebar.classList.toggle('collapsed');
+
+        if (contentWrapper) {
+            contentWrapper.classList.toggle('sidebar-collapsed');
+        }
+
+        // ذخیره وضعیت
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    }
+
+    // رویداد کلیک دکمه
+    if (sidebarToggleBtn) {
+        sidebarToggleBtn.addEventListener('click', toggleSidebarCollapse);
+    }
+
+    // تابع برای موبایل
     function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('show');
     }
 
     // بستن sidebar با کلید ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            const sidebar = document.getElementById('sidebar');
             sidebar.classList.remove('show');
         }
     });
+
+    // بستن sidebar وقتی روی لینک کلیک می‌شود (موبایل)
+    if (window.innerWidth <= 768) {
+        const menuLinks = document.querySelectorAll('.menu-link');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+            });
+        });
+    }
 </script>
