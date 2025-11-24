@@ -20,10 +20,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * سرولت به‌روزرسانی حساب
- * تمام بیزنس لاجیک در AccountService
- */
+
 @Slf4j
 @WebServlet("/accounts/update")
 public class AccountUpdateServlet extends HttpServlet {

@@ -31,13 +31,11 @@ public class AccountServiceImpl implements AccountService {
 
     private final SecureRandom random = new SecureRandom();
 
-    // حدود مجاز
     private static final BigDecimal MIN_INITIAL_BALANCE = BigDecimal.ZERO;
     private static final BigDecimal MAX_INITIAL_BALANCE = new BigDecimal("10000000000"); // 10B
     private static final int ACCOUNT_NUMBER_LENGTH = 16;
     private static final int MAX_GENERATION_ATTEMPTS = 100;
 
-    // ========== متدهای CRUD موجود ==========
 
     @Transactional
     @Override
@@ -117,22 +115,15 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findByAccountNumberWithUser(accountNumber);
     }
 
-//    @Override
-//    public List<Account> findByUserWithUser(User user) throws Exception {
-//        log.info("Fetching accounts with user for user ID: {}", user.getId());
-//        return accountRepository.findByUserWithUser(user);
-//    }
 @Override
 public List<Account> findByUserWithUser(User user) throws Exception {
     log.info("Fetching accounts with user for user ID: {}", user.getId());
     List<Account> accounts = accountRepository.findByUserWithUser(user);
 
-    // ✅ Force Initialize کردن Enum ها
     accounts.forEach(account -> {
-        // این خط باعث می‌شود Hibernate تمام فیلدهای lazy را بارگذاری کند
         Hibernate.initialize(account);
-        account.getType(); // Force load enum
-        account.getStatus(); // Force load enum
+        account.getType();
+        account.getStatus();
     });
 
     return accounts;
@@ -148,7 +139,6 @@ public List<Account> findByUserWithUser(User user) throws Exception {
         return accountRepository.findAll(page, size);
     }
 
-    // ========== متدهای بیزنس جدید ==========
 
     @Transactional
     @Override
@@ -157,7 +147,6 @@ public List<Account> findByUserWithUser(User user) throws Exception {
 
         log.info("Creating account for user ID: {} with type: {}", userId, accountType);
 
-        // 1. اعتبارسنجی ورودی
         if (userId == null) {
             throw new IllegalArgumentException("شناسه کاربر الزامی است");
         }
@@ -165,16 +154,13 @@ public List<Account> findByUserWithUser(User user) throws Exception {
             throw new IllegalArgumentException("نوع حساب الزامی است");
         }
 
-        // 2. پیدا کردن کاربر
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("کاربر یافت نشد"));
 
-        // 3. بررسی فعال بودن کاربر
         if (!user.isActive()) {
             throw new IllegalStateException("کاربر باید فعال باشد");
         }
 
-        // 4. اعتبارسنجی موجودی اولیه
         BigDecimal balance = initialBalance != null ? initialBalance : BigDecimal.ZERO;
 
         if (balance.compareTo(MIN_INITIAL_BALANCE) < 0) {
@@ -186,10 +172,8 @@ public List<Account> findByUserWithUser(User user) throws Exception {
             );
         }
 
-        // 5. تولید شماره حساب یکتا
         String accountNumber = generateAccountNumber();
 
-        // 6. ساخت حساب
         Account account = Account.builder()
                 .user(user)
                 .accountNumber(accountNumber)
@@ -210,7 +194,6 @@ public List<Account> findByUserWithUser(User user) throws Exception {
 
         log.info("Changing account status: ID {} to {}", accountId, newStatus);
 
-        // 1. اعتبارسنجی
         if (accountId == null) {
             throw new IllegalArgumentException("شناسه حساب الزامی است");
         }
@@ -218,16 +201,13 @@ public List<Account> findByUserWithUser(User user) throws Exception {
             throw new IllegalArgumentException("وضعیت جدید الزامی است");
         }
 
-        // 2. پیدا کردن حساب
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-        // 3. بررسی تغییر
         if (account.getStatus() == newStatus) {
             throw new IllegalStateException("حساب از قبل در این وضعیت است");
         }
 
-        // 4. تغییر وضعیت
         AccountStatus oldStatus = account.getStatus();
         account.setStatus(newStatus);
         Account updatedAccount = accountRepository.save(account);
@@ -244,7 +224,6 @@ public List<Account> findByUserWithUser(User user) throws Exception {
 
         log.info("Freezing account: ID {}", accountId);
 
-        // فراخوانی changeAccountStatus
         return changeAccountStatus(accountId, AccountStatus.FROZEN);
     }
 
@@ -254,27 +233,22 @@ public List<Account> findByUserWithUser(User user) throws Exception {
 
         log.info("Closing account: ID {}", accountId);
 
-        // 1. پیدا کردن حساب
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-        // 2. بررسی موجودی
         if (account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
             throw new IllegalStateException("حساب با موجودی مثبت قابل بستن نیست");
         }
 
-        // 3. بستن حساب
         return changeAccountStatus(accountId, AccountStatus.CLOSED);
     }
 
     @Override
     public void validateAccountForTransaction(String accountNumber) throws Exception {
 
-        // 1. بررسی وجود حساب
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-        // 2. بررسی وضعیت
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new IllegalStateException("حساب باید فعال باشد");
         }
@@ -285,16 +259,13 @@ public List<Account> findByUserWithUser(User user) throws Exception {
     @Override
     public void validateAccountForDeletion(Long accountId) throws Exception {
 
-        // 1. بررسی وجود حساب
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-        // 2. بررسی موجودی
         if (account.getBalance().compareTo(BigDecimal.ZERO) > 0) {
             throw new IllegalStateException("حساب با موجودی مثبت قابل حذف نیست");
         }
 
-        // 3. بررسی وضعیت
         if (account.getStatus() == AccountStatus.ACTIVE) {
             throw new IllegalStateException("حساب فعال باید ابتدا بسته شود");
         }
@@ -306,16 +277,13 @@ public List<Account> findByUserWithUser(User user) throws Exception {
     public void validateSufficientBalance(String accountNumber, BigDecimal amount)
             throws Exception {
 
-        // 1. بررسی مبلغ
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("مبلغ باید بیشتر از صفر باشد");
         }
 
-        // 2. پیدا کردن حساب
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-        // 3. بررسی موجودی
         if (account.getBalance().compareTo(amount) < 0) {
             throw new IllegalStateException(
                     String.format("موجودی کافی نیست. موجودی فعلی: %.2f, مبلغ مورد نیاز: %.2f",
@@ -346,7 +314,6 @@ public List<Account> findByUserWithUser(User user) throws Exception {
         return accountNumber;
     }
 
-    // ========== متدهای کمکی ==========
 
     /**
      * تولید شماره حساب 16 رقمی تصادفی

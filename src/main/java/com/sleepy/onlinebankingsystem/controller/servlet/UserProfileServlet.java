@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * سرولت پروفایل کاربر
- * تمام بیزنس لاجیک در UserService
- */
+
 @Slf4j
 @WebServlet("/user-profile")
 public class UserProfileServlet extends HttpServlet {

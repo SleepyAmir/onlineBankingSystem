@@ -19,45 +19,15 @@ import java.util.Date;
 @Table(name = "loans",
         uniqueConstraints = @UniqueConstraint(columnNames = "loanNumber"))
 @NamedQueries({
-        @NamedQuery(name = "Loan.findByUser",
-                query = "SELECT l FROM Loan l WHERE l.user = :user"),
-
-        @NamedQuery(name = "Loan.findByLoanNumber",
-                query = "SELECT l FROM Loan l WHERE l.loanNumber = :loanNumber"),
-
-        @NamedQuery(name = "Loan.findByStatus",
-                query = "SELECT l FROM Loan l WHERE l.status = :status"),
-
-        @NamedQuery(name = "Loan.findActiveLoans",
-                query = "SELECT l FROM Loan l WHERE l.status = 'ACTIVE'"),
-
-        @NamedQuery(name = "Loan.findAll",
-                query = "SELECT l FROM Loan l"),
-
-        // ✅ JOIN FETCH برای User و Account
-        @NamedQuery(name = "Loan.findByIdWithUserAndAccount",
-                query = "SELECT l FROM Loan l " +
-                        "JOIN FETCH l.user " +
-                        "JOIN FETCH l.account a " +
-                        "JOIN FETCH a.user " +
-                        "WHERE l.id = :id AND l.deleted = false"),
-
-        @NamedQuery(name = "Loan.findByLoanNumberWithUserAndAccount",
-                query = "SELECT l FROM Loan l " +
-                        "JOIN FETCH l.user " +
-                        "JOIN FETCH l.account a " +
-                        "JOIN FETCH a.user " +
-                        "WHERE l.loanNumber = :loanNumber AND l.deleted = false"),
-        @NamedQuery(name = "Loan.findByStatusWithUserAndAccount",
-                query = "SELECT l FROM Loan l " +
-                        "JOIN FETCH l.user " +
-                        "JOIN FETCH l.account " +
-                        "WHERE l.status = :status AND l.deleted = false"),
-        @NamedQuery(name = "Loan.findByIdForPayment",
-                query = "SELECT l FROM Loan l " +
-                        "JOIN FETCH l.user u " +
-                        "JOIN FETCH l.account a " +
-                        "WHERE l.id = :id AND l.deleted = false")
+        @NamedQuery(name = "Loan.findByUser", query = "SELECT l FROM Loan l WHERE l.user = :user"),
+        @NamedQuery(name = "Loan.findByLoanNumber", query = "SELECT l FROM Loan l WHERE l.loanNumber = :loanNumber"),
+        @NamedQuery(name = "Loan.findByStatus", query = "SELECT l FROM Loan l WHERE l.status = :status"),
+        @NamedQuery(name = "Loan.findActiveLoans", query = "SELECT l FROM Loan l WHERE l.status = 'ACTIVE'"),
+        @NamedQuery(name = "Loan.findAll", query = "SELECT l FROM Loan l"),
+        @NamedQuery(name = "Loan.findByIdWithUserAndAccount", query = "SELECT l FROM Loan l " + "JOIN FETCH l.user " + "JOIN FETCH l.account a " + "JOIN FETCH a.user " + "WHERE l.id = :id AND l.deleted = false"),
+        @NamedQuery(name = "Loan.findByLoanNumberWithUserAndAccount", query = "SELECT l FROM Loan l " + "JOIN FETCH l.user " + "JOIN FETCH l.account a " + "JOIN FETCH a.user " + "WHERE l.loanNumber = :loanNumber AND l.deleted = false"),
+        @NamedQuery(name = "Loan.findByStatusWithUserAndAccount", query = "SELECT l FROM Loan l " + "JOIN FETCH l.user " + "JOIN FETCH l.account " + "WHERE l.status = :status AND l.deleted = false"),
+        @NamedQuery(name = "Loan.findByIdForPayment", query = "SELECT l FROM Loan l " + "JOIN FETCH l.user u " + "JOIN FETCH l.account a " + "WHERE l.id = :id AND l.deleted = false")
 })
 public class Loan extends Base {
 

@@ -12,9 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
-/**
- * سرولت ثبت‌نام - تمام بیزنس لاجیک در UserService
- */
 @Slf4j
 @WebServlet("/auth/register")
 public class RegisterServlet extends HttpServlet {

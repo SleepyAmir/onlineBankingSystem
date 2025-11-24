@@ -13,10 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
-/**
- * سرولت ایجاد کاربر توسط ادمین
- * تمام بیزنس لاجیک در UserService
- */
+
 @Slf4j
 @WebServlet("/users/create")
 public class UserCreateServlet extends HttpServlet {

@@ -16,26 +16,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @NamedQueries({
-        @NamedQuery(
-                name = "Role.findByUser",
-                query = "SELECT r FROM Role r WHERE r.user = :user"
-        ),
-        @NamedQuery(
-                name = "Role.findByUsernameAndRoleName",
-                query = "SELECT r FROM Role r WHERE r.user.username = :username AND r.role = :roleName"
-        ),
-        @NamedQuery(
-                name = "Role.findByRoleName",
-                query = "SELECT r FROM Role r WHERE r.role = :roleName"
-        ),
-        @NamedQuery(
-                name = "Role.findAll",
-                query = "SELECT r FROM Role r ORDER BY r.id"
-        ),
-        @NamedQuery(
-                name = "Role.countAll",
-                query = "SELECT COUNT(r) FROM Role r"
-        )
+        @NamedQuery(name = "Role.findByUser", query = "SELECT r FROM Role r WHERE r.user = :user"),
+        @NamedQuery(name = "Role.findByUsernameAndRoleName", query = "SELECT r FROM Role r WHERE r.user.username = :username AND r.role = :roleName"),
+        @NamedQuery(name = "Role.findByRoleName", query = "SELECT r FROM Role r WHERE r.role = :roleName"),
+        @NamedQuery(name = "Role.findAll", query = "SELECT r FROM Role r ORDER BY r.id"),
+        @NamedQuery(name = "Role.countAll", query = "SELECT COUNT(r) FROM Role r")
 })
 public class Role extends Base {
 

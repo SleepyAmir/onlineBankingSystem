@@ -39,7 +39,6 @@ public class AccountRepository extends BaseRepository<Account> {
                 .getResultList().stream().findFirst();
     }
 
-    // ✅ متد جدید با JOIN FETCH
     public Optional<Account> findByAccountNumberWithUser(String accountNumber) {
         try {
             Account account = em.createNamedQuery(Account.FIND_BY_ACCOUNT_NUMBER_WITH_USER, Account.class)
@@ -51,7 +50,6 @@ public class AccountRepository extends BaseRepository<Account> {
         }
     }
 
-    // ✅ متد جدید با JOIN FETCH برای ID
     public Optional<Account> findByIdWithUser(Long id) {
         try {
             Account account = em.createNamedQuery(Account.FIND_BY_ID_WITH_USER, Account.class)

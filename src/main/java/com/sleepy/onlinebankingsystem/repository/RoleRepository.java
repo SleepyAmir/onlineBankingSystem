@@ -26,7 +26,6 @@ public class RoleRepository extends BaseRepository<Role> {
         return Role.class;
     }
 
-    // ——— متدهای سفارشی ———
 
     public List<Role> findByUser(User user) {
         return em.createNamedQuery(Role.FIND_BY_USER, Role.class)

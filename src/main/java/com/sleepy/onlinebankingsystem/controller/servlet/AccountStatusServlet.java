@@ -16,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Set;
 
-/**
- * سرولت تغییر وضعیت حساب
- * تمام بیزنس لاجیک در AccountService
- */
+
 @Slf4j
 @WebServlet("/accounts/status")
 public class AccountStatusServlet extends HttpServlet {

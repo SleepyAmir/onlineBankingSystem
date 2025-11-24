@@ -143,7 +143,6 @@ public class CardServiceImpl implements CardService {
         return cardRepository.findAllWithAccountAndUser(page, size);
     }
 
-    // ========== متدهای بیزنس جدید ==========
 
     @Transactional
     @Override
@@ -151,24 +150,19 @@ public class CardServiceImpl implements CardService {
 
         log.info("Issuing new card for account ID: {}", accountId);
 
-        // 1. اعتبارسنجی
         validateCardIssuance(accountId);
 
-        // 2. پیدا کردن حساب
         Account account = accountService.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-        // 3. بررسی نوع کارت
         if (cardType == null) {
             throw new IllegalArgumentException("نوع کارت الزامی است");
         }
 
-        // 4. تولید اطلاعات کارت
         String cardNumber = generateUniqueCardNumber();
         String cvv = generateCVV();
         LocalDate expiryDate = LocalDate.now().plusYears(CARD_VALIDITY_YEARS);
 
-        // 5. ساخت کارت
         Card card = Card.builder()
                 .account(account)
                 .cardNumber(cardNumber)
@@ -191,21 +185,17 @@ public class CardServiceImpl implements CardService {
 
         log.info("Activating card with ID: {}", cardId);
 
-        // 1. پیدا کردن کارت
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("کارت یافت نشد"));
 
-        // 2. بررسی وضعیت فعلی
         if (card.isActive()) {
             throw new IllegalStateException("کارت از قبل فعال است");
         }
 
-        // 3. بررسی انقضا
         if (card.getExpiryDate().isBefore(LocalDate.now())) {
             throw new IllegalStateException("کارت منقضی شده است و قابل فعال‌سازی نیست");
         }
 
-        // 4. فعال‌سازی
         card.setActive(true);
         Card updatedCard = cardRepository.save(card);
 
@@ -220,16 +210,13 @@ public class CardServiceImpl implements CardService {
 
         log.info("Blocking card with ID: {}", cardId);
 
-        // 1. پیدا کردن کارت
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new IllegalArgumentException("کارت یافت نشد"));
 
-        // 2. بررسی وضعیت فعلی
         if (!card.isActive()) {
             throw new IllegalStateException("کارت از قبل مسدود است");
         }
 
-        // 3. مسدودسازی
         card.setActive(false);
         Card updatedCard = cardRepository.save(card);
 
@@ -241,21 +228,17 @@ public class CardServiceImpl implements CardService {
     @Override
     public void validateCardForTransaction(String cardNumber) throws Exception {
 
-        // 1. بررسی وجود کارت
         Card card = cardRepository.findByCardNumber(cardNumber)
                 .orElseThrow(() -> new IllegalArgumentException("کارت یافت نشد"));
 
-        // 2. بررسی فعال بودن
         if (!card.isActive()) {
             throw new IllegalStateException("کارت غیرفعال است");
         }
 
-        // 3. بررسی انقضا
         if (card.getExpiryDate().isBefore(LocalDate.now())) {
             throw new IllegalStateException("کارت منقضی شده است");
         }
 
-        // 4. بررسی وضعیت حساب
         Account account = card.getAccount();
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new IllegalStateException("حساب مرتبط با کارت فعال نیست");
@@ -279,16 +262,13 @@ public class CardServiceImpl implements CardService {
     @Override
     public void validateCardIssuance(Long accountId) throws Exception {
 
-        // 1. بررسی وجود حساب
         Account account = accountService.findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("حساب یافت نشد"));
 
-        // 2. بررسی وضعیت حساب
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new IllegalStateException("حساب باید فعال باشد");
         }
 
-        // 3. بررسی تعداد کارت‌های موجود
         List<Card> existingCards = cardRepository.findByAccount(account);
         long activeCardsCount = existingCards.stream()
                 .filter(Card::isActive)
@@ -303,7 +283,6 @@ public class CardServiceImpl implements CardService {
         log.debug("Card issuance validated for account: {}", account.getAccountNumber());
     }
 
-    // ========== متدهای کمکی ==========
 
     /**
      * تولید شماره کارت یکتا 16 رقمی

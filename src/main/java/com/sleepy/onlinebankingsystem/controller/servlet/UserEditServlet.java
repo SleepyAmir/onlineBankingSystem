@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * سرولت ویرایش کاربر
- * تمام بیزنس لاجیک در UserService
- */
+
 @Slf4j
 @WebServlet("/users/edit")
 public class UserEditServlet extends HttpServlet {

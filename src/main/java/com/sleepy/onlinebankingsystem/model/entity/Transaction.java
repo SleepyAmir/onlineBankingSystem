@@ -20,71 +20,17 @@ import java.util.Date;
 @Table(name = "transactions",
         uniqueConstraints = @UniqueConstraint(columnNames = "transactionId"))
 @NamedQueries({
-        @NamedQuery(name = "Transaction.findByAccount",
-                query = "SELECT t FROM Transaction t WHERE (t.fromAccount = :account OR t.toAccount = :account)"),
-        @NamedQuery(name = "Transaction.findByUser",
-                query = "SELECT t FROM Transaction t WHERE (t.fromAccount.user = :user OR t.toAccount.user = :user)"),
-        @NamedQuery(name = "Transaction.findByTransactionId",
-                query = "SELECT t FROM Transaction t WHERE t.transactionId = :transactionId"),
-        @NamedQuery(name = "Transaction.findByDateRange",
-                query = "SELECT t FROM Transaction t WHERE t.transactionDate BETWEEN :startDate AND :endDate"),
-        @NamedQuery(name = "Transaction.findAll",
-                query = "SELECT t FROM Transaction t"),
-        @NamedQuery(name = "Transaction.findByIdWithAccounts",
-                query = "SELECT t FROM Transaction t " +
-                        "LEFT JOIN FETCH t.fromAccount fa " +
-                        "LEFT JOIN FETCH fa.user " +
-                        "LEFT JOIN FETCH t.toAccount ta " +
-                        "LEFT JOIN FETCH ta.user " +
-                        "WHERE t.id = :id AND t.deleted = false"),
-        @NamedQuery(name = "Transaction.findByTransactionIdWithAccounts",
-                query = "SELECT t FROM Transaction t " +
-                        "LEFT JOIN FETCH t.fromAccount fa " +
-                        "LEFT JOIN FETCH fa.user " +
-                        "LEFT JOIN FETCH t.toAccount ta " +
-                        "LEFT JOIN FETCH ta.user " +
-                        "WHERE t.transactionId = :transactionId AND t.deleted = false"),
-        @NamedQuery(name = "Transaction.findAllWithAccounts",
-                query = "SELECT t FROM Transaction t " +
-                        "LEFT JOIN FETCH t.fromAccount fa " +
-                        "LEFT JOIN FETCH fa.user " +
-                        "LEFT JOIN FETCH t.toAccount ta " +
-                        "LEFT JOIN FETCH ta.user " +
-                        "WHERE t.deleted = false " +
-                        "ORDER BY t.transactionDate DESC"),
-
-        // ✅ جدید - تراکنش‌های یک کاربر با Account و User
-        @NamedQuery(name = "Transaction.findByUserWithAccounts",
-                query = "SELECT DISTINCT t FROM Transaction t " +
-                        "LEFT JOIN FETCH t.fromAccount fa " +
-                        "LEFT JOIN FETCH fa.user " +
-                        "LEFT JOIN FETCH t.toAccount ta " +
-                        "LEFT JOIN FETCH ta.user " +
-                        "WHERE (fa.user = :user OR ta.user = :user) " +
-                        "AND t.deleted = false " +
-                        "ORDER BY t.transactionDate DESC"),
-
-        // ✅ جدید - تراکنش‌های یک حساب با Account و User
-        @NamedQuery(name = "Transaction.findByAccountWithAccounts",
-                query = "SELECT t FROM Transaction t " +
-                        "LEFT JOIN FETCH t.fromAccount fa " +
-                        "LEFT JOIN FETCH fa.user " +
-                        "LEFT JOIN FETCH t.toAccount ta " +
-                        "LEFT JOIN FETCH ta.user " +
-                        "WHERE (t.fromAccount = :account OR t.toAccount = :account) " +
-                        "AND t.deleted = false " +
-                        "ORDER BY t.transactionDate DESC"),
-
-        // ✅ جدید - تراکنش‌های بازه زمانی با Account و User
-        @NamedQuery(name = "Transaction.findByDateRangeWithAccounts",
-                query = "SELECT t FROM Transaction t " +
-                        "LEFT JOIN FETCH t.fromAccount fa " +
-                        "LEFT JOIN FETCH fa.user " +
-                        "LEFT JOIN FETCH t.toAccount ta " +
-                        "LEFT JOIN FETCH ta.user " +
-                        "WHERE t.transactionDate BETWEEN :startDate AND :endDate " +
-                        "AND t.deleted = false " +
-                        "ORDER BY t.transactionDate DESC")
+        @NamedQuery(name = "Transaction.findByAccount", query = "SELECT t FROM Transaction t WHERE (t.fromAccount = :account OR t.toAccount = :account)"),
+        @NamedQuery(name = "Transaction.findByUser", query = "SELECT t FROM Transaction t WHERE (t.fromAccount.user = :user OR t.toAccount.user = :user)"),
+        @NamedQuery(name = "Transaction.findByTransactionId", query = "SELECT t FROM Transaction t WHERE t.transactionId = :transactionId"),
+        @NamedQuery(name = "Transaction.findByDateRange", query = "SELECT t FROM Transaction t WHERE t.transactionDate BETWEEN :startDate AND :endDate"),
+        @NamedQuery(name = "Transaction.findAll", query = "SELECT t FROM Transaction t"),
+        @NamedQuery(name = "Transaction.findByIdWithAccounts", query = "SELECT t FROM Transaction t " + "LEFT JOIN FETCH t.fromAccount fa " + "LEFT JOIN FETCH fa.user " + "LEFT JOIN FETCH t.toAccount ta " + "LEFT JOIN FETCH ta.user " + "WHERE t.id = :id AND t.deleted = false"),
+        @NamedQuery(name = "Transaction.findByTransactionIdWithAccounts", query = "SELECT t FROM Transaction t " + "LEFT JOIN FETCH t.fromAccount fa " + "LEFT JOIN FETCH fa.user " + "LEFT JOIN FETCH t.toAccount ta " + "LEFT JOIN FETCH ta.user " + "WHERE t.transactionId = :transactionId AND t.deleted = false"),
+        @NamedQuery(name = "Transaction.findAllWithAccounts", query = "SELECT t FROM Transaction t " + "LEFT JOIN FETCH t.fromAccount fa " + "LEFT JOIN FETCH fa.user " + "LEFT JOIN FETCH t.toAccount ta " + "LEFT JOIN FETCH ta.user " + "WHERE t.deleted = false " + "ORDER BY t.transactionDate DESC"),
+        @NamedQuery(name = "Transaction.findByUserWithAccounts", query = "SELECT DISTINCT t FROM Transaction t " + "LEFT JOIN FETCH t.fromAccount fa " + "LEFT JOIN FETCH fa.user " + "LEFT JOIN FETCH t.toAccount ta " + "LEFT JOIN FETCH ta.user " + "WHERE (fa.user = :user OR ta.user = :user) " + "AND t.deleted = false " + "ORDER BY t.transactionDate DESC"),
+        @NamedQuery(name = "Transaction.findByAccountWithAccounts", query = "SELECT t FROM Transaction t " + "LEFT JOIN FETCH t.fromAccount fa " + "LEFT JOIN FETCH fa.user " + "LEFT JOIN FETCH t.toAccount ta " + "LEFT JOIN FETCH ta.user " + "WHERE (t.fromAccount = :account OR t.toAccount = :account) " + "AND t.deleted = false " + "ORDER BY t.transactionDate DESC"),
+        @NamedQuery(name = "Transaction.findByDateRangeWithAccounts",query = "SELECT t FROM Transaction t " + "LEFT JOIN FETCH t.fromAccount fa " + "LEFT JOIN FETCH fa.user " + "LEFT JOIN FETCH t.toAccount ta " + "LEFT JOIN FETCH ta.user " + "WHERE t.transactionDate BETWEEN :startDate AND :endDate " + "AND t.deleted = false " + "ORDER BY t.transactionDate DESC")
 })
 public class Transaction extends Base {
 

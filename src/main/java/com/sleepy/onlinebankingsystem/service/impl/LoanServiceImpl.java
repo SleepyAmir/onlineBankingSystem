@@ -367,7 +367,6 @@ public class LoanServiceImpl implements LoanService {
         }
     }
 
-    // در LoanServiceImpl.java - اضافه کنید
 
     @Override
     public Optional<Loan> findByIdWithUserAndAccount(Long id) throws Exception {

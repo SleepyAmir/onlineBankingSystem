@@ -35,7 +35,6 @@ public class TransactionServiceImpl implements TransactionService {
     @Inject
     CardService cardService;
 
-    // ========== متدهای CRUD موجود ==========
 
     @Transactional
     @Override
@@ -94,7 +93,6 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.findAll(page, size);
     }
 
-    // ========== متدهای بیزنس جدید ==========
 
     @Transactional
     @Override
@@ -103,25 +101,20 @@ public class TransactionServiceImpl implements TransactionService {
 
         log.info("Processing deposit: {} to account {}", amount, toAccountNumber);
 
-        // 1. اعتبارسنجی مبلغ
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("مبلغ باید بیشتر از صفر باشد");
         }
 
-        // 2. پیدا کردن حساب مقصد
         Account toAccount = accountService.findByAccountNumber(toAccountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("حساب مقصد یافت نشد"));
 
-        // 3. بررسی وضعیت حساب
         if (toAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new IllegalStateException("حساب مقصد فعال نیست");
         }
 
-        // 4. افزایش موجودی
         toAccount.setBalance(toAccount.getBalance().add(amount));
         accountService.update(toAccount);
 
-        // 5. ثبت تراکنش
         Transaction transaction = Transaction.builder()
                 .transactionId(generateTransactionId())
                 .toAccount(toAccount)
@@ -146,30 +139,24 @@ public class TransactionServiceImpl implements TransactionService {
 
         log.info("Processing withdrawal: {} from account {}", amount, fromAccountNumber);
 
-        // 1. اعتبارسنجی مبلغ
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("مبلغ باید بیشتر از صفر باشد");
         }
 
-        // 2. پیدا کردن حساب مبدأ
         Account fromAccount = accountService.findByAccountNumber(fromAccountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("حساب مبدأ یافت نشد"));
 
-        // 3. بررسی وضعیت حساب
         if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new IllegalStateException("حساب مبدأ فعال نیست");
         }
 
-        // 4. بررسی موجودی کافی
         if (fromAccount.getBalance().compareTo(amount) < 0) {
             throw new IllegalStateException("موجودی حساب کافی نیست");
         }
 
-        // 5. کاهش موجودی
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
         accountService.update(fromAccount);
 
-        // 6. ثبت تراکنش
         Transaction transaction = Transaction.builder()
                 .transactionId(generateTransactionId())
                 .fromAccount(fromAccount)
@@ -194,34 +181,28 @@ public class TransactionServiceImpl implements TransactionService {
 
         log.info("Processing transfer: {} from {} to {}", amount, fromAccountNumber, toAccountNumber);
 
-        // 1. اعتبارسنجی مبلغ
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("مبلغ باید بیشتر از صفر باشد");
         }
 
-        // 2. پیدا کردن حساب‌ها
         Account fromAccount = accountService.findByAccountNumber(fromAccountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("حساب مبدأ یافت نشد"));
 
         Account toAccount = accountService.findByAccountNumber(toAccountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("حساب مقصد یافت نشد"));
 
-        // 3. بررسی انتقال به خودی خود
         if (fromAccount.getId().equals(toAccount.getId())) {
             throw new IllegalArgumentException("انتقال به همان حساب امکان‌پذیر نیست");
         }
 
-        // 4. اعتبارسنجی کامل
         validateTransaction(amount, fromAccount, toAccount);
 
-        // 5. انجام انتقال
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
         toAccount.setBalance(toAccount.getBalance().add(amount));
 
         accountService.update(fromAccount);
         accountService.update(toAccount);
 
-        // 6. ثبت تراکنش
         Transaction transaction = Transaction.builder()
                 .transactionId(generateTransactionId())
                 .fromAccount(fromAccount)
@@ -248,19 +229,16 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("Processing card transfer: {} from card {} to card {}",
                 amount, fromCardNumber, toCardNumber);
 
-        // 1. اعتبارسنجی مبلغ
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("مبلغ باید بیشتر از صفر باشد");
         }
 
-        // 2. پیدا کردن کارت‌ها
         Card fromCard = cardService.findByCardNumber(fromCardNumber)
                 .orElseThrow(() -> new IllegalArgumentException("کارت مبدأ یافت نشد"));
 
         Card toCard = cardService.findByCardNumber(toCardNumber)
                 .orElseThrow(() -> new IllegalArgumentException("کارت مقصد یافت نشد"));
 
-        // 3. بررسی فعال بودن کارت‌ها
         if (!fromCard.isActive()) {
             throw new IllegalStateException("کارت مبدأ غیرفعال است");
         }
@@ -268,26 +246,21 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalStateException("کارت مقصد غیرفعال است");
         }
 
-        // 4. دریافت حساب‌های مربوطه
         Account fromAccount = fromCard.getAccount();
         Account toAccount = toCard.getAccount();
 
-        // 5. بررسی انتقال به خودی خود
         if (fromAccount.getId().equals(toAccount.getId())) {
             throw new IllegalArgumentException("انتقال به همان حساب امکان‌پذیر نیست");
         }
 
-        // 6. اعتبارسنجی کامل
         validateTransaction(amount, fromAccount, toAccount);
 
-        // 7. انجام انتقال
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
         toAccount.setBalance(toAccount.getBalance().add(amount));
 
         accountService.update(fromAccount);
         accountService.update(toAccount);
 
-        // 8. ثبت تراکنش
         Transaction transaction = Transaction.builder()
                 .transactionId(generateTransactionId())
                 .fromAccount(fromAccount)
@@ -310,12 +283,10 @@ public class TransactionServiceImpl implements TransactionService {
     public void validateTransaction(BigDecimal amount, Account fromAccount, Account toAccount)
             throws Exception {
 
-        // 1. بررسی مبلغ
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("مبلغ باید بیشتر از صفر باشد");
         }
 
-        // 2. بررسی حساب مبدأ
         if (fromAccount != null) {
             if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
                 throw new IllegalStateException("حساب مبدأ فعال نیست");
@@ -325,7 +296,6 @@ public class TransactionServiceImpl implements TransactionService {
             }
         }
 
-        // 3. بررسی حساب مقصد
         if (toAccount != null) {
             if (toAccount.getStatus() != AccountStatus.ACTIVE) {
                 throw new IllegalStateException("حساب مقصد فعال نیست");
@@ -376,11 +346,9 @@ public class TransactionServiceImpl implements TransactionService {
 
         log.info("Reversing transaction: {}", transactionId);
 
-        // 1. پیدا کردن تراکنش
         Transaction original = transactionRepository.findByTransactionId(transactionId)
                 .orElseThrow(() -> new IllegalArgumentException("تراکنش یافت نشد"));
 
-        // 2. بررسی امکان برگشت
         if (original.getStatus() == TransactionStatus.REVERSED) {
             throw new IllegalStateException("این تراکنش قبلاً برگشت خورده است");
         }
@@ -388,35 +356,29 @@ public class TransactionServiceImpl implements TransactionService {
             throw new IllegalStateException("تراکنش ناموفق قابل برگشت نیست");
         }
 
-        // 3. برگشت موجودی‌ها
         Account fromAccount = original.getFromAccount();
         Account toAccount = original.getToAccount();
 
         if (fromAccount != null && toAccount != null) {
-            // انتقال - برعکس می‌کنیم
             fromAccount.setBalance(fromAccount.getBalance().add(original.getAmount()));
             toAccount.setBalance(toAccount.getBalance().subtract(original.getAmount()));
             accountService.update(fromAccount);
             accountService.update(toAccount);
         } else if (fromAccount != null) {
-            // برداشت - پس می‌دیم
             fromAccount.setBalance(fromAccount.getBalance().add(original.getAmount()));
             accountService.update(fromAccount);
         } else if (toAccount != null) {
-            // واریز - برمی‌گردونیم
-            toAccount.setBalance(toAccount.getBalance().subtract(original.getAmount()));
+             toAccount.setBalance(toAccount.getBalance().subtract(original.getAmount()));
             accountService.update(toAccount);
         }
 
-        // 4. تغییر وضعیت تراکنش اصلی
         original.setStatus(TransactionStatus.REVERSED);
         transactionRepository.save(original);
 
-        // 5. ثبت تراکنش برگشتی
         Transaction reversal = Transaction.builder()
                 .transactionId(generateTransactionId())
-                .fromAccount(toAccount)  // برعکس
-                .toAccount(fromAccount)  // برعکس
+                .fromAccount(toAccount)
+                .toAccount(fromAccount)
                 .amount(original.getAmount())
                 .type(original.getType())
                 .transactionDate(LocalDateTime.now())
@@ -431,7 +393,6 @@ public class TransactionServiceImpl implements TransactionService {
         return saved;
     }
 
-    // ========== متدهای کمکی ==========
 
     private String generateTransactionId() {
         return "TRX" + System.currentTimeMillis() + "-" +

@@ -1,5 +1,3 @@
-// ✅ TransactionHistoryServlet.java
-
 package com.sleepy.onlinebankingsystem.controller.servlet;
 
 import com.sleepy.onlinebankingsystem.model.entity.Account;

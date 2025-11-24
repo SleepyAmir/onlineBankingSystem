@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Optional;
 
-/**
- * سرولت حذف کاربر
- * تمام بیزنس لاجیک در UserService
- */
+
 @Slf4j
 @WebServlet("/users/delete")
 public class UserDeleteServlet extends HttpServlet {

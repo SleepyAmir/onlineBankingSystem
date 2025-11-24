@@ -12,10 +12,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * صفحه خوش‌آمدگویی و اطلاعات عمومی سیستم
- * شامل: خانه، درباره ما، خدمات، تماس با ما
- */
 @Slf4j
 @WebServlet({"/welcome", "/about", "/services", "/contact"})
 public class WelcomeServlet extends HttpServlet {

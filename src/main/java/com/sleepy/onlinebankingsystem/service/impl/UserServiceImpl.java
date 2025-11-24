@@ -41,7 +41,6 @@ public class UserServiceImpl implements UserService {
     private static final int MAX_USERNAME_LENGTH = 50;
     private static final int MIN_PASSWORD_LENGTH = 6;
 
-    // ========== متدهای CRUD موجود ==========
 
     @Transactional
     @Override

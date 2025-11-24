@@ -61,7 +61,6 @@ public class AccountCreateServlet extends HttpServlet {
             setError(req, resp, "خطا در بارگذاری فرم: " + e.getMessage());
         }
     }
-// در AccountCreateServlet.java - متد doPost
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)

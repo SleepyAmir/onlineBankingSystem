@@ -17,56 +17,17 @@ import java.util.Date;
 @Table(name = "cards",
         uniqueConstraints = @UniqueConstraint(columnNames = "cardNumber"))
 @NamedQueries({
-        @NamedQuery(name = "Card.findByAccount",
-                query = "SELECT c FROM Card c WHERE c.account = :account"),
-
-        @NamedQuery(name = "Card.findByCardNumber",
-                query = "SELECT c FROM Card c WHERE c.cardNumber = :cardNumber"),
-
-        @NamedQuery(name = "Card.findByUser",
-                query = "SELECT c FROM Card c WHERE c.account.user = :user"),
-
-        @NamedQuery(name = "Card.findActiveCards",
-                query = "SELECT c FROM Card c WHERE c.active = true"),
-
-        @NamedQuery(name = "Card.findAll",
-                query = "SELECT c FROM Card c"),
-
-        @NamedQuery(name = "Card.findByUserWithAccount",
-                query = "SELECT c FROM Card c " +
-                        "JOIN FETCH c.account " +
-                        "WHERE c.account.user.id = :userId AND c.deleted = false"),
-
-        // ✅ اصلاح شده - User هم JOIN FETCH می‌شود
-        @NamedQuery(name = "Card.findByIdWithAccount",
-                query = "SELECT c FROM Card c " +
-                        "JOIN FETCH c.account a " +
-                        "JOIN FETCH a.user " +
-                        "WHERE c.id = :id AND c.deleted = false"),
-
-        @NamedQuery(name = "Card.findByUserWithAccountAndUser",
-                query = "SELECT c FROM Card c " +
-                        "JOIN FETCH c.account a " +
-                        "JOIN FETCH a.user u " +
-                        "WHERE u.id = :userId AND c.deleted = false"),
-
-        @NamedQuery(name = "Card.findByCardNumberWithAccount",
-                query = "SELECT c FROM Card c " +
-                        "JOIN FETCH c.account a " +
-                        "JOIN FETCH a.user " +
-                        "WHERE c.cardNumber = :cardNumber AND c.deleted = false"),
-        @NamedQuery(name = "Card.findActiveCardsWithAccountAndUser",
-                query = "SELECT c FROM Card c " +
-                        "JOIN FETCH c.account a " +
-                        "JOIN FETCH a.user " +
-                        "WHERE c.active = true AND c.deleted = false " +
-                        "ORDER BY c.createdAt DESC"),
-        @NamedQuery(name = "Card.findAllWithAccountAndUser",
-                query = "SELECT c FROM Card c " +
-                        "JOIN FETCH c.account a " +
-                        "JOIN FETCH a.user " +
-                        "WHERE c.deleted = false " +
-                        "ORDER BY c.createdAt DESC")
+        @NamedQuery(name = "Card.findByAccount", query = "SELECT c FROM Card c WHERE c.account = :account"),
+        @NamedQuery(name = "Card.findByCardNumber", query = "SELECT c FROM Card c WHERE c.cardNumber = :cardNumber"),
+        @NamedQuery(name = "Card.findByUser", query = "SELECT c FROM Card c WHERE c.account.user = :user"),
+        @NamedQuery(name = "Card.findActiveCards", query = "SELECT c FROM Card c WHERE c.active = true"),
+        @NamedQuery(name = "Card.findAll", query = "SELECT c FROM Card c"),
+        @NamedQuery(name = "Card.findByUserWithAccount", query = "SELECT c FROM Card c " + "JOIN FETCH c.account " + "WHERE c.account.user.id = :userId AND c.deleted = false"),
+        @NamedQuery(name = "Card.findByIdWithAccount", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user " + "WHERE c.id = :id AND c.deleted = false"),
+        @NamedQuery(name = "Card.findByUserWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user u " + "WHERE u.id = :userId AND c.deleted = false"),
+        @NamedQuery(name = "Card.findByCardNumberWithAccount", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user " + "WHERE c.cardNumber = :cardNumber AND c.deleted = false"),
+        @NamedQuery(name = "Card.findActiveCardsWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user " + "WHERE c.active = true AND c.deleted = false " + "ORDER BY c.createdAt DESC"),
+        @NamedQuery(name = "Card.findAllWithAccountAndUser", query = "SELECT c FROM Card c " + "JOIN FETCH c.account a " + "JOIN FETCH a.user " + "WHERE c.deleted = false " + "ORDER BY c.createdAt DESC")
 })
 public class Card extends Base {
 
@@ -102,7 +63,7 @@ public class Card extends Base {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    // ✅ متد کمکی برای تبدیل به Date (برای JSP)
+    //  متد کمکی برای تبدیل به Date (برای JSP)
     public Date getExpiryDateAsDate() {
         if (this.expiryDate == null) return null;
         return Date.from(this.expiryDate.atStartOfDay(ZoneId.systemDefault()).toInstant());

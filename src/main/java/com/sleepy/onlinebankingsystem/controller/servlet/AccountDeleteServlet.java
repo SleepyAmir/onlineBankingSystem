@@ -17,10 +17,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * سرولت حذف حساب
- * تمام بیزنس لاجیک در AccountService
- */
+
 @Slf4j
 @WebServlet("/accounts/delete")
 public class AccountDeleteServlet extends HttpServlet {
