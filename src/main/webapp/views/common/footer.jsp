@@ -21,6 +21,12 @@
         }
     }
 
+    /* ✅ اضافه شده: متغیرها */
+    :root {
+        --sidebar-width: 280px;
+        --sidebar-collapsed-width: 80px;
+    }
+
     .modern-footer {
         background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
         color: #e5e7eb;
@@ -28,14 +34,13 @@
         position: relative;
         overflow: hidden;
         margin-top: 5rem;
-        margin-right: var(--sidebar-width, 280px);
-        transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-right: var(--sidebar-width, 280px); /* ✅ بدون تغییر */
+        transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* ✅ بدون تغییر */
     }
 
-    /* اگر sidebar جمع شد */
-    .sidebar.mini ~ * .modern-footer,
-    body.sidebar-mini .modern-footer {
-        margin-right: 85px;
+    /* ✅ اصلاح شده: sidebar-collapsed به جای sidebar-mini */
+    body.sidebar-collapsed .modern-footer {
+        margin-right: var(--sidebar-collapsed-width, 80px); /* ✅ اصلاح شده */
     }
 
     /* برای موبایل footer تمام عرض */
