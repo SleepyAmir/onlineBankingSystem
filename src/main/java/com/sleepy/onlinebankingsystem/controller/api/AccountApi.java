@@ -19,10 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * REST API برای مدیریت حساب‌ها
- * تمام بیزنس لاجیک در AccountService است
- */
+
 @Path("/accounts")
 @Slf4j
 @Consumes(MediaType.APPLICATION_JSON)
