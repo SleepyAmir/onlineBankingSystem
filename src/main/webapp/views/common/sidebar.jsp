@@ -2,6 +2,27 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
+    /* ✅ FIX: اصلاح margin برای content-wrapper */
+    .content-wrapper {
+        margin-right: var(--sidebar-width, 280px);
+        transition: margin-right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding-top: var(--navbar-height);
+        min-height: 100vh;
+    }
+
+    /* ✅ وقتی sidebar جمع می‌شود */
+    body.sidebar-collapsed .content-wrapper {
+        margin-right: var(--sidebar-collapsed-width, 80px);
+    }
+
+    /* ✅ برای موبایل */
+    @media (max-width: 768px) {
+        .content-wrapper {
+            margin-right: 0 !important;
+        }
+    }
+
+    /* بقیه استایل‌های قبلی sidebar */
     @keyframes slideInRight {
         from {
             opacity: 0;
@@ -13,7 +34,6 @@
         }
     }
 
-    /* متغیرهای اصلی */
     :root {
         --sidebar-width: 280px;
         --sidebar-collapsed-width: 80px;
@@ -35,12 +55,10 @@
         animation: slideInRight 0.5s ease-out;
     }
 
-    /* حالت جمع شده */
     .sidebar.collapsed {
         width: var(--sidebar-collapsed-width);
     }
 
-    /* دکمه جمع/باز کردن */
     .sidebar-toggle-btn {
         position: absolute;
         top: 1rem;
@@ -73,7 +91,6 @@
         transform: rotate(180deg);
     }
 
-    /* اسکرول بار */
     .sidebar::-webkit-scrollbar {
         width: 6px;
     }
@@ -93,7 +110,6 @@
         margin: 0;
     }
 
-    /* عنوان بخش‌ها */
     .menu-section-title {
         padding: 1.75rem 1.5rem 0.75rem;
         font-size: 0.7rem;
@@ -127,7 +143,6 @@
         display: none;
     }
 
-    /* آیتم‌های منو */
     .menu-item {
         margin: 0.4rem 1rem;
         animation: slideInRight 0.5s ease-out backwards;
@@ -206,7 +221,6 @@
         width: 0;
     }
 
-    /* آیکون منو */
     .menu-icon {
         width: 40px;
         height: 40px;
@@ -228,7 +242,6 @@
         transform: rotate(-10deg) scale(1.1);
     }
 
-    /* متن منو */
     .menu-text {
         position: relative;
         z-index: 1;
@@ -243,7 +256,6 @@
         width: 0;
     }
 
-    /* بج اطلاعات */
     .menu-badge {
         margin-right: auto;
         padding: 0.35rem 0.65rem;
@@ -273,7 +285,6 @@
         color: var(--danger-color);
     }
 
-    /* آیتم ویژه */
     .menu-item-featured .menu-link {
         background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
         border: 2px solid #bfdbfe;
@@ -284,17 +295,6 @@
         color: white;
     }
 
-    /* تنظیمات محتوا */
-    .content-wrapper {
-        margin-right: var(--sidebar-width);
-        transition: margin-right var(--transition-speed) ease;
-    }
-
-    .content-wrapper.sidebar-collapsed {
-        margin-right: var(--sidebar-collapsed-width);
-    }
-
-    /* Tooltip برای حالت جمع شده */
     .sidebar.collapsed .menu-link {
         position: relative;
     }
@@ -324,7 +324,6 @@
         margin-left: 1.5rem;
     }
 
-    /* پاسخ‌گویی موبایل */
     @media (max-width: 768px) {
         .sidebar {
             transform: translateX(100%);
@@ -344,15 +343,10 @@
             transform: translateX(0);
         }
 
-        .content-wrapper {
-            margin-right: 0 !important;
-        }
-
         .sidebar-toggle-btn {
             display: none;
         }
 
-        /* Overlay برای موبایل */
         .sidebar-overlay {
             position: fixed;
             top: 0;
@@ -380,13 +374,11 @@
 </style>
 
 <aside class="sidebar" id="sidebar">
-    <!-- دکمه جمع/باز کردن -->
     <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="جمع/باز کردن منو">
         <i class="fas fa-chevron-left"></i>
     </button>
 
     <ul class="sidebar-menu">
-        <!-- Dashboard Section -->
         <li class="menu-section-title">
             <i class="fas fa-grip-horizontal me-2"></i>
             صفحات اصلی
@@ -402,7 +394,6 @@
             </a>
         </li>
 
-        <!-- Banking Operations -->
         <li class="menu-section-title">
             <i class="fas fa-money-bill-wave me-2"></i>
             عملیات بانکی
@@ -468,7 +459,6 @@
             </a>
         </li>
 
-        <!-- Admin Section -->
         <c:if test="${sessionScope.roles.contains('ADMIN') || sessionScope.roles.contains('MANAGER')}">
             <li class="menu-section-title">
                 <i class="fas fa-shield-alt me-2"></i>
@@ -501,7 +491,6 @@
             </li>
         </c:if>
 
-        <!-- Settings Section -->
         <li class="menu-section-title">
             <i class="fas fa-sliders-h me-2"></i>
             تنظیمات و راهنما
@@ -542,51 +531,40 @@
 <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <script>
-    // دریافت المان‌ها
     const sidebar = document.getElementById('sidebar');
     const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-    const contentWrapper = document.querySelector('.content-wrapper');
+    const body = document.body;
 
-    // بررسی وضعیت ذخیره شده
+    // ✅ بررسی وضعیت ذخیره شده
     const savedState = localStorage.getItem('sidebarCollapsed');
     if (savedState === 'true') {
         sidebar.classList.add('collapsed');
-        if (contentWrapper) {
-            contentWrapper.classList.add('sidebar-collapsed');
-        }
+        body.classList.add('sidebar-collapsed');
     }
 
-    // تابع جمع/باز کردن sidebar
+    // ✅ تابع toggle با اضافه کردن کلاس به body
     function toggleSidebarCollapse() {
         sidebar.classList.toggle('collapsed');
+        body.classList.toggle('sidebar-collapsed');
 
-        if (contentWrapper) {
-            contentWrapper.classList.toggle('sidebar-collapsed');
-        }
-
-        // ذخیره وضعیت
         const isCollapsed = sidebar.classList.contains('collapsed');
         localStorage.setItem('sidebarCollapsed', isCollapsed);
     }
 
-    // رویداد کلیک دکمه
     if (sidebarToggleBtn) {
         sidebarToggleBtn.addEventListener('click', toggleSidebarCollapse);
     }
 
-    // تابع برای موبایل
     function toggleSidebar() {
         sidebar.classList.toggle('show');
     }
 
-    // بستن sidebar با کلید ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             sidebar.classList.remove('show');
         }
     });
 
-    // بستن sidebar وقتی روی لینک کلیک می‌شود (موبایل)
     if (window.innerWidth <= 768) {
         const menuLinks = document.querySelectorAll('.menu-link');
         menuLinks.forEach(link => {
