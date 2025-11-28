@@ -24,7 +24,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
 
-            <!-- فقط برای اولین بار update استفاده کن، بعدش none -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.connection.useUnicode" value="true"/>
             <property name="hibernate.connection.characterEncoding" value="UTF-8"/>
