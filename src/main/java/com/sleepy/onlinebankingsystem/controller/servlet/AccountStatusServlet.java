@@ -29,7 +29,6 @@ public class AccountStatusServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ بررسی دسترسی
             HttpSession session = req.getSession(false);
 
             @SuppressWarnings("unchecked")
@@ -40,7 +39,6 @@ public class AccountStatusServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ دریافت پارامترها
             String idParam = req.getParameter("id");
             String statusParam = req.getParameter("status");
 

@@ -15,7 +15,6 @@ public abstract class BaseRepository<T extends Base> {
     @PersistenceContext(unitName = "sleepy")
     protected EntityManager em;
 
-    // سازنده پیش‌فرض
     public BaseRepository() {}
 
     protected abstract EntityManager getEntityManager();
@@ -42,7 +41,7 @@ public abstract class BaseRepository<T extends Base> {
                 .createQuery("SELECT e FROM " + getEntityClass().getSimpleName() + " e", getEntityClass());
         query.setFirstResult(page * size);
         query.setMaxResults(size);
-        return query.getResultList(); // @Where خودکار فیلتر می‌کنه
+        return query.getResultList();
     }
 
     @Transactional

@@ -4,7 +4,6 @@ import com.sleepy.onlinebankingsystem.model.enums.AccountStatus;
 import com.sleepy.onlinebankingsystem.model.enums.AccountType;
 import lombok.*;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -71,5 +70,4 @@ public class Account extends Base {
     @OneToMany(mappedBy = "toAccount", fetch = FetchType.LAZY)
     private Set<Transaction> incomingTransactions = new HashSet<>();
 
-    // isDeleted() از Base میاد
 }

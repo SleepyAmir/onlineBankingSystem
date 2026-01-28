@@ -32,7 +32,6 @@ public class AccountApi {
     @Inject
     private UserService userService;
 
-    // ==================== ایجاد حساب ====================
 
     /**
      * ایجاد حساب جدید

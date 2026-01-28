@@ -382,6 +382,210 @@
         animation: pulse 2s infinite;
     }
 
+    /* ==================== Bank Cards Section ==================== */
+    .bank-cards-section {
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease-out backwards;
+        animation-delay: 0.5s;
+    }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .bank-card-wrapper {
+        perspective: 1000px;
+        height: 240px;
+    }
+
+    .bank-card-preview {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+                0 20px 60px rgba(102, 126, 234, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .bank-card-preview:hover {
+        transform: translateY(-10px) rotateX(5deg);
+        box-shadow:
+                0 30px 80px rgba(102, 126, 234, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    }
+
+    .bank-card-preview::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .bank-card-preview.debit {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .bank-card-preview.credit {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .card-chip {
+        width: 50px;
+        height: 40px;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) inset;
+    }
+
+    .card-chip::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+
+    .card-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-bank-name {
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+
+    .card-type-badge {
+        background: rgba(255, 255, 255, 0.25);
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .card-number-display {
+        font-size: 1.5rem;
+        letter-spacing: 4px;
+        font-weight: 700;
+        text-align: center;
+        margin: 2rem 0;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-bottom-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-info-item {
+        flex: 1;
+    }
+
+    .card-info-label {
+        font-size: 0.65rem;
+        opacity: 0.8;
+        margin-bottom: 0.3rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .card-info-value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-cvv {
+        text-align: left;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+    }
+
+    .card-status-indicator {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 15px #10b981;
+        animation: pulse 2s infinite;
+    }
+
+    .card-status-indicator.inactive {
+        background: #ef4444;
+        box-shadow: 0 0 15px #ef4444;
+    }
+
+    .no-cards-message {
+        text-align: center;
+        padding: 3rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .no-cards-message i {
+        font-size: 4rem;
+        color: #9ca3af;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .no-cards-message p {
+        color: #6b7280;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .cards-container {
+            grid-template-columns: 1fr;
+        }
+
+        .card-number-display {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+    }
     /* ==================== Financial Summary ==================== */
     .financial-summary {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);

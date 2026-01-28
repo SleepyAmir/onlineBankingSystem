@@ -34,7 +34,6 @@ public class UserEditServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ دریافت ID
             String idParam = req.getParameter("id");
             if (idParam == null || idParam.isBlank()) {
                 resp.sendRedirect(req.getContextPath() + "/users/list?error=missing_id");
@@ -43,7 +42,6 @@ public class UserEditServlet extends HttpServlet {
 
             Long userId = Long.parseLong(idParam);
 
-            // 2️⃣ پیدا کردن کاربر
             Optional<User> userOpt = userService.findById(userId);
             if (userOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() + "/users/list?error=not_found");
@@ -53,7 +51,6 @@ public class UserEditServlet extends HttpServlet {
             User user = userOpt.get();
             List<Role> userRoles = roleService.findByUser(user);
 
-            // 3️⃣ ارسال به JSP
             req.setAttribute("user", user);
             req.setAttribute("userRoles", userRoles);
             req.setAttribute("availableRoles", UserRole.values());
@@ -117,8 +114,6 @@ public class UserEditServlet extends HttpServlet {
 
             // 5️⃣ تغییر رمز عبور (اگر وارد شده)
             if (password != null && !password.isBlank()) {
-                // فرض: رمز فعلی در فرم وارد نشده، فقط ادمین می‌تونه بدون رمز فعلی تغییر بده
-                // برای امنیت بیشتر باید currentPassword هم بگیری
                 userService.changePassword(userId, user.getPassword(), password);
             }
 

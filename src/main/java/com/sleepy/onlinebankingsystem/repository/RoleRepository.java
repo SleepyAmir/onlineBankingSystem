@@ -1,4 +1,3 @@
-// 📁 src/main/java/com/sleepy/onlinebankingsystem/repository/RoleRepository.java
 package com.sleepy.onlinebankingsystem.repository;
 
 import com.sleepy.onlinebankingsystem.model.entity.Role;

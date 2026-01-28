@@ -46,7 +46,6 @@ public class AccountDetailServlet extends HttpServlet {
 
             Optional<Account> accountOpt;
 
-            // تغییر این قسمت:
             if (accountNumber != null && !accountNumber.isBlank()) {
                 accountOpt = accountService.findByAccountNumberWithUser(accountNumber);
             } else {

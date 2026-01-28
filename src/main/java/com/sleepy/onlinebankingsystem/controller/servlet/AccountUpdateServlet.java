@@ -33,7 +33,6 @@ public class AccountUpdateServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ بررسی دسترسی
             HttpSession session = req.getSession(false);
 
             @SuppressWarnings("unchecked")
@@ -45,7 +44,6 @@ public class AccountUpdateServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ دریافت ID
             String idParam = req.getParameter("id");
             if (idParam == null || idParam.isBlank()) {
                 resp.sendRedirect(req.getContextPath() +
@@ -55,7 +53,6 @@ public class AccountUpdateServlet extends HttpServlet {
 
             Long accountId = Long.parseLong(idParam);
 
-            // 3️⃣ پیدا کردن حساب
             Optional<Account> accountOpt = accountService.findById(accountId);
             if (accountOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() +
@@ -65,7 +62,6 @@ public class AccountUpdateServlet extends HttpServlet {
 
             Account account = accountOpt.get();
 
-            // 4️⃣ ارسال به JSP
             req.setAttribute("account", account);
             req.setAttribute("accountTypes", AccountType.values());
             req.setAttribute("accountStatuses", AccountStatus.values());
@@ -88,7 +84,6 @@ public class AccountUpdateServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت ID
             String idParam = req.getParameter("id");
             if (idParam == null || idParam.isBlank()) {
                 resp.sendRedirect(req.getContextPath() +
@@ -98,7 +93,6 @@ public class AccountUpdateServlet extends HttpServlet {
 
             Long accountId = Long.parseLong(idParam);
 
-            // 2️⃣ پیدا کردن حساب
             Optional<Account> accountOpt = accountService.findById(accountId);
             if (accountOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() +
@@ -108,14 +102,12 @@ public class AccountUpdateServlet extends HttpServlet {
 
             Account account = accountOpt.get();
 
-            // 3️⃣ دریافت پارامترها
             String accountTypeParam = req.getParameter("accountType");
             String accountStatusParam = req.getParameter("accountStatus");
             String balanceParam = req.getParameter("balance");
 
             log.info("Updating account: {}", account.getAccountNumber());
 
-            // 4️⃣ به‌روزرسانی نوع حساب
             if (accountTypeParam != null && !accountTypeParam.isBlank()) {
                 try {
                     AccountType accountType = AccountType.valueOf(accountTypeParam);
@@ -126,7 +118,6 @@ public class AccountUpdateServlet extends HttpServlet {
                 }
             }
 
-            // 5️⃣ به‌روزرسانی وضعیت (از طریق Service)
             if (accountStatusParam != null && !accountStatusParam.isBlank()) {
                 try {
                     AccountStatus newStatus = AccountStatus.valueOf(accountStatusParam);
@@ -141,7 +132,6 @@ public class AccountUpdateServlet extends HttpServlet {
                 }
             }
 
-            // 6️⃣ به‌روزرسانی موجودی (فقط ادمین)
             if (userRoles.contains(UserRole.ADMIN)) {
                 if (balanceParam != null && !balanceParam.isBlank()) {
                     try {
@@ -159,12 +149,10 @@ public class AccountUpdateServlet extends HttpServlet {
                 }
             }
 
-            // 7️⃣ ذخیره تغییرات
             accountService.update(account);
 
             log.info("Account updated successfully: {}", account.getAccountNumber());
 
-            // 8️⃣ هدایت به صفحه جزئیات
             resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" +
                     accountId + "&message=updated");
 

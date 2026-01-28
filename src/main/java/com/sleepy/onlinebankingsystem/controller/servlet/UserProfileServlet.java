@@ -34,7 +34,6 @@ public class UserProfileServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ دریافت نام کاربری از Session
             HttpSession session = req.getSession(false);
             String username = (String) session.getAttribute("username");
 
@@ -43,7 +42,6 @@ public class UserProfileServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ پیدا کردن کاربر
             Optional<User> userOpt = userService.findByUsername(username);
             if (userOpt.isEmpty()) {
                 log.error("Logged-in user not found: {}", username);
@@ -54,7 +52,6 @@ public class UserProfileServlet extends HttpServlet {
             User user = userOpt.get();
             List<Role> roles = roleService.findByUser(user);
 
-            // 3️⃣ ارسال به JSP
             req.setAttribute("user", user);
             req.setAttribute("roles", roles);
             req.getRequestDispatcher("/views/users/profile.jsp").forward(req, resp);
@@ -70,7 +67,6 @@ public class UserProfileServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ دریافت نام کاربری از Session
             HttpSession session = req.getSession(false);
             String username = (String) session.getAttribute("username");
 
@@ -79,7 +75,6 @@ public class UserProfileServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ پیدا کردن کاربر
             Optional<User> userOpt = userService.findByUsername(username);
             if (userOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() + "/auth/login?error=user_not_found");
@@ -88,7 +83,6 @@ public class UserProfileServlet extends HttpServlet {
 
             User user = userOpt.get();
 
-            // 3️⃣ دریافت پارامترها
             String firstName = req.getParameter("firstName");
             String lastName = req.getParameter("lastName");
             String phone = req.getParameter("phone");
@@ -98,7 +92,6 @@ public class UserProfileServlet extends HttpServlet {
 
             log.info("Updating profile for user: {}", username);
 
-            // 4️⃣ به‌روزرسانی اطلاعات پایه
             if (firstName != null && !firstName.isBlank()) {
                 user.setFirstName(firstName);
             }
@@ -109,29 +102,23 @@ public class UserProfileServlet extends HttpServlet {
                 user.setPhone(phone);
             }
 
-            // 5️⃣ تغییر رمز عبور (اگر وارد شده)
             if (newPassword != null && !newPassword.isBlank()) {
-                // بررسی تطابق رمز جدید
                 if (!newPassword.equals(confirmPassword)) {
                     setErrorWithUser(req, resp, user, "رمز عبور جدید و تکرار آن یکسان نیستند");
                     return;
                 }
 
-                // فراخوانی Service برای تغییر رمز (اعتبارسنجی اونجاست)
                 userService.changePassword(user.getId(), currentPassword, newPassword);
 
                 log.info("Password changed for user: {}", username);
             }
 
-            // 6️⃣ ذخیره تغییرات
             userService.update(user);
 
-            // 7️⃣ به‌روزرسانی Session
             session.setAttribute("fullName", user.getFirstName() + " " + user.getLastName());
 
             log.info("Profile updated successfully for user: {}", username);
 
-            // 8️⃣ نمایش پیام موفقیت
             setSuccessWithUser(req, resp, user, "پروفایل شما با موفقیت به‌روزرسانی شد");
 
         } catch (IllegalArgumentException e) {

@@ -23,7 +23,6 @@ public class LoanPaymentServlet extends HttpServlet {
     @Inject
     private LoanService loanService;
 
-    // ✅ Inject کردن Service جدید
     @Inject
     private LoanCalculationService loanCalculationService;
 

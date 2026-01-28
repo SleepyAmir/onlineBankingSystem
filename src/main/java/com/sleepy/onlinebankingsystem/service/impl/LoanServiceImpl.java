@@ -137,7 +137,6 @@ public class LoanServiceImpl implements LoanService {
         return loanRepository.findAll(page, size);
     }
 
-    // ========== متدهای بیزنس جدید ==========
 
     @Transactional
     @Override

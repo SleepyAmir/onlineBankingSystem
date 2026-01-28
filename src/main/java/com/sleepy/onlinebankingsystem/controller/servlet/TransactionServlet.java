@@ -283,8 +283,6 @@ public class TransactionServlet extends HttpServlet {
         redirectToDetail(resp, req.getContextPath(), transaction.getId(), "transfer_success");
     }
 
-    // ========== متدهای کمکی ==========
-
     /**
      * اعتبارسنجی و تبدیل مبلغ
      */
@@ -313,12 +311,10 @@ public class TransactionServlet extends HttpServlet {
         @SuppressWarnings("unchecked")
         Set<UserRole> roles = (Set<UserRole>) session.getAttribute("roles");
 
-        // Admin و Manager به همه حساب‌ها دسترسی دارن
         if (roles.contains(UserRole.ADMIN) || roles.contains(UserRole.MANAGER)) {
             return true;
         }
 
-        // کاربر عادی فقط به حساب خودش دسترسی داره
         return account.getUser().getUsername().equals(currentUsername);
     }
 

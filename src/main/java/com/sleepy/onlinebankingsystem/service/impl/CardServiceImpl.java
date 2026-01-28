@@ -30,8 +30,8 @@ public class CardServiceImpl implements CardService {
 
     private final SecureRandom random = new SecureRandom();
 
-    // ثوابت کارت
-    private static final String CARD_BIN = "6037"; // BIN معمول کارت‌های ایرانی
+
+    private static final String CARD_BIN = "6037";
     private static final int CARD_VALIDITY_YEARS = 3;
     private static final int MAX_CARDS_PER_ACCOUNT = 5;
 

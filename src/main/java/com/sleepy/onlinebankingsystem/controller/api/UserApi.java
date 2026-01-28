@@ -16,10 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * REST API برای مدیریت کاربران
- * تمام بیزنس لاجیک در UserService است
- */
 @Path("/users")
 @Slf4j
 @Consumes(MediaType.APPLICATION_JSON)

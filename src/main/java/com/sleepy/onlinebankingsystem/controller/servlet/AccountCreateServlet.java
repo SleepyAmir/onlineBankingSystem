@@ -21,10 +21,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * سرولت ایجاد حساب
- * تمام بیزنس لاجیک در AccountService
- */
+
 @Slf4j
 @WebServlet("/accounts/create")
 public class AccountCreateServlet extends HttpServlet {
@@ -46,12 +43,10 @@ public class AccountCreateServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // اگر Admin/Manager هست، لیست کاربران رو نمایش بده
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
                 req.setAttribute("users", userService.findActiveUsers());
             }
 
-            // ارسال لیست نوع حساب‌ها
             req.setAttribute("accountTypes", AccountType.values());
 
             req.getRequestDispatcher("/views/accounts/create.jsp").forward(req, resp);
@@ -73,12 +68,10 @@ public class AccountCreateServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت پارامترها
             String accountTypeParam = req.getParameter("accountType");
             String userIdParam = req.getParameter("userId");
             String initialBalanceParam = req.getParameter("initialBalance");
 
-            // 2️⃣ اعتبارسنجی نوع حساب
             if (accountTypeParam == null || accountTypeParam.isBlank()) {
                 setError(req, resp, "نوع حساب الزامی است");
                 return;
@@ -92,7 +85,6 @@ public class AccountCreateServlet extends HttpServlet {
                 return;
             }
 
-            // 3️⃣ تعیین صاحب حساب
             Long targetUserId;
 
             if (userRoles.contains(UserRole.ADMIN) || userRoles.contains(UserRole.MANAGER)) {
@@ -107,10 +99,8 @@ public class AccountCreateServlet extends HttpServlet {
                 targetUserId = currentUserOpt.orElseThrow().getId();
             }
 
-            // 4️⃣ پردازش موجودی اولیه
             BigDecimal initialBalance = null;
 
-            // ✅ فقط ادمین می‌تواند موجودی اولیه تعیین کند
             if (userRoles.contains(UserRole.ADMIN)) {
                 if (initialBalanceParam != null && !initialBalanceParam.isBlank()) {
                     try {
@@ -125,14 +115,12 @@ public class AccountCreateServlet extends HttpServlet {
                     }
                 }
             } else {
-                // ✅ کاربر عادی: موجودی صفر
                 initialBalance = BigDecimal.ZERO;
             }
 
             log.info("Creating account - User: {}, Type: {}, Balance: {}",
                     targetUserId, accountType, initialBalance);
 
-            // 5️⃣ فراخوانی Service
             Account savedAccount = accountService.createAccount(
                     targetUserId,
                     accountType,
@@ -142,7 +130,6 @@ public class AccountCreateServlet extends HttpServlet {
             log.info("Account created successfully: {} by: {}",
                     savedAccount.getAccountNumber(), currentUsername);
 
-            // 6️⃣ هدایت به صفحه جزئیات
             resp.sendRedirect(req.getContextPath() + "/accounts/detail?id=" +
                     savedAccount.getId() + "&message=created");
 
@@ -157,6 +144,7 @@ public class AccountCreateServlet extends HttpServlet {
             setError(req, resp, "خطا در ایجاد حساب: " + e.getMessage());
         }
     }
+
     /**
      * نمایش خطا و بازگشت به فرم
      */

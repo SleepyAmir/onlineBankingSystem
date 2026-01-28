@@ -28,7 +28,6 @@ public class UserListServlet extends HttpServlet {
             throws ServletException, IOException {
         
         try {
-            // 1️⃣ دریافت شماره صفحه از پارامتر (پیش‌فرض: 0)
             String pageParam = req.getParameter("page");
             int page = 0;
             
@@ -42,17 +41,14 @@ public class UserListServlet extends HttpServlet {
                 }
             }
 
-            // 2️⃣ دریافت لیست کاربران با صفحه‌بندی
             List<User> users = userService.findAll(page, PAGE_SIZE);
 
-            // 3️⃣ ارسال اطلاعات به JSP
             req.setAttribute("users", users);
             req.setAttribute("currentPage", page);
             req.setAttribute("pageSize", PAGE_SIZE);
 
             log.info("Fetched {} users for page {}", users.size(), page);
 
-            // 4️⃣ نمایش JSP
             req.getRequestDispatcher("/views/users/list.jsp").forward(req, resp);
 
         } catch (Exception e) {

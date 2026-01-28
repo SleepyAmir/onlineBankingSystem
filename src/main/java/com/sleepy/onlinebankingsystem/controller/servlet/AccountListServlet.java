@@ -65,15 +65,12 @@ public class AccountListServlet extends HttpServlet {
                     Optional<User> userOpt = userService.findById(userId);
 
                     if (userOpt.isPresent()) {
-                        // ✅ استفاده از متد با JOIN FETCH
                         accounts = accountService.findByUserWithUser(userOpt.get());
                         req.setAttribute("selectedUser", userOpt.get());
                     } else {
-                        // ✅ استفاده از متد جدید
                         accounts = accountService.findAllWithUsers(page, PAGE_SIZE);
                     }
                 } else {
-                    // ✅ استفاده از متد جدید
                     accounts = accountService.findAllWithUsers(page, PAGE_SIZE);
                 }
             } else {
@@ -85,7 +82,6 @@ public class AccountListServlet extends HttpServlet {
                     return;
                 }
 
-                // ✅ استفاده از متد با JOIN FETCH
                 accounts = accountService.findByUserWithUser(userOpt.get());
             }
 

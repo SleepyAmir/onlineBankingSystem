@@ -27,7 +27,6 @@ public class LoanRejectServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // بررسی دسترسی (فقط Admin و Manager)
             HttpSession session = req.getSession(false);
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");

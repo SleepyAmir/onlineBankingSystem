@@ -47,7 +47,6 @@ public class Role extends Base {
         authority.setRole(null);
     }
 
-    // Utility methods
     public String getRoleName() {
         return role != null ? role.name() : null;
     }

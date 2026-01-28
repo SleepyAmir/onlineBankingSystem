@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.util.*;
 
-/**
- * DataInitializer با استفاده از Service Layer
- * تمام عملیات از طریق Service انجام می‌شود
- */
+
 @Slf4j
 @WebListener
 @ApplicationScoped
@@ -50,19 +47,14 @@ public class DataInitializer implements ServletContextListener {
             return;
         }
 
-        // 1️⃣ ایجاد کاربران با استفاده از UserService
         Map<String, User> users = createInitialUsers();
 
-        // 2️⃣ ایجاد حساب‌ها با استفاده از AccountService
         Map<String, List<Account>> accounts = createAccounts(users);
 
-        // 3️⃣ ایجاد کارت‌ها با استفاده از CardService
         createCards(accounts);
 
-        // 4️⃣ ایجاد تراکنش‌ها با استفاده از TransactionService
         createSampleTransactions(accounts);
 
-        // 5️⃣ ایجاد وام‌ها با استفاده از LoanService
         createSampleLoans(accounts);
 
         log.info("Data Initialization Completed Successfully!");
@@ -77,7 +69,6 @@ public class DataInitializer implements ServletContextListener {
         }
     }
 
-    // ========== ایجاد کاربران ==========
 
     private Map<String, User> createInitialUsers() throws Exception {
         Map<String, User> users = new LinkedHashMap<>();
@@ -112,7 +103,6 @@ public class DataInitializer implements ServletContextListener {
         return users;
     }
 
-    // ========== ایجاد حساب‌ها ==========
 
     private Map<String, List<Account>> createAccounts(Map<String, User> users) throws Exception {
         Map<String, List<Account>> accounts = new HashMap<>();
@@ -152,7 +142,6 @@ public class DataInitializer implements ServletContextListener {
         return accounts;
     }
 
-    // ========== ایجاد کارت‌ها ==========
 
     private void createCards(Map<String, List<Account>> accounts) throws Exception {
         log.info("Creating cards...");
@@ -169,7 +158,6 @@ public class DataInitializer implements ServletContextListener {
         log.info("Created {} cards", cardCount);
     }
 
-    // ========== ایجاد تراکنش‌ها ==========
 
     private void createSampleTransactions(Map<String, List<Account>> accounts) throws Exception {
         log.info("Creating sample transactions...");
@@ -179,21 +167,18 @@ public class DataInitializer implements ServletContextListener {
         Account saraSavings = accounts.get("sara").get(0);
         Account saraChecking = accounts.get("sara").get(1);
 
-        // 1. واریز به حساب امیر
         transactionService.processDeposit(
                 amirSavings.getAccountNumber(),
                 new BigDecimal("2000000"),
                 "واریز اولیه"
         );
 
-        // 2. برداشت از حساب سارا
         transactionService.processWithdrawal(
                 saraChecking.getAccountNumber(),
                 new BigDecimal("500000"),
                 "برداشت نمونه"
         );
 
-        // 3. انتقال از امیر به سارا
         transactionService.processTransfer(
                 amirSavings.getAccountNumber(),
                 saraSavings.getAccountNumber(),
@@ -204,7 +189,6 @@ public class DataInitializer implements ServletContextListener {
         log.info("Created sample transactions");
     }
 
-    // ========== ایجاد وام‌ها ==========
 
     private void createSampleLoans(Map<String, List<Account>> accounts) throws Exception {
         log.info("Creating sample loans...");
@@ -212,7 +196,6 @@ public class DataInitializer implements ServletContextListener {
         Account amirAccount = accounts.get("amir").get(0);
         Account saraAccount = accounts.get("sara").get(0);
 
-        // 1. وام در انتظار تأیید (Amir)
         loanService.applyForLoan(
                 amirAccount.getAccountNumber(),
                 new BigDecimal("50000000"),
@@ -220,7 +203,6 @@ public class DataInitializer implements ServletContextListener {
                 24
         );
 
-        // 2. وام تأیید شده (Sara)
         Loan saraLoan = loanService.applyForLoan(
                 saraAccount.getAccountNumber(),
                 new BigDecimal("30000000"),
@@ -228,13 +210,11 @@ public class DataInitializer implements ServletContextListener {
                 36
         );
 
-        // تأیید وام سارا
         loanService.approveLoan(saraLoan.getId());
 
         log.info("Created sample loans");
     }
 
-    // ========== Helpers ==========
 
     private void printLoginCredentials() {
         log.info("========================================");

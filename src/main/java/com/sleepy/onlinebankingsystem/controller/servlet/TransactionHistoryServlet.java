@@ -48,7 +48,6 @@ public class TransactionHistoryServlet extends HttpServlet {
             @SuppressWarnings("unchecked")
             Set<UserRole> userRoles = (Set<UserRole>) session.getAttribute("roles");
 
-            // 1️⃣ دریافت شماره صفحه
             String pageParam = req.getParameter("page");
             int page = 0;
 
@@ -62,7 +61,6 @@ public class TransactionHistoryServlet extends HttpServlet {
                 }
             }
 
-            // 2️⃣ دریافت فیلترها
             String accountIdParam = req.getParameter("accountId");
             String startDateParam = req.getParameter("startDate");
             String endDateParam = req.getParameter("endDate");
@@ -74,13 +72,12 @@ public class TransactionHistoryServlet extends HttpServlet {
 
                 if (startDateParam != null && endDateParam != null &&
                         !startDateParam.isBlank() && !endDateParam.isBlank()) {
-                    // ✅ فیلتر بر اساس بازه زمانی با JOIN FETCH
+
                     LocalDateTime startDate = LocalDateTime.parse(startDateParam + "T00:00:00");
                     LocalDateTime endDate = LocalDateTime.parse(endDateParam + "T23:59:59");
                     transactions = transactionService.findByDateRangeWithAccounts(startDate, endDate);
 
                 } else if (accountIdParam != null && !accountIdParam.isBlank()) {
-                    // ✅ فیلتر بر اساس حساب خاص با JOIN FETCH
                     Long accountId = Long.parseLong(accountIdParam);
                     Optional<Account> accountOpt = accountService.findById(accountId);
 
@@ -90,12 +87,10 @@ public class TransactionHistoryServlet extends HttpServlet {
                         transactions = transactionService.findAllWithAccounts(page, PAGE_SIZE);
                     }
                 } else {
-                    // ✅ همه تراکنش‌ها با JOIN FETCH
                     transactions = transactionService.findAllWithAccounts(page, PAGE_SIZE);
                 }
 
             } else {
-                // 4️⃣ کاربر عادی فقط تراکنش‌های خودش را می‌بیند
                 Optional<User> userOpt = userService.findByUsername(currentUsername);
 
                 if (userOpt.isEmpty()) {

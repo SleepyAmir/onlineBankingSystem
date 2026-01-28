@@ -30,7 +30,6 @@ public class AccountDeleteServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ بررسی دسترسی (فقط ادمین)
             HttpSession session = req.getSession(false);
 
             @SuppressWarnings("unchecked")
@@ -43,7 +42,6 @@ public class AccountDeleteServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ دریافت ID
             String idParam = req.getParameter("id");
             if (idParam == null || idParam.isBlank()) {
                 resp.sendRedirect(req.getContextPath() +
@@ -53,7 +51,6 @@ public class AccountDeleteServlet extends HttpServlet {
 
             Long accountId = Long.parseLong(idParam);
 
-            // 3️⃣ پیدا کردن حساب (برای لاگ)
             Optional<Account> accountOpt = accountService.findById(accountId);
             if (accountOpt.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() +
@@ -66,16 +63,13 @@ public class AccountDeleteServlet extends HttpServlet {
 
             log.info("Attempting to delete account: {}", accountNumber);
 
-            // 4️⃣ اعتبارسنجی برای حذف (در Service)
             accountService.validateAccountForDeletion(accountId);
 
-            // 5️⃣ حذف نرم
             accountService.softDelete(accountId);
 
             log.info("Account soft-deleted: {} by admin: {}",
                     accountNumber, session.getAttribute("username"));
 
-            // 6️⃣ هدایت با پیام موفقیت
             resp.sendRedirect(req.getContextPath() +
                     "/accounts/list?message=deleted");
 

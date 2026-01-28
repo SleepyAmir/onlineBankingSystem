@@ -254,11 +254,7 @@ public class WelcomeServlet extends HttpServlet {
         showContactPage(req, resp);
     }
 
-    // ==================== کلاس‌های کمکی ====================
 
-    /**
-     * ویژگی سیستم
-     */
     public static class Feature {
         private final String icon;
         private final String title;
@@ -275,9 +271,6 @@ public class WelcomeServlet extends HttpServlet {
         public String getDescription() { return description; }
     }
 
-    /**
-     * عضو تیم
-     */
     public static class TeamMember {
         private final String name;
         private final String position;
