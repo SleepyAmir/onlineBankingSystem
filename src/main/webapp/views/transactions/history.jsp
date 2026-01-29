@@ -16,7 +16,7 @@
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h4 class="mb-0">تاریخچه تراکنش‌ها</h4>
             <a href="${pageContext.request.contextPath}/transactions" class="btn btn-light btn-sm">
-                تراکنش جدید
+                بازگشت
             </a>
         </div>
         <div class="card-body">

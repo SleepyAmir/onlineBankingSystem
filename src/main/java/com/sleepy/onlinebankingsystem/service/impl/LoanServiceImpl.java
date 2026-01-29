@@ -35,10 +35,10 @@ public class LoanServiceImpl implements LoanService {
     // حدود وام
     private static final BigDecimal MIN_LOAN_AMOUNT = new BigDecimal("1000000");        // 1M
     private static final BigDecimal MAX_LOAN_AMOUNT = new BigDecimal("1000000000");     // 1B
-    private static final BigDecimal MIN_INTEREST_RATE = BigDecimal.ZERO;
-    private static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("100");
-    private static final int MIN_DURATION_MONTHS = 1;
-    private static final int MAX_DURATION_MONTHS = 360;
+    private static final BigDecimal MIN_INTEREST_RATE = new  BigDecimal("5");
+    private static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("30");
+    private static final int MIN_DURATION_MONTHS = 6;
+    private static final int MAX_DURATION_MONTHS = 60;
 
     // ========== متدهای CRUD موجود ==========
 
