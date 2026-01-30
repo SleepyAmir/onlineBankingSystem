@@ -51,6 +51,9 @@ public class Loan extends Base {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal principal;
 
+    @Column(name = "remaining_balance", nullable = false, precision = 19, scale = 2)
+    private BigDecimal remainingBalance;
+
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal annualInterestRate;
 
@@ -71,19 +74,18 @@ public class Loan extends Base {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // ✅ متد کمکی برای تبدیل به Date (برای JSP)
+    // ========== متدهای کمکی برای تبدیل تاریخ ==========
+
     public Date getStartDateAsDate() {
         if (this.startDate == null) return null;
         return Date.from(this.startDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
-    // ✅ متد فرمت‌شده
     public String getFormattedStartDate() {
         if (this.startDate == null) return "";
         return this.startDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
     }
 
-    // ✅ تاریخ پایان وام
     public LocalDate getEndDate() {
         if (this.startDate == null || this.durationMonths == null) return null;
         return this.startDate.plusMonths(this.durationMonths);
@@ -103,16 +105,58 @@ public class Loan extends Base {
 
 
 
-
+    /**
+     * کل مبلغ بازپرداخت (قسط ماهانه × تعداد ماه)
+     */
     public BigDecimal getTotalRepayment() {
         if (this.monthlyPayment == null || this.durationMonths == null)
             return BigDecimal.ZERO;
         return this.monthlyPayment.multiply(new BigDecimal(this.durationMonths));
     }
 
+    /**
+     * کل سود (کل بازپرداخت - مبلغ اصل)
+     * ✅ الان مشکل نداره چون از principal اصلی استفاده میکنه
+     */
     public BigDecimal getTotalInterest() {
         return getTotalRepayment().subtract(
                 this.principal != null ? this.principal : BigDecimal.ZERO
         );
+    }
+
+    /**
+     * محاسبه مبلغ پرداخت شده
+     */
+    public BigDecimal getPaidAmount() {
+        if (this.principal == null || this.remainingBalance == null) {
+            return BigDecimal.ZERO;
+        }
+        return this.principal.subtract(this.remainingBalance);
+    }
+
+    /**
+     * درصد پیشرفت پرداخت
+     */
+    public int getPaymentProgress() {
+        if (this.principal == null || this.principal.compareTo(BigDecimal.ZERO) == 0) {
+            return 0;
+        }
+
+        if (this.status == LoanStatus.PAID) {
+            return 100;
+        }
+
+        if (this.status == LoanStatus.REJECTED || this.status == LoanStatus.PENDING) {
+            return 0;
+        }
+
+        BigDecimal paidAmount = getPaidAmount();
+        if (paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return 0;
+        }
+
+        return paidAmount.multiply(new BigDecimal("100"))
+                .divide(this.principal, 0, java.math.RoundingMode.HALF_UP)
+                .intValue();
     }
 }

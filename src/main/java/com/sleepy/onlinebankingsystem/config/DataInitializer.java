@@ -149,7 +149,6 @@ public class DataInitializer implements ServletContextListener {
 
         for (List<Account> accountList : accounts.values()) {
             for (Account account : accountList) {
-                // صدور کارت با استفاده از CardService
                 cardService.issueCard(account.getId(), CardType.DEBIT);
                 cardCount++;
             }
@@ -196,13 +195,17 @@ public class DataInitializer implements ServletContextListener {
         Account amirAccount = accounts.get("amir").get(0);
         Account saraAccount = accounts.get("sara").get(0);
 
-        loanService.applyForLoan(
+        // وام 1: درخواست شده (PENDING)
+        Loan amirLoan = loanService.applyForLoan(
                 amirAccount.getAccountNumber(),
                 new BigDecimal("50000000"),
                 new BigDecimal("18.00"),
                 24
         );
+        log.info("✅ Loan created - User: Amir | Status: PENDING | Amount: {} | Remaining: {}",
+                amirLoan.getPrincipal(), amirLoan.getRemainingBalance());
 
+        // وام 2: تأیید شده و پرداخت اولیه (ACTIVE)
         Loan saraLoan = loanService.applyForLoan(
                 saraAccount.getAccountNumber(),
                 new BigDecimal("30000000"),
@@ -211,18 +214,35 @@ public class DataInitializer implements ServletContextListener {
         );
 
         loanService.approveLoan(saraLoan.getId());
+        log.info("✅ Loan created - User: Sara | Status: APPROVED | Amount: {} | Remaining: {}",
+                saraLoan.getPrincipal(), saraLoan.getRemainingBalance());
 
-        log.info("Created sample loans");
+        // پرداخت یک قسط برای نمایش
+        try {
+            loanService.payLoanInstallment(saraLoan.getId(), null);
+            log.info("✅ First installment paid for Sara's loan");
+        } catch (Exception e) {
+            log.warn("⚠️ Could not pay installment: {}", e.getMessage());
+        }
+
+        log.info("Created {} sample loans", 2);
     }
 
 
     private void printLoginCredentials() {
         log.info("========================================");
-        log.info("Login Credentials (Password: {})", DEFAULT_PASSWORD);
-        log.info("Admin    : admin");
-        log.info("Manager  : manager");
-        log.info("Customer1: amir");
-        log.info("Customer2: sara");
+        log.info("🔐 Login Credentials (Password: {})", DEFAULT_PASSWORD);
+        log.info("👤 Admin    : admin");
+        log.info("👤 Manager  : manager");
+        log.info("👤 Customer1: amir");
+        log.info("👤 Customer2: sara");
+        log.info("========================================");
+        log.info("📊 Sample Data Summary:");
+        log.info("   - 4 Users");
+        log.info("   - 4 Accounts");
+        log.info("   - 4 Cards");
+        log.info("   - 3 Transactions");
+        log.info("   - 2 Loans");
         log.info("========================================");
     }
 

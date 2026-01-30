@@ -13,22 +13,28 @@ import java.math.RoundingMode;
 @ApplicationScoped
 public class LoanCalculationServiceImpl implements LoanCalculationService {
 
+    /**
+     * ✅ اصلاح شد - استفاده از remainingBalance
+     */
     @Override
     public BigDecimal calculateRemainingBalance(Loan loan) {
-        if (loan == null || loan.getPrincipal() == null) {
+        if (loan == null || loan.getRemainingBalance() == null) {
             return BigDecimal.ZERO;
         }
-        return loan.getPrincipal();
+        return loan.getRemainingBalance();
     }
 
+    /**
+     * ✅ اصلاح شد - محاسبه صحیح مبلغ پرداخت شده
+     */
     @Override
     public BigDecimal calculatePaidAmount(Loan loan) {
-        if (loan == null) {
+        if (loan == null || loan.getPrincipal() == null) {
             return BigDecimal.ZERO;
         }
 
         if (loan.getStatus() == LoanStatus.PAID) {
-            return loan.getTotalRepayment();
+            return loan.getPrincipal();
         }
 
         if (loan.getStatus() == LoanStatus.REJECTED ||
@@ -36,15 +42,17 @@ public class LoanCalculationServiceImpl implements LoanCalculationService {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal totalLoan = loan.getTotalRepayment();
-        BigDecimal remaining = calculateRemainingBalance(loan);
-
-        return totalLoan.subtract(remaining);
+        // مبلغ اصل - مبلغ باقیمانده = مبلغ پرداخت شده
+        BigDecimal paidAmount = loan.getPrincipal().subtract(loan.getRemainingBalance());
+        return paidAmount.max(BigDecimal.ZERO);
     }
 
+    /**
+     * ✅ اصلاح شد - محاسبه صحیح درصد پیشرفت
+     */
     @Override
     public int calculatePaymentProgress(Loan loan) {
-        if (loan == null) {
+        if (loan == null || loan.getPrincipal() == null) {
             return 0;
         }
 
@@ -57,19 +65,22 @@ public class LoanCalculationServiceImpl implements LoanCalculationService {
             return 0;
         }
 
-        BigDecimal totalLoan = loan.getTotalRepayment();
-        if (totalLoan.compareTo(BigDecimal.ZERO) == 0) {
+        BigDecimal principal = loan.getPrincipal();
+        if (principal.compareTo(BigDecimal.ZERO) == 0) {
             return 0;
         }
 
         BigDecimal paidAmount = calculatePaidAmount(loan);
         BigDecimal progress = paidAmount
                 .multiply(new BigDecimal("100"))
-                .divide(totalLoan, 0, RoundingMode.HALF_UP);
+                .divide(principal, 0, RoundingMode.HALF_UP);
 
         return progress.intValue();
     }
 
+    /**
+     * ✅ اصلاح شد - محاسبه صحیح اقساط باقیمانده
+     */
     @Override
     public int calculateRemainingInstallments(Loan loan) {
         if (loan == null) {
@@ -90,14 +101,17 @@ public class LoanCalculationServiceImpl implements LoanCalculationService {
             return 0;
         }
 
-        BigDecimal remaining = calculateRemainingBalance(loan);
-        BigDecimal installments = remaining.divide(
+        BigDecimal remainingBalance = calculateRemainingBalance(loan);
+        BigDecimal installments = remainingBalance.divide(
                 loan.getMonthlyPayment(), 0, RoundingMode.UP
         );
 
         return installments.intValue();
     }
 
+    /**
+     * ✅ اصلاح شد - محاسبه صحیح اقساط پرداخت شده
+     */
     @Override
     public int calculatePaidInstallments(Loan loan) {
         if (loan == null || loan.getDurationMonths() == null) {

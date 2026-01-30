@@ -344,15 +344,20 @@ public class LoanApi {
     // ========== متدهای کمکی ==========
 
     /**
-     * تبدیل Entity به DTO
+     * ✅ تبدیل Entity به DTO - اضافه شدن remainingBalance و سایر فیلدها
      */
     private LoanResponse mapToResponse(Loan loan) {
         return LoanResponse.builder()
                 .loanNumber(loan.getLoanNumber())
                 .principal(loan.getPrincipal())
+                .remainingBalance(loan.getRemainingBalance())
+                .paidAmount(loan.getPaidAmount())
                 .annualInterestRate(loan.getAnnualInterestRate())
                 .durationMonths(loan.getDurationMonths())
                 .monthlyPayment(loan.getMonthlyPayment())
+                .totalRepayment(loan.getTotalRepayment())
+                .totalInterest(loan.getTotalInterest())
+                .paymentProgress(loan.getPaymentProgress())
                 .status(loan.getStatus())
                 .build();
     }
@@ -407,26 +412,44 @@ public class LoanApi {
     public static class LoanResponse {
         private String loanNumber;
         private BigDecimal principal;
+        private BigDecimal remainingBalance;
+        private BigDecimal paidAmount;
         private BigDecimal annualInterestRate;
         private Integer durationMonths;
         private BigDecimal monthlyPayment;
+        private BigDecimal totalRepayment;
+        private BigDecimal totalInterest;
+        private int paymentProgress;
         private LoanStatus status;
 
-        public LoanResponse(String loanNumber, BigDecimal principal, BigDecimal annualInterestRate,
-                            Integer durationMonths, BigDecimal monthlyPayment, LoanStatus status) {
+        public LoanResponse(String loanNumber, BigDecimal principal, BigDecimal remainingBalance,
+                            BigDecimal paidAmount, BigDecimal annualInterestRate, Integer durationMonths,
+                            BigDecimal monthlyPayment, BigDecimal totalRepayment, BigDecimal totalInterest,
+                            int paymentProgress, LoanStatus status) {
             this.loanNumber = loanNumber;
             this.principal = principal;
+            this.remainingBalance = remainingBalance;
+            this.paidAmount = paidAmount;
             this.annualInterestRate = annualInterestRate;
             this.durationMonths = durationMonths;
             this.monthlyPayment = monthlyPayment;
+            this.totalRepayment = totalRepayment;
+            this.totalInterest = totalInterest;
+            this.paymentProgress = paymentProgress;
             this.status = status;
         }
 
+        // Getters
         public String getLoanNumber() { return loanNumber; }
         public BigDecimal getPrincipal() { return principal; }
+        public BigDecimal getRemainingBalance() { return remainingBalance; }
+        public BigDecimal getPaidAmount() { return paidAmount; }
         public BigDecimal getAnnualInterestRate() { return annualInterestRate; }
         public Integer getDurationMonths() { return durationMonths; }
         public BigDecimal getMonthlyPayment() { return monthlyPayment; }
+        public BigDecimal getTotalRepayment() { return totalRepayment; }
+        public BigDecimal getTotalInterest() { return totalInterest; }
+        public int getPaymentProgress() { return paymentProgress; }
         public LoanStatus getStatus() { return status; }
     }
 }

@@ -1,5 +1,3 @@
-<%-- ✅ payment.jsp - نسخه نهایی با Service جدید --%>
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -159,126 +157,109 @@
                                     <fmt:formatNumber value="${account.balance}" type="number" groupingUsed="true"/> ریال
                                 </td>
                             </tr>
+                            <tr>
+                                <th>موجودی پس از پرداخت:</th>
+                                <td class="text-end text-muted">
+                                    <span id="balanceAfterPayment">-</span>
+                                </td>
+                            </tr>
                         </table>
 
-                        <!-- هشدار موجودی کم -->
+                        <!-- هشدار موجودی -->
                         <c:if test="${account.balance < loan.monthlyPayment}">
-                            <div class="alert alert-warning mt-3 mb-0">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>توجه:</strong> موجودی حساب شما کمتر از قسط ماهانه است!
+                            <div class="alert alert-danger mt-3">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>توجه:</strong> موجودی حساب شما برای پرداخت قسط کافی نیست!
                             </div>
                         </c:if>
-
-                        <!-- اطلاعات مفید -->
-                        <div class="mt-4 p-3 bg-light rounded">
-                            <h6 class="text-muted mb-3">
-                                <i class="fas fa-info-circle me-2"></i>اطلاعات تکمیلی
-                            </h6>
-                            <div class="row g-2">
-                                <div class="col-12">
-                                    <small class="text-muted">کل مبلغ بازپرداخت:</small>
-                                    <div class="fw-bold">
-                                        <fmt:formatNumber value="${loan.totalRepayment}" type="number" groupingUsed="true"/> ریال
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <small class="text-muted">کل سود:</small>
-                                    <div class="fw-bold text-warning">
-                                        <fmt:formatNumber value="${loan.totalInterest}" type="number" groupingUsed="true"/> ریال
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <small class="text-muted">تاریخ شروع:</small>
-                                    <div class="fw-bold">${loan.formattedStartDate}</div>
-                                </div>
-                                <div class="col-12">
-                                    <small class="text-muted">تاریخ پایان:</small>
-                                    <div class="fw-bold text-info">${loan.formattedEndDate}</div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- فرم پرداخت -->
-        <div class="card shadow-lg border-0">
-            <div class="card-header bg-gradient bg-primary text-white">
+        <!-- کارت فرم پرداخت -->
+        <div class="card border-warning shadow-sm">
+            <div class="card-header bg-warning text-dark">
                 <h5 class="mb-0">
-                    <i class="fas fa-money-check-alt me-2"></i>پرداخت قسط وام
+                    <i class="fas fa-credit-card me-2"></i>فرم پرداخت
                 </h5>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body">
                 <form action="${pageContext.request.contextPath}/loans/payment"
                       method="post"
                       id="paymentForm">
-
                     <input type="hidden" name="loanId" value="${loan.id}">
 
-                    <!-- فیلد مبلغ پرداخت -->
-                    <div class="mb-4">
-                        <label for="paymentAmount" class="form-label fw-bold">
-                            <i class="fas fa-dollar-sign me-2"></i>مبلغ پرداخت (ریال)
-                            <span class="text-danger">*</span>
-                        </label>
-                        <input type="number"
-                               class="form-control form-control-lg"
-                               id="paymentAmount"
-                               name="paymentAmount"
-                               required
-                               min="${loan.monthlyPayment}"
-                               max="${remainingBalance}"
-                               value="${loan.monthlyPayment}"
-                               step="1000"
-                               placeholder="مبلغ دلخواه را وارد کنید">
-
-                        <div class="form-text mt-2">
-                            <div class="d-flex justify-content-between">
-                                <span>
-                                    <i class="fas fa-arrow-down text-danger"></i>
-                                    حداقل: <strong><fmt:formatNumber value="${loan.monthlyPayment}" type="number" groupingUsed="true"/></strong> ریال
-                                </span>
-                                <span>
-                                    <i class="fas fa-arrow-up text-success"></i>
-                                    حداکثر: <strong><fmt:formatNumber value="${remainingBalance}" type="number" groupingUsed="true"/></strong> ریال
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- دکمه‌های پیشنهادی -->
+                    <!-- دکمه‌های انتخاب سریع مبلغ -->
                     <div class="mb-4">
                         <label class="form-label fw-bold">
-                            <i class="fas fa-hand-pointer me-2"></i>انتخاب سریع مبلغ:
+                            <i class="fas fa-bolt me-2"></i>انتخاب سریع مبلغ:
                         </label>
                         <div class="btn-group w-100" role="group">
                             <button type="button"
                                     class="btn btn-outline-primary quick-amount"
                                     data-amount="${loan.monthlyPayment}">
+                                <i class="fas fa-calendar-check me-1"></i>
                                 یک قسط
                                 <br>
-                                <small><fmt:formatNumber value="${loan.monthlyPayment}" type="number" groupingUsed="true"/></small>
+                                <small class="text-muted">
+                                    <fmt:formatNumber value="${loan.monthlyPayment}" type="number" groupingUsed="true"/> ریال
+                                </small>
                             </button>
-                            <c:if test="${remainingBalance >= loan.monthlyPayment * 3}">
-                                <button type="button"
-                                        class="btn btn-outline-primary quick-amount"
-                                        data-amount="${loan.monthlyPayment * 3}">
-                                    سه قسط
-                                    <br>
-                                    <small><fmt:formatNumber value="${loan.monthlyPayment * 3}" type="number" groupingUsed="true"/></small>
-                                </button>
-                            </c:if>
-                            <c:if test="${remainingBalance > loan.monthlyPayment}">
-                                <button type="button"
-                                        class="btn btn-outline-success quick-amount"
-                                        data-amount="${remainingBalance}">
-                                    تسویه کامل
-                                    <br>
-                                    <small><fmt:formatNumber value="${remainingBalance}" type="number" groupingUsed="true"/></small>
-                                </button>
-                            </c:if>
+                            <button type="button"
+                                    class="btn btn-outline-info quick-amount"
+                                    data-amount="${loan.monthlyPayment * 3}">
+                                <i class="fas fa-calendar-week me-1"></i>
+                                سه قسط
+                                <br>
+                                <small class="text-muted">
+                                    <fmt:formatNumber value="${loan.monthlyPayment * 3}" type="number" groupingUsed="true"/> ریال
+                                </small>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-success quick-amount"
+                                    data-amount="${remainingBalance}">
+                                <i class="fas fa-check-double me-1"></i>
+                                تسویه کامل
+                                <br>
+                                <small class="text-muted">
+                                    <fmt:formatNumber value="${remainingBalance}" type="number" groupingUsed="true"/> ریال
+                                </small>
+                            </button>
                         </div>
+                    </div>
+
+                    <!-- فیلد مبلغ -->
+                    <div class="mb-4">
+                        <label for="paymentAmount" class="form-label fw-bold">
+                            <i class="fas fa-money-bill-wave me-2"></i>مبلغ پرداخت (ریال):
+                        </label>
+                        <input type="number"
+                               class="form-control form-control-lg text-end"
+                               id="paymentAmount"
+                               name="amount"
+                               step="0.01"
+                               min="${loan.monthlyPayment}"
+                               max="${remainingBalance}"
+                               placeholder="مبلغ مورد نظر را وارد کنید"
+                               required>
+                        <div class="form-text text-end">
+                            <i class="fas fa-info-circle me-1"></i>
+                            حداقل: <fmt:formatNumber value="${loan.monthlyPayment}" type="number" groupingUsed="true"/> ریال
+                            | حداکثر: <fmt:formatNumber value="${remainingBalance}" type="number" groupingUsed="true"/> ریال
+                        </div>
+                    </div>
+
+                    <!-- توضیحات -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-comment me-2"></i>توضیحات (اختیاری):
+                        </label>
+                        <textarea class="form-control"
+                                  id="description"
+                                  name="description"
+                                  rows="3"
+                                  placeholder="توضیحات خود را وارد کنید..."></textarea>
                     </div>
 
                     <!-- راهنما -->
@@ -375,6 +356,9 @@
                 btn.classList.remove('active');
             });
             this.classList.add('active');
+
+            // به‌روزرسانی موجودی پس از پرداخت
+            updateBalanceAfterPayment();
         });
     });
 
@@ -430,12 +414,26 @@
         return true;
     });
 
-    // فرمت کردن عدد هنگام تایپ
+    // فرمت کردن عدد هنگام تایپ و به‌روزرسانی موجودی
     document.getElementById('paymentAmount').addEventListener('input', function(e) {
-        // حذف کاراکترهای غیر عددی
-        let value = this.value.replace(/[^0-9]/g, '');
-        this.value = value;
+        updateBalanceAfterPayment();
     });
+
+    // تابع به‌روزرسانی موجودی پس از پرداخت
+    function updateBalanceAfterPayment() {
+        const amount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+        const accountBalance = ${account.balance};
+        const balanceAfter = accountBalance - amount;
+
+        const balanceElement = document.getElementById('balanceAfterPayment');
+        if (amount > 0) {
+            balanceElement.innerHTML = balanceAfter.toLocaleString('fa-IR') + ' ریال';
+            balanceElement.className = balanceAfter >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+        } else {
+            balanceElement.innerHTML = '-';
+            balanceElement.className = 'text-muted';
+        }
+    }
 </script>
 
 <jsp:include page="/views/common/footer.jsp" />

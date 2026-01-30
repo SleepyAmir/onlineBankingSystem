@@ -35,12 +35,10 @@ public class LoanServiceImpl implements LoanService {
     // حدود وام
     private static final BigDecimal MIN_LOAN_AMOUNT = new BigDecimal("1000000");        // 1M
     private static final BigDecimal MAX_LOAN_AMOUNT = new BigDecimal("1000000000");     // 1B
-    private static final BigDecimal MIN_INTEREST_RATE = new  BigDecimal("5");
+    private static final BigDecimal MIN_INTEREST_RATE = new BigDecimal("5");
     private static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("30");
     private static final int MIN_DURATION_MONTHS = 6;
     private static final int MAX_DURATION_MONTHS = 60;
-
-    // ========== متدهای CRUD موجود ==========
 
     @Transactional
     @Override
@@ -74,6 +72,9 @@ public class LoanServiceImpl implements LoanService {
                 .ifPresent(loan -> loanRepository.softDelete(loan.getId()));
     }
 
+    /**
+     * ✅ متد اصلاح شده - استفاده از remainingBalance
+     */
     @Override
     @Transactional
     public Loan payInstallment(Loan loan, BigDecimal amount) throws Exception {
@@ -93,17 +94,23 @@ public class LoanServiceImpl implements LoanService {
             );
         }
 
-        BigDecimal remainingPrincipal = loan.getPrincipal().subtract(amount);
-        if (remainingPrincipal.compareTo(BigDecimal.ZERO) <= 0) {
+        // ✅ استفاده از remainingBalance به جای principal
+        BigDecimal newRemainingBalance = loan.getRemainingBalance().subtract(amount);
+
+        if (newRemainingBalance.compareTo(BigDecimal.ZERO) <= 0) {
+            // وام کاملاً تسویه شد
             loan.setStatus(LoanStatus.PAID);
-            loan.setPrincipal(BigDecimal.ZERO);
+            loan.setRemainingBalance(BigDecimal.ZERO);
             log.info("Loan fully paid: {}", loan.getLoanNumber());
         } else {
-            loan.setPrincipal(remainingPrincipal);
+            // هنوز بخشی از وام باقی مانده
+            loan.setRemainingBalance(newRemainingBalance);
             loan.setStatus(LoanStatus.ACTIVE);
-            log.info("Installment paid for loan: {}, remaining: {}", loan.getLoanNumber(), remainingPrincipal);
+            log.info("Installment paid for loan: {}, remaining: {}",
+                    loan.getLoanNumber(), newRemainingBalance);
         }
 
+        // ✅ principal دست نخورده باقی میمونه
         return loanRepository.save(loan);
     }
 
@@ -137,7 +144,9 @@ public class LoanServiceImpl implements LoanService {
         return loanRepository.findAll(page, size);
     }
 
-
+    /**
+     * ✅ متد اصلاح شده - مقداردهی اولیه remainingBalance
+     */
     @Transactional
     @Override
     public Loan applyForLoan(String accountNumber, BigDecimal principal,
@@ -169,6 +178,7 @@ public class LoanServiceImpl implements LoanService {
                 .user(account.getUser())
                 .loanNumber(loanNumber)
                 .principal(principal)
+                .remainingBalance(principal)  // ✅ مقداردهی اولیه
                 .annualInterestRate(annualInterestRate)
                 .durationMonths(durationMonths)
                 .monthlyPayment(monthlyPayment)
@@ -188,20 +198,16 @@ public class LoanServiceImpl implements LoanService {
 
         log.info("Approving loan with ID: {}", loanId);
 
-        // 1. پیدا کردن وام
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new IllegalArgumentException("وام یافت نشد"));
 
-        // 2. بررسی وضعیت وام
         if (loan.getStatus() != LoanStatus.PENDING) {
             throw new IllegalStateException("فقط وام‌های در انتظار قابل تأیید هستند");
         }
 
-        // 3. تغییر وضعیت وام
         loan.setStatus(LoanStatus.APPROVED);
         loanRepository.save(loan);
 
-        // 4. واریز مبلغ وام به حساب
         Account account = loan.getAccount();
         account.setBalance(account.getBalance().add(loan.getPrincipal()));
         accountService.update(account);
@@ -217,16 +223,13 @@ public class LoanServiceImpl implements LoanService {
 
         log.info("Rejecting loan with ID: {}", loanId);
 
-        // 1. پیدا کردن وام
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new IllegalArgumentException("وام یافت نشد"));
 
-        // 2. بررسی وضعیت وام
         if (loan.getStatus() != LoanStatus.PENDING) {
             throw new IllegalStateException("فقط وام‌های در انتظار قابل رد هستند");
         }
 
-        // 3. تغییر وضعیت وام
         loan.setStatus(LoanStatus.REJECTED);
         Loan updatedLoan = loanRepository.save(loan);
 
@@ -241,29 +244,23 @@ public class LoanServiceImpl implements LoanService {
 
         log.info("Processing loan installment payment for loan ID: {}", loanId);
 
-        // 1. پیدا کردن وام
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new IllegalArgumentException("وام یافت نشد"));
 
-        // 2. بررسی وضعیت وام
         if (loan.getStatus() != LoanStatus.APPROVED && loan.getStatus() != LoanStatus.ACTIVE) {
             throw new IllegalStateException("فقط وام‌های فعال قابل پرداخت هستند");
         }
 
-        // 3. تعیین مبلغ پرداخت (اگر null باشد، قسط استاندارد)
         BigDecimal paymentAmount = amount != null ? amount : loan.getMonthlyPayment();
 
-        // 4. بررسی موجودی حساب
         Account account = loan.getAccount();
         if (account.getBalance().compareTo(paymentAmount) < 0) {
             throw new IllegalStateException("موجودی حساب کافی نیست");
         }
 
-        // 5. کاهش موجودی حساب
         account.setBalance(account.getBalance().subtract(paymentAmount));
         accountService.update(account);
 
-        // 6. پرداخت قسط
         Loan updatedLoan = payInstallment(loan, paymentAmount);
 
         log.info("Loan installment paid successfully: {} amount: {}",
@@ -277,7 +274,6 @@ public class LoanServiceImpl implements LoanService {
                                               BigDecimal annualInterestRate,
                                               Integer durationMonths) throws Exception {
 
-        // بررسی ورودی‌ها
         if (principal == null || annualInterestRate == null || durationMonths == null) {
             throw new IllegalArgumentException("تمام پارامترها الزامی هستند");
         }
@@ -290,17 +286,14 @@ public class LoanServiceImpl implements LoanService {
             throw new IllegalArgumentException("مدت زمان باید مثبت باشد");
         }
 
-        // اگر بهره صفر باشد
         if (annualInterestRate.compareTo(BigDecimal.ZERO) == 0) {
             return principal.divide(new BigDecimal(durationMonths), 2, RoundingMode.HALF_UP);
         }
 
-        // محاسبه نرخ ماهانه (نرخ سالانه / 12 / 100)
         BigDecimal monthlyRate = annualInterestRate
                 .divide(new BigDecimal("12"), 6, RoundingMode.HALF_UP)
                 .divide(new BigDecimal("100"), 6, RoundingMode.HALF_UP);
 
-        // فرمول: PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
         double onePlusR = 1 + monthlyRate.doubleValue();
         double power = Math.pow(onePlusR, durationMonths);
 
@@ -322,12 +315,10 @@ public class LoanServiceImpl implements LoanService {
                                         BigDecimal annualInterestRate,
                                         Integer durationMonths) throws Exception {
 
-        // 1. بررسی شماره حساب
         if (accountNumber == null || accountNumber.isBlank()) {
             throw new IllegalArgumentException("شماره حساب الزامی است");
         }
 
-        // 2. بررسی مبلغ اصل وام
         if (principal == null) {
             throw new IllegalArgumentException("مبلغ اصل وام الزامی است");
         }
@@ -342,7 +333,6 @@ public class LoanServiceImpl implements LoanService {
             );
         }
 
-        // 3. بررسی نرخ بهره
         if (annualInterestRate == null) {
             throw new IllegalArgumentException("نرخ بهره الزامی است");
         }
@@ -354,7 +344,6 @@ public class LoanServiceImpl implements LoanService {
             );
         }
 
-        // 4. بررسی مدت زمان
         if (durationMonths == null) {
             throw new IllegalArgumentException("مدت زمان وام الزامی است");
         }
@@ -365,7 +354,6 @@ public class LoanServiceImpl implements LoanService {
             );
         }
     }
-
 
     @Override
     public Optional<Loan> findByIdWithUserAndAccount(Long id) throws Exception {
@@ -378,18 +366,18 @@ public class LoanServiceImpl implements LoanService {
         log.debug("Fetching loan with user and account by loan number: {}", loanNumber);
         return loanRepository.findByLoanNumberWithUserAndAccount(loanNumber);
     }
+
     @Override
     public List<Loan> findByStatusWithUserAndAccount(LoanStatus status) throws Exception {
         log.debug("Fetching loans with user and account by status: {}", status);
         return loanRepository.findByStatusWithUserAndAccount(status);
     }
+
     @Override
     public Optional<Loan> findByIdForPayment(Long id) throws Exception {
         log.debug("Fetching loan for payment by ID: {}", id);
         return loanRepository.findByIdForPayment(id);
     }
-
-    // ========== متدهای کمکی ==========
 
     private String generateLoanNumber() {
         StringBuilder sb = new StringBuilder("LOAN-");
