@@ -1,4 +1,3 @@
-// com.sleepy.onlinebankingsystem.service.impl.RoleServiceImpl
 package com.sleepy.onlinebankingsystem.service.impl;
 
 import com.sleepy.onlinebankingsystem.model.entity.Role;
@@ -48,7 +47,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void softDelete(Long id) throws Exception {
         log.info("Soft-deleting role with ID: {}", id);
-        roleRepository.softDelete(id); // از BaseRepository استفاده می‌کند
+        roleRepository.softDelete(id);
     }
 
     @Override
