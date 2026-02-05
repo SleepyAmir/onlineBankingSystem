@@ -28,6 +28,7 @@
         <welcome-file>welcome</welcome-file>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
+
     <!-- ======================================== -->
     <!-- 3. Character Encoding Filter (MUST BE FIRST) -->
     <!-- ======================================== -->
@@ -44,10 +45,8 @@
         <dispatcher>ERROR</dispatcher>
     </filter-mapping>
 
-
-
     <!-- ======================================== -->
-    <!-- 3. CSRF Filter (ONLY for Web UI, NOT for API) -->
+    <!-- 4. CSRF Filter (ONLY for Web UI, NOT for API) -->
     <!-- ======================================== -->
     <filter>
         <filter-name>CsrfFilter</filter-name>
@@ -61,9 +60,38 @@
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
 
+    <!-- ======================================== -->
+    <!-- ======================================== -->
+    <!-- ======================================== -->
+    <!-- 5. JAX-RS / REST API Configuration -->
+    <!-- ======================================== -->
+    <!-- این servlet همه REST API های شما رو handle می‌کنه -->
+    <servlet>
+        <servlet-name>JAX-RS Application</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jakarta.ws.rs.Application</param-name>
+            <param-value>com.sleepy.onlinebankingsystem.controller.api.RestApplication</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>com.sleepy.onlinebankingsystem.controller.api</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>JAX-RS Application</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
 
     <!-- ======================================== -->
-    <!-- 5. Error Pages -->
+    <!-- ======================================== -->
+
+
+
+    <!-- ======================================== -->
+    <!-- 6. Error Pages -->
     <!-- ======================================== -->
     <error-page>
         <error-code>404</error-code>
@@ -79,14 +107,14 @@
     </error-page>
 
     <!-- ======================================== -->
-    <!-- 6. Session Listener -->
+    <!-- 7. Session Listener -->
     <!-- ======================================== -->
     <listener>
         <listener-class>com.sleepy.onlinebankingsystem.utils.SessionListener</listener-class>
     </listener>
 
     <!-- ======================================== -->
-    <!-- 7. NO Security Constraints for API -->
+    <!-- 8. NO Security Constraints for API -->
     <!-- ======================================== -->
     <!-- API endpoints are handled by their own authentication mechanism -->
     <!-- Do NOT add security-constraint for /api/* -->

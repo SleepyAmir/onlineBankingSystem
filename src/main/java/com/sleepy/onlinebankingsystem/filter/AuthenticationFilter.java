@@ -30,7 +30,7 @@ public class AuthenticationFilter implements Filter {
             "/auth/login",
             "/auth/register",
             "/auth/logout",
-            "/api/",           // ✅ API endpoints are public (handle auth separately)
+            "/api/",
             "/css/",
             "/js/",
             "/images/",
