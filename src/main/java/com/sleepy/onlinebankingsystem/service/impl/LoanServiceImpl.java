@@ -32,7 +32,6 @@ public class LoanServiceImpl implements LoanService {
 
     private final SecureRandom random = new SecureRandom();
 
-    // حدود وام
     private static final BigDecimal MIN_LOAN_AMOUNT = new BigDecimal("1000000");        // 1M
     private static final BigDecimal MAX_LOAN_AMOUNT = new BigDecimal("1000000000");     // 1B
     private static final BigDecimal MIN_INTEREST_RATE = new BigDecimal("5");
@@ -72,9 +71,7 @@ public class LoanServiceImpl implements LoanService {
                 .ifPresent(loan -> loanRepository.softDelete(loan.getId()));
     }
 
-    /**
-     * ✅ متد اصلاح شده - استفاده از remainingBalance
-     */
+
     @Override
     @Transactional
     public Loan payInstallment(Loan loan, BigDecimal amount) throws Exception {
@@ -110,7 +107,6 @@ public class LoanServiceImpl implements LoanService {
                     loan.getLoanNumber(), newRemainingBalance);
         }
 
-        // ✅ principal دست نخورده باقی میمونه
         return loanRepository.save(loan);
     }
 
@@ -144,9 +140,7 @@ public class LoanServiceImpl implements LoanService {
         return loanRepository.findAll(page, size);
     }
 
-    /**
-     * ✅ متد اصلاح شده - مقداردهی اولیه remainingBalance
-     */
+
     @Transactional
     @Override
     public Loan applyForLoan(String accountNumber, BigDecimal principal,
@@ -178,7 +172,7 @@ public class LoanServiceImpl implements LoanService {
                 .user(account.getUser())
                 .loanNumber(loanNumber)
                 .principal(principal)
-                .remainingBalance(principal)  // ✅ مقداردهی اولیه
+                .remainingBalance(principal)
                 .annualInterestRate(annualInterestRate)
                 .durationMonths(durationMonths)
                 .monthlyPayment(monthlyPayment)

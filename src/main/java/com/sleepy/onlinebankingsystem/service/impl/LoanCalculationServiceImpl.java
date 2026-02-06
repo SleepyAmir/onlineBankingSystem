@@ -13,9 +13,7 @@ import java.math.RoundingMode;
 @ApplicationScoped
 public class LoanCalculationServiceImpl implements LoanCalculationService {
 
-    /**
-     * ✅ اصلاح شد - استفاده از remainingBalance
-     */
+
     @Override
     public BigDecimal calculateRemainingBalance(Loan loan) {
         if (loan == null || loan.getRemainingBalance() == null) {
@@ -24,9 +22,7 @@ public class LoanCalculationServiceImpl implements LoanCalculationService {
         return loan.getRemainingBalance();
     }
 
-    /**
-     * ✅ اصلاح شد - محاسبه صحیح مبلغ پرداخت شده
-     */
+
     @Override
     public BigDecimal calculatePaidAmount(Loan loan) {
         if (loan == null || loan.getPrincipal() == null) {
@@ -47,9 +43,7 @@ public class LoanCalculationServiceImpl implements LoanCalculationService {
         return paidAmount.max(BigDecimal.ZERO);
     }
 
-    /**
-     * ✅ اصلاح شد - محاسبه صحیح درصد پیشرفت
-     */
+
     @Override
     public int calculatePaymentProgress(Loan loan) {
         if (loan == null || loan.getPrincipal() == null) {
@@ -78,9 +72,7 @@ public class LoanCalculationServiceImpl implements LoanCalculationService {
         return progress.intValue();
     }
 
-    /**
-     * ✅ اصلاح شد - محاسبه صحیح اقساط باقیمانده
-     */
+
     @Override
     public int calculateRemainingInstallments(Loan loan) {
         if (loan == null) {
@@ -109,9 +101,6 @@ public class LoanCalculationServiceImpl implements LoanCalculationService {
         return installments.intValue();
     }
 
-    /**
-     * ✅ اصلاح شد - محاسبه صحیح اقساط پرداخت شده
-     */
     @Override
     public int calculatePaidInstallments(Loan loan) {
         if (loan == null || loan.getDurationMonths() == null) {

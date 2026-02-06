@@ -7,6 +7,7 @@ import com.sleepy.onlinebankingsystem.model.entity.User;
 import com.sleepy.onlinebankingsystem.model.enums.UserRole;
 import com.sleepy.onlinebankingsystem.service.UserService;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Transactional
 public class UserApi {
 
     @Inject
@@ -33,6 +35,7 @@ public class UserApi {
      */
     @POST
     @Path("/register")
+    @Transactional
     public Response register(RegisterRequest request) {
         try {
             log.info("API: User registration attempt for username: {}", request.getUsername());
@@ -74,6 +77,7 @@ public class UserApi {
      * POST /api/users
      */
     @POST
+    @Transactional
     public Response createUser(UserCreateRequest request) {
         try {
             log.info("API: Creating user by admin: {}", request.getUsername());

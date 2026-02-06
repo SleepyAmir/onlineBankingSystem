@@ -35,7 +35,6 @@ public class CardServiceImpl implements CardService {
     private static final int CARD_VALIDITY_YEARS = 3;
     private static final int MAX_CARDS_PER_ACCOUNT = 5;
 
-    // ========== متدهای CRUD موجود ==========
 
     @Transactional
     @Override

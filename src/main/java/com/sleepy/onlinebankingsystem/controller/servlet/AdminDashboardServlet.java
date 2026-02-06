@@ -111,19 +111,19 @@ public class AdminDashboardServlet extends HttpServlet {
             int activeCardCount = activeCards.size();
             int blockedCardCount = totalCards - activeCardCount;
 
-            // ✅ آخرین کاربران (با مرتب‌سازی)
+            //آخرین کاربران
             List<User> recentUsers = allUsers.stream()
                     .sorted((u1, u2) -> u2.getCreatedAt().compareTo(u1.getCreatedAt()))
                     .limit(5)
                     .collect(Collectors.toList());
 
-            // ✅ آخرین تراکنش‌ها
+            //آخرین تراکنش ها
             List<Transaction> recentTransactions = allTransactions.stream()
                     .sorted((t1, t2) -> t2.getTransactionDate().compareTo(t1.getTransactionDate()))
                     .limit(10)
                     .collect(Collectors.toList());
 
-            // ✅ وام‌های در انتظار (مهم: باید User را هم داشته باشند)
+            //وام های درحال انتظار
             // برای جلوگیری از LazyInitializationException، User را force load می‌کنیم
             List<Loan> recentLoans = pendingLoans.stream()
                     .sorted((l1, l2) -> l2.getCreatedAt().compareTo(l1.getCreatedAt()))
@@ -163,7 +163,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
             req.setAttribute("recentUsers", recentUsers);
             req.setAttribute("recentTransactions", recentTransactions);
-            req.setAttribute("recentLoans", recentLoans);  // ✅ وام‌های در انتظار با دکمه عملیاتی
+            req.setAttribute("recentLoans", recentLoans);
 
             req.setAttribute("systemStats", systemStats);
 
