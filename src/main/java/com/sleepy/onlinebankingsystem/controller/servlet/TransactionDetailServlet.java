@@ -28,7 +28,6 @@ public class TransactionDetailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // 1️⃣ دریافت شناسه تراکنش
             String idParam = req.getParameter("id");
             String transactionIdParam = req.getParameter("transactionId");
 
@@ -39,10 +38,8 @@ public class TransactionDetailServlet extends HttpServlet {
                 return;
             }
 
-            // 2️⃣ پیدا کردن تراکنش با JOIN FETCH
             Optional<Transaction> transactionOpt;
 
-            // ✅ استفاده از متدهای WithAccounts که User را هم لود می‌کنند
             if (transactionIdParam != null && !transactionIdParam.isBlank()) {
                 transactionOpt = transactionService.findByTransactionIdWithAccounts(transactionIdParam);
             } else {

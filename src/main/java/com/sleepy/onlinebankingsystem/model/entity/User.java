@@ -31,7 +31,7 @@ public class User extends Base {
 
     @NotBlank @Size(min = 2, max = 50)
     @Column(nullable = false, length = 50, columnDefinition = "NVARCHAR2(50)")
-    private String username;
+    private String  username;
 
     @NotBlank
     @Size(min = 60, max = 60, message = "هش رمز عبور نامعتبر است")
