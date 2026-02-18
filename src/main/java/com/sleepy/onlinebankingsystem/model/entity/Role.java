@@ -30,7 +30,7 @@ public class Role extends Base {
     public static final String FIND_ALL = "Role.findAll";
     public static final String COUNT_ALL = "Role.countAll";
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

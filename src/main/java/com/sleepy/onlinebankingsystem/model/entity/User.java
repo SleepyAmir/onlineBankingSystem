@@ -64,7 +64,6 @@ public class User extends Base {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Account> accounts = new HashSet<>();
 
-    // Helper methods
     public void addRole(Role role) {
         roles.add(role);
         role.setUser(this);
